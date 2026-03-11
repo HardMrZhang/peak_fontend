@@ -1,0 +1,451 @@
+/* ===== Generalization Page — Premium Redesign ===== */
+.gen-page {
+  background: var(--bg-primary);
+  min-height: 100vh;
+}
+
+.gen-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px 64px;
+}
+
+/* ===== Hero Profile Card ===== */
+.gen-profile {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 15% 80%, rgba(245, 166, 35, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 20%, rgba(245, 166, 35, 0.06) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(40, 28, 12, 0.95) 0%, var(--bg-card) 100%);
+  border: 1px solid rgba(245, 166, 35, 0.2);
+  border-radius: 16px;
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.gen-profile::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(245, 166, 35, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.profile-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow:
+    0 4px 16px rgba(245, 166, 35, 0.3),
+    0 0 0 2px rgba(245, 166, 35, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.08);
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-address {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  letter-spacing: 0.5px;
+}
+
+.profile-total {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.profile-total strong {
+  font-size: 22px;
+  background: linear-gradient(135deg, #f5a623, #ffd568);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.profile-badges {
+  display: flex;
+  gap: 12px;
+}
+
+.badge-btn {
+  height: 40px;
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+
+.badge-btn.team {
+  border: none !important;
+  background: linear-gradient(135deg, #f5a623 0%, #e6961e 100%) !important;
+  color: #1a1207 !important;
+  box-shadow: 0 4px 16px rgba(245, 166, 35, 0.35);
+}
+
+.badge-btn.team:hover {
+  box-shadow: 0 6px 24px rgba(245, 166, 35, 0.5);
+  transform: translateY(-1px);
+}
+
+.badge-btn.rank {
+  border: none !important;
+  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%) !important;
+  color: #0a1a04 !important;
+  box-shadow: 0 4px 16px rgba(82, 196, 26, 0.3);
+}
+
+.badge-btn.rank:hover {
+  box-shadow: 0 6px 24px rgba(82, 196, 26, 0.45);
+  transform: translateY(-1px);
+}
+
+/* ===== Invite + Stats Section ===== */
+.invite-section {
+  background:
+    linear-gradient(135deg, rgba(40, 28, 12, 0.7) 0%, var(--bg-card) 100%);
+  border: 1px solid rgba(245, 166, 35, 0.15);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-bottom: 20px;
+}
+
+.invite-label {
+  font-size: 14px;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.invite-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(245, 166, 35, 0.06);
+  border: 1px solid rgba(245, 166, 35, 0.22);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  transition: border-color 0.3s ease;
+}
+
+.invite-row:hover {
+  border-color: rgba(245, 166, 35, 0.45);
+}
+
+.invite-url {
+  flex: 1;
+  font-size: 14px;
+  color: var(--accent-orange);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy-btn {
+  border: 1px solid rgba(245, 166, 35, 0.4) !important;
+  background: rgba(245, 166, 35, 0.1) !important;
+  color: var(--accent-orange) !important;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  height: 36px;
+  padding: 0 16px;
+  transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+  background: rgba(245, 166, 35, 0.2) !important;
+  border-color: var(--accent-orange) !important;
+  transform: translateY(-1px);
+}
+
+/* Stats Grid */
+.push-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.push-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 16px 20px;
+  transition: all 0.3s ease;
+}
+
+.push-stat:hover {
+  background: rgba(245, 166, 35, 0.06);
+  border-color: rgba(245, 166, 35, 0.2);
+}
+
+.push-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background: rgba(245, 166, 35, 0.12);
+  color: var(--accent-orange);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.push-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.push-value {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.push-value.orange {
+  background: linear-gradient(135deg, #f5a623, #ffd568);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ===== Tabs & Table Section ===== */
+.ranking-section {
+  background:
+    linear-gradient(135deg, rgba(40, 28, 12, 0.5) 0%, var(--bg-card) 100%);
+  border: 1px solid rgba(245, 166, 35, 0.12);
+  border-radius: 16px;
+  padding: 24px 28px;
+}
+
+/* Override Ant Design tabs */
+.ranking-section .ant-tabs-nav::before {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.ranking-section .ant-tabs-tab {
+  color: var(--text-muted) !important;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 4px !important;
+  transition: color 0.3s ease;
+}
+
+.ranking-section .ant-tabs-tab:hover {
+  color: var(--accent-orange) !important;
+}
+
+.ranking-section .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--accent-orange) !important;
+  font-weight: 600;
+}
+
+.ranking-section .ant-tabs-ink-bar {
+  background: var(--accent-orange) !important;
+  height: 3px !important;
+  border-radius: 2px;
+}
+
+/* Table styles */
+.ranking-section .ant-table {
+  background: transparent !important;
+}
+
+.ranking-section .ant-table-thead>tr>th {
+  background: rgba(245, 166, 35, 0.06) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  color: var(--text-muted) !important;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.ranking-section .ant-table-tbody>tr>td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.ranking-section .ant-table-tbody>tr:hover>td {
+  background: rgba(245, 166, 35, 0.05) !important;
+}
+
+.ranking-section .ant-table-cell-row-hover {
+  background: rgba(245, 166, 35, 0.05) !important;
+}
+
+/* Ranking cells */
+.rank-cell {
+  font-weight: 600;
+}
+
+.rank-medal {
+  font-size: 20px;
+}
+
+/* Pagination */
+.ranking-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ===== Leaderboard (standalone) ===== */
+.leaderboard-section {
+  margin-top: 20px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(245, 166, 35, 0.08) 0%, transparent 60%),
+    linear-gradient(135deg, rgba(40, 28, 12, 0.5) 0%, var(--bg-card) 100%);
+  border: 1px solid rgba(245, 166, 35, 0.18);
+  border-radius: 16px;
+  padding: 24px 28px;
+}
+
+.leaderboard-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.leaderboard-icon {
+  font-size: 22px;
+}
+
+.leaderboard-section .ant-table {
+  background: transparent !important;
+}
+
+.leaderboard-section .ant-table-thead>tr>th {
+  background: rgba(245, 166, 35, 0.08) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  color: var(--text-muted) !important;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.leaderboard-section .ant-table-tbody>tr>td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.leaderboard-section .ant-table-tbody>tr:hover>td {
+  background: rgba(245, 166, 35, 0.05) !important;
+}
+
+.leaderboard-section .ant-table-cell-row-hover {
+  background: rgba(245, 166, 35, 0.05) !important;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .gen-inner {
+    padding: 0 24px 48px;
+  }
+}
+
+@media (max-width: 768px) {
+  .gen-inner {
+    padding: 0 16px 40px;
+  }
+
+  .gen-profile {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+  }
+
+  .profile-badges {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .invite-section {
+    padding: 20px;
+  }
+
+  .invite-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .invite-url {
+    font-size: 12px;
+    word-break: break-all;
+    white-space: normal;
+  }
+
+  .push-stats {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .ranking-section {
+    padding: 18px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gen-profile {
+    padding: 16px;
+  }
+
+  .profile-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .badge-btn {
+    height: 34px;
+    font-size: 12px;
+    padding: 0 14px;
+  }
+
+  .push-stat {
+    padding: 12px 14px;
+  }
+}

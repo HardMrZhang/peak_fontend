@@ -1,0 +1,288 @@
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 64px;
+  background: rgba(5, 5, 8, 0.75);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 1px 24px rgba(0, 0, 0, 0.4);
+}
+
+.header-inner {
+  max-width: 2000px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+
+.header-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  object-position: center;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 2px 12px rgba(245, 166, 35, 0.2);
+}
+
+.header-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 18px rgba(245, 166, 35, 0.35);
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-item {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.25s;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  position: relative;
+}
+
+.nav-item:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.nav-item.active {
+  color: var(--accent-orange);
+  font-weight: 700;
+  background: rgba(245, 166, 35, 0.08);
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 2px;
+  background: var(--accent-orange);
+  border-radius: 1px;
+  box-shadow: 0 0 8px rgba(245, 166, 35, 0.6);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lang-btn {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  transition: all 0.25s;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.lang-btn:hover {
+  color: var(--accent-orange);
+  background: rgba(245, 166, 35, 0.08);
+  border-color: rgba(245, 166, 35, 0.3);
+}
+
+.header-balance {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.balance-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.balance-dot.node {
+  background: var(--accent-orange);
+  box-shadow: 0 0 6px var(--accent-orange-glow);
+}
+
+.balance-dot.usdt {
+  background: var(--accent-green);
+  box-shadow: 0 0 6px rgba(0, 230, 118, 0.25);
+}
+
+/* Solana wallet-adapter button overrides */
+.wallet-connect-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.wallet-connect-wrapper .wallet-adapter-button {
+  height: 36px !important;
+  padding: 0 18px !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+  transition: all 0.25s !important;
+  line-height: 36px !important;
+  letter-spacing: 0.2px !important;
+}
+
+.wallet-connect-wrapper .wallet-adapter-button:hover,
+.wallet-connect-wrapper .wallet-adapter-button:not([disabled]):hover {
+  background: rgba(245, 166, 35, 0.12) !important;
+  border-color: rgba(245, 166, 35, 0.4) !important;
+  color: #fff !important;
+  box-shadow: 0 0 16px rgba(245, 166, 35, 0.1) !important;
+}
+
+.wallet-connect-wrapper .wallet-adapter-button-trigger {
+  background: linear-gradient(135deg, #f5a623 0%, #ff8c00 100%) !important;
+  border-color: transparent !important;
+  color: #000 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 2px 12px rgba(245, 166, 35, 0.3) !important;
+}
+
+.wallet-connect-wrapper .wallet-adapter-button-trigger:hover {
+  background: linear-gradient(135deg, #e09520 0%, #e07800 100%) !important;
+  color: #000 !important;
+  box-shadow: 0 2px 20px rgba(245, 166, 35, 0.4) !important;
+}
+
+.wallet-connect-wrapper .wallet-adapter-button .wallet-adapter-button-start-icon {
+  margin-right: 8px !important;
+}
+
+.wallet-connect-wrapper .wallet-adapter-button .wallet-adapter-button-start-icon img {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Mobile menu button - hidden on desktop */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 6px;
+  line-height: 1;
+}
+
+/* Mobile dropdown menu */
+.mobile-menu {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background: rgba(5, 5, 8, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 20px 16px;
+  z-index: 99;
+}
+
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobile-nav-item {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobile-nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.mobile-nav-item.active {
+  color: var(--accent-orange);
+  font-weight: 600;
+  background: rgba(245, 166, 35, 0.08);
+}
+
+@media (max-width: 1024px) {
+  .header-inner {
+    padding: 0 24px;
+  }
+  .nav-item {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-nav {
+    display: none;
+  }
+  .mobile-menu-btn {
+    display: block;
+  }
+  .header-inner {
+    padding: 0 16px;
+  }
+  .header-left {
+    gap: 12px;
+  }
+  .header-right {
+    gap: 8px;
+  }
+  .wallet-connect-wrapper .wallet-adapter-button {
+    height: 32px !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .lang-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  .header-logo {
+    width: 32px;
+    height: 32px;
+  }
+}

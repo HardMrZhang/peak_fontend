@@ -419,13 +419,13 @@ export default function Nodes() {
                 <button className="qty-btn" onClick={() => setQty(Math.max(1, qty - 1))}><MinusOutlined /></button>
                 <InputNumber
                   min={1}
-                  max={100}
+                  max={10}
                   value={qty}
                   onChange={(v) => setQty(v ?? 1)}
                   controls={false}
                   className="qty-input"
                 />
-                <button className="qty-btn" onClick={() => setQty(Math.min(100, qty + 1))}><PlusOutlined /></button>
+                <button className="qty-btn" onClick={() => setQty(Math.min(10, qty + 1))}><PlusOutlined /></button>
               </div>
             </div>
             <div className="form-row form-row-emphasis">

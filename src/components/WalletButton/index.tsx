@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { useTranslation } from 'react-i18next'
+import { useAutoConnectWallet } from '@/hooks/useAutoConnectWallet'
 import './index.css'
 
 interface WalletOption {
@@ -84,6 +85,8 @@ export default function WalletButton() {
   const { connected } = useWallet()
   const { t } = useTranslation()
   const [modalOpen, setModalOpen] = useState(false)
+
+  useAutoConnectWallet()
 
   const showMobileModal = isMobileBrowser() && !isInsideWalletBrowser() && !connected
 

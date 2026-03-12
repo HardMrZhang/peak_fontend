@@ -15,6 +15,7 @@ import {
   getLedger,
   getBalances,
   getMyNfts,
+  getSaleSummary,
 } from '@/api'
 import type {
   NodeSaleConfig,
@@ -71,7 +72,11 @@ export default function Nodes() {
   const [infoLoading, setInfoLoading] = useState(true)
   const [tableLoading, setTableLoading] = useState(false)
 
-  const refreshData = useCallback(() => {
+  const refreshSaleConfig = useCallback(() => {
+    getSaleSummary().then((r) => setSaleConfig(r.data)).catch(() => { })
+  }, [])
+
+  const refreshUserData = useCallback(() => {
     if (!token) return
     Promise.all([
       getNodeInfo().then((r) => {
@@ -84,12 +89,23 @@ export default function Nodes() {
     ])
   }, [token])
 
+  const refreshData = useCallback(() => {
+    refreshSaleConfig()
+    refreshUserData()
+  }, [refreshSaleConfig, refreshUserData])
+
   useEffect(() => {
-    if (!token) { setInfoLoading(false); return }
     setInfoLoading(true)
-    refreshData()
+    refreshSaleConfig()
     setInfoLoading(false)
-  }, [token, refreshData])
+  }, [refreshSaleConfig])
+
+  useEffect(() => {
+    if (!token) { return }
+    setInfoLoading(true)
+    refreshUserData()
+    setInfoLoading(false)
+  }, [token, refreshUserData])
 
   const fetchTab = useCallback(() => {
     if (!token) return
@@ -409,7 +425,7 @@ export default function Nodes() {
                   controls={false}
                   className="qty-input"
                 />
-                <button className="qty-btn" onClick={() => setQty(qty + 1)}><PlusOutlined /></button>
+                <button className="qty-btn" onClick={() => setQty(Math.min(100, qty + 1))}><PlusOutlined /></button>
               </div>
             </div>
             <div className="form-row form-row-emphasis">

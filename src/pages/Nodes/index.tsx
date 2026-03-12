@@ -385,34 +385,8 @@ export default function Nodes() {
         <p className="purchase-nft-note">{t('nodes.nftNote')}</p>
         <div className="purchase-content">
           <div className="purchase-nft-preview">
-            <div className="preview-ambient" />
-            <div className="atom-decor">
-              <div className="atom-orbit atom-orbit-1"><div className="orbit-dot" /></div>
-              <div className="atom-orbit atom-orbit-2"><div className="orbit-dot" /></div>
-              <div className="atom-orbit atom-orbit-3"><div className="orbit-dot" /></div>
-              <div className="atom-core" />
-              <div className="atom-node an-1" />
-              <div className="atom-node an-2" />
-              <div className="atom-node an-3" />
-              <div className="atom-node an-4" />
-              <div className="atom-node an-5" />
-              <div className="atom-node an-6" />
-              <div className="atom-pedestal">
-                <div className="atom-pedestal-surface" />
-                <div className="atom-pedestal-ring atom-pedestal-ring-1" />
-                <div className="atom-pedestal-ring atom-pedestal-ring-2" />
-              </div>
-            </div>
-            <div className="nft-card-area">
-              <video src={nftPreviewVideo} autoPlay loop muted playsInline className="nft-image" />
-              <div className="pedestal">
-                <div className="pedestal-surface" />
-                <div className="pedestal-ring-1" />
-                <div className="pedestal-ring-2" />
-                <div className="pedestal-glow" />
-              </div>
-              <span className="nft-qty">x{qty}</span>
-            </div>
+            <video src={nftPreviewVideo} autoPlay loop muted playsInline className="preview-video" />
+            <span className="nft-qty">x{qty}</span>
           </div>
           <div className="purchase-form">
             <div className="form-row">

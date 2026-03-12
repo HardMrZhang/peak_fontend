@@ -72,6 +72,9 @@
   transition: all 0.2s;
   text-align: left;
   color: #f0f0f5;
+  text-decoration: none;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mobile-wallet-item:hover,

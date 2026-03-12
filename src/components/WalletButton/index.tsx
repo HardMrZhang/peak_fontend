@@ -11,14 +11,30 @@ interface WalletOption {
   deepLink: (url: string) => string
 }
 
+function getOSType(): 'ios' | 'android' | 'other' {
+  if (typeof window === 'undefined') return 'other'
+  const ua = navigator.userAgent
+  if (/iphone|ipad|ipod|ios/i.test(ua)) return 'ios'
+  if (/android|XiaoMi|MiuiBrowser/i.test(ua)) return 'android'
+  return 'other'
+}
+
+function buildOkxDeepLink(url: string): string {
+  const encodedDappUrl = encodeURIComponent(url)
+  const schemeLink = `okx://wallet/dapp/url?dappUrl=${encodedDappUrl}`
+  const os = getOSType()
+
+  if (os === 'android') {
+    return schemeLink
+  }
+  return `https://www.okx.com/download?deeplink=${encodeURIComponent(schemeLink)}`
+}
+
 const MOBILE_WALLETS: WalletOption[] = [
   {
     name: 'OKX Wallet',
     icon: 'https://static.okx.com/cdn/assets/imgs/247/58E63FEA47A2B7D7.png',
-    deepLink: (url) => {
-      const inner = `okx://wallet/dapp/url?dappUrl=${encodeURIComponent(url)}`
-      return `https://web3.okx.com/download?deeplink=${encodeURIComponent(inner)}`
-    },
+    deepLink: buildOkxDeepLink,
   },
   {
     name: 'Binance Web3',
@@ -80,7 +96,8 @@ function isInsideWalletBrowser(): boolean {
     w.tokenpocket?.solana ||
     w.coinbaseSolana ||
     w.okxwallet?.solana ||
-    w.BinanceChain
+    w.BinanceChain ||
+    /OKApp/i.test(navigator.userAgent)
   )
 }
 
@@ -93,9 +110,24 @@ export default function WalletButton() {
 
   const showMobileModal = isMobileBrowser() && !isInsideWalletBrowser() && !connected
 
-  const handleWalletClick = useCallback((wallet: WalletOption) => {
+  const handleWalletClick = useCallback((wallet: WalletOption, e: React.MouseEvent) => {
     const currentUrl = window.location.href
-    window.location.href = wallet.deepLink(currentUrl)
+    const deepLink = wallet.deepLink(currentUrl)
+
+    if (wallet.name === 'OKX Wallet' && getOSType() === 'android') {
+      e.preventDefault()
+      window.location.href = deepLink
+      const fallback = `https://www.okx.com/download?deeplink=${encodeURIComponent(deepLink)}`
+      setTimeout(() => {
+        if (!document.hidden) window.location.href = fallback
+      }, 2500)
+      return
+    }
+
+    if (wallet.name !== 'OKX Wallet') {
+      e.preventDefault()
+      window.location.href = deepLink
+    }
   }, [])
 
   const { setVisible: setWalletModalVisible } = useWalletModal()
@@ -204,10 +236,12 @@ export default function WalletButton() {
             </div>
             <div className="mobile-wallet-list">
               {MOBILE_WALLETS.map((wallet) => (
-                <button
+                <a
                   key={wallet.name}
                   className="mobile-wallet-item"
-                  onClick={() => handleWalletClick(wallet)}
+                  href={wallet.deepLink(window.location.href)}
+                  onClick={(e) => handleWalletClick(wallet, e)}
+                  rel="noopener noreferrer"
                 >
                   <img
                     src={wallet.icon}
@@ -219,7 +253,7 @@ export default function WalletButton() {
                   />
                   <span className="mobile-wallet-name">{wallet.name}</span>
                   <span className="mobile-wallet-arrow">›</span>
-                </button>
+                </a>
               ))}
             </div>
             <p className="mobile-wallet-hint">

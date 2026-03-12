@@ -15,7 +15,10 @@ const MOBILE_WALLETS: WalletOption[] = [
   {
     name: 'OKX Wallet',
     icon: 'https://static.okx.com/cdn/assets/imgs/247/58E63FEA47A2B7D7.png',
-    deepLink: (url) => `okx://wallet/dapp/url?dappUrl=${encodeURIComponent(url)}`,
+    deepLink: (url) => {
+      const inner = `okx://wallet/dapp/url?dappUrl=${encodeURIComponent(url)}`
+      return `https://web3.okx.com/download?deeplink=${encodeURIComponent(inner)}`
+    },
   },
   {
     name: 'Binance Web3',

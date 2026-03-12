@@ -33,7 +33,7 @@ import './index.css'
 
 const BUY_NODE_DISCRIMINATOR = Buffer.from([224, 164, 165, 140, 70, 25, 52, 247])
 const MPL_CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d')
-const NODE_DESTROY_DATE = new Date('2026-04-15T00:00:00')
+const NODE_DESTROY_DATE = new Date('2026-06-06T00:00:00')
 
 function useCountdown(target: Date) {
   const calc = useCallback(() => {
@@ -278,7 +278,7 @@ export default function Nodes() {
             </div>
             <div className="sale-destroy">
               <span className="sale-destroy-text">
-                {t('nodes.destroyNotice', { date: 'April 15, 2026' })}
+                {t('nodes.destroyNotice', { date: 'June 6, 2026' })}
               </span>
               <span className="sale-destroy-countdown">
                 <span className="cd-block">{String(destroyCountdown.days).padStart(2, '0')}</span>

@@ -257,6 +257,7 @@
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 8px;
+  white-space: nowrap;
 }
 
 .info-formula {

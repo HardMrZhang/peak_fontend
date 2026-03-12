@@ -1,24 +1,32 @@
 .mobile-wallet-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.6);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   animation: fadeIn 0.2s ease;
+  overflow: hidden;
 }
 
 .mobile-wallet-modal {
-  width: 90%;
-  max-width: 420px;
-  max-height: 85vh;
+  width: 88%;
+  max-width: 380px;
+  max-height: 75vh;
   overflow-y: auto;
   background: #111118;
   border-radius: 20px;
   padding: 20px 16px 24px;
   animation: scaleIn 0.25s ease;
+  margin: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .mobile-wallet-header {

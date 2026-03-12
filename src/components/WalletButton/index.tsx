@@ -112,8 +112,32 @@ export default function WalletButton() {
       </div>
 
       {modalOpen && (
-        <div className="mobile-wallet-overlay" onClick={() => setModalOpen(false)}>
-          <div className="mobile-wallet-modal" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="mobile-wallet-overlay"
+          onClick={() => setModalOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            className="mobile-wallet-modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              margin: 'auto',
+              maxHeight: '75vh',
+              overflowY: 'auto',
+            }}
+          >
             <div className="mobile-wallet-header">
               <span>{t('wallet.connectWallet', 'Connect Wallet')}</span>
               <button className="mobile-wallet-close" onClick={() => setModalOpen(false)}>

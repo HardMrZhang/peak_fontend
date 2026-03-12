@@ -347,8 +347,10 @@ export default function Nodes() {
                   <div className="peak-dual-divider" />
                   <div className="peak-dual-item">
                     <span className="info-label">{t('nodes.peakReleased')}</span>
-                    <span className="info-value orange">{infoLoading ? '--' : parseFloat(reward?.totalReleased ?? '0').toFixed(2)} PEAK</span>
-                    <Button className="withdrawal-small-btn" onClick={() => navigate('/account/withdrawal')}>{t('nodes.withdrawal')}</Button>
+                    <div className="peak-released-row">
+                      <span className="info-value orange">{infoLoading ? '--' : parseFloat(reward?.totalReleased ?? '0').toFixed(2)} PEAK</span>
+                      <Button className="withdrawal-small-btn" onClick={() => navigate('/account/withdrawal')}>{t('nodes.withdrawal')}</Button>
+                    </div>
                   </div>
                 </div>
               </div>

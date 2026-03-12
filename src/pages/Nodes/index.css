@@ -249,6 +249,7 @@
   color: var(--text-secondary);
   margin-bottom: 10px;
   letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 
 .info-value {
@@ -298,8 +299,14 @@
   letter-spacing: 0.2px;
 }
 
+.peak-released-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .withdrawal-small-btn {
-  margin-top: 10px;
   width: fit-content;
   height: 30px;
   padding: 0 18px;
@@ -310,6 +317,7 @@
   background: transparent !important;
   color: var(--accent-orange) !important;
   transition: all 0.25s;
+  flex-shrink: 0;
 }
 
 .withdrawal-small-btn:hover {

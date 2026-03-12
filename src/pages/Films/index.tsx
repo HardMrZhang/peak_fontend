@@ -72,7 +72,7 @@ export default function Films() {
           <div className="peak-bar-left">
             <span className="peak-bar-title">{t('films.online')}</span>
             <span className="peak-bar-online">{t('films.onlineTag')}</span>
-            <CountdownTimer targetDate={sale?.saleStartAt || NODE_TRADE_DATE} />
+            <CountdownTimer targetDate={NODE_TRADE_DATE} />
           </div>
           <div className="peak-bar-right">
             <img src={logoImg} alt="PEAK" className="peak-bar-logo" />

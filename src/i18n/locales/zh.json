@@ -29,6 +29,7 @@
   "nodes": {
     "title": "节点",
     "nodeSales": "节点销售",
+    "whatIsNft": "什么是节点NFT？",
     "salePeriod": "销售期",
     "purchaseNodes": "购买节点",
     "benefitText": "限量10,000个节点NFT，平分10亿PEAK，第一年为3.6亿PEAK，先到先领",
@@ -73,7 +74,7 @@
     "nftBonusTitle": "NFT积分加成",
     "nftBonusDesc": "持有1张NFT，积分为2倍；持有2张，积分为3倍；持有N张，积分为N+1倍。以此类推。",
     "nftPromoTitle": "多级推广奖励，构建你的网络",
-    "nftPromoDesc": "节点持有者享有10级下线积分奖励，而普通用户仅限1级下线积分奖励。",
+    "nftPromoDesc": "节点持有者享有多级下线积分奖励，而普通用户仅限1级下线积分奖励。",
     "nftWhitelistTitle": "持有10个节点解锁新白名单",
     "nftWhitelistDesc": "持有10个及以上节点，将获得新白名单资格，优先参与平台新项目发行，抢占未来机会。",
     "nftRewardTitle": "我的节点NFT收益",

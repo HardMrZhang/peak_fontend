@@ -29,6 +29,7 @@
   "nodes": {
     "title": "Nodes",
     "nodeSales": "Node Sales",
+    "whatIsNft": "What is Node NFT?",
     "salePeriod": "Sale Period",
     "purchaseNodes": "Purchase Nodes",
     "benefitText": "Limited 10,000 Node NFTs, sharing 1 billion PEAK. Year 1: 360 million PEAK, first come first served",
@@ -73,7 +74,7 @@
     "nftBonusTitle": "NFT Bonus Points",
     "nftBonusDesc": "Hold 1 NFT for 2x points; 2 NFTs for 3x points; N NFTs for (N+1)x points, and so on.",
     "nftPromoTitle": "Multi-level Promotion Rewards",
-    "nftPromoDesc": "Node holders enjoy 10-level referral bonus points, while regular users are limited to 1-level referral points.",
+    "nftPromoDesc": "Node holders enjoy multi-level referral bonus points, while regular users are limited to 1-level referral points.",
     "nftWhitelistTitle": "Hold 10 Nodes to Unlock Whitelist",
     "nftWhitelistDesc": "Holding 10+ nodes grants whitelist eligibility for new project launches on the platform.",
     "nftRewardTitle": "My Node NFT Rewards",

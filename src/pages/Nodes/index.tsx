@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Button, Modal, InputNumber, Table, Pagination, Tooltip, message, Spin } from 'antd'
-import { InfoCircleOutlined, MinusOutlined, PlusOutlined, InboxOutlined } from '@ant-design/icons'
+import { Button, Modal, InputNumber, Table, Pagination, message, Spin } from 'antd'
+import { MinusOutlined, PlusOutlined, InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey, TransactionInstruction, Transaction } from '@solana/web3.js'
@@ -264,6 +264,7 @@ export default function Nodes() {
             <div className="sale-header">
               <span className="sale-icon">✦</span>
               <span className="sale-title">{t('nodes.nodeSales')}</span>
+              <span className="what-is-nft" onClick={() => setInfoOpen(true)}>{t('nodes.whatIsNft')}</span>
             </div>
             <div className="sale-info">
               <span className="sale-text">
@@ -314,9 +315,6 @@ export default function Nodes() {
           <div className="info-section">
             <h2 className="section-title">
               {t('nodes.nodeInfo')}
-              <Tooltip title={t('nodes.clickDetails')}>
-                <InfoCircleOutlined className="info-icon" onClick={() => setInfoOpen(true)} />
-              </Tooltip>
             </h2>
             <div className="info-cards">
               <div className="info-card">

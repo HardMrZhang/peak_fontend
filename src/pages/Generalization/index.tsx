@@ -165,8 +165,21 @@ export default function Generalization() {
   const shortAddr = addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '—'
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(inviteUrl)
-    message.success(t('generalization.copySuccess'))
+    if (!inviteUrl) return
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(inviteUrl)
+      message.success(t('generalization.copySuccess'))
+    } else {
+      const textarea = document.createElement('textarea')
+      textarea.value = inviteUrl
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+      message.success(t('generalization.copySuccess'))
+    }
   }
 
   return (

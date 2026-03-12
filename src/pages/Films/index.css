@@ -56,11 +56,11 @@
 .peak-bar-sub {
   max-width: 2000px;
   margin: 0 auto;
-  background: linear-gradient(135deg, #0a0d1e 0%, #0e1530 50%, #081340 100%);
+  background: linear-gradient(135deg, #0d1025 0%, #111a3a 50%, #0a1848 100%);
   border-radius: 0 0 16px 16px;
-  padding: 12px 36px;
+  padding: 6px 36px;
   border: 1px solid rgba(100, 140, 255, 0.08);
-  border-top: 1px solid rgba(100, 140, 255, 0.06);
+  border-top: none;
 }
 
 .peak-bar-nodes {

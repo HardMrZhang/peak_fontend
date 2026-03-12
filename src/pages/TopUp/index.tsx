@@ -129,8 +129,22 @@ export default function TopUp() {
   }, [connected, token, refreshUsdtBalance])
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(deposit?.programId ?? '')
-    message.success(t('topup.copySuccess'))
+    const text = deposit?.programId ?? ''
+    if (!text) return
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text)
+      message.success(t('topup.copySuccess'))
+    } else {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+      message.success(t('topup.copySuccess'))
+    }
   }
 
   const handleDeposit = useCallback(async () => {

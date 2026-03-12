@@ -2,11 +2,9 @@ import { useTranslation } from 'react-i18next'
 import './index.css'
 
 const socialLinks = [
-  { label: 'Facebook', icon: '●', url: '#' },
   { label: 'X', icon: '𝕏', url: '#' },
   { label: 'Telegram', icon: '●', url: '#' },
   { label: 'Email', icon: '✉', url: '#' },
-  { label: 'Discord', icon: '●', url: '#' },
   { label: 'White paper', icon: '■', url: '#' },
 ]
 

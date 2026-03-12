@@ -18,13 +18,13 @@
     "tagNft": "NFT",
     "tagTrade": "Trade",
     "shortDrama": "Short-form drama",
-    "shortDramaDesc": "Our short dramas harmed offers fast-paced, high-energy hits across various genres.",
-    "videoEditing": "Films & TV",
-    "videoEditingDesc": "We focus on high-quality film & TV commentary, with in-depth analysis of plots and characters.",
+    "shortDramaDesc": "Our short drama channel offers fast-paced, high-energy mini-series across romance, suspense, fantasy, and more. Binge-watch anytime, with new stories updated daily.",
+    "videoEditing": "Film",
+    "videoEditingDesc": "We focus on high-quality film & TV commentary, with in-depth analysis of plots, characters and behind-the-scenes stories. Helping you quickly understand great movies and shows, and enjoy the charm of cinema easily.",
     "tvSeries": "TV series",
-    "tvSeriesDesc": "Dedicated to in-depth commentary on TV series. We dissect plot lines, analyze characters.",
+    "tvSeriesDesc": "Dedicated to in-depth commentary on TV series. We sort out plot lines, analyze characters and foreshadowing, helping you understand every great show and enjoy watching without confusion.",
     "aiAnime": "AI Anime & Micro Variety",
-    "aiAnimeDesc": "A creative channel featuring AI-generated anime and premium micro-variety shows."
+    "aiAnimeDesc": "A curated channel featuring AI-generated anime and premium micro-variety shows. Enjoy immersive, fun, and trendy viewing experiences with innovative visuals and lighthearted content."
   },
   "nodes": {
     "title": "Nodes",
@@ -32,15 +32,21 @@
     "salePeriod": "Sale Period",
     "purchaseNodes": "Purchase Nodes",
     "benefitText": "Limited 10,000 Node NFTs, sharing 1 billion PEAK. Year 1: 360 million PEAK, first come first served",
+    "destroyNotice": "All unsold nodes will be destroyed before {{date}}.",
+    "cdDays": "D",
+    "cdHours": "H",
+    "cdMinutes": "M",
+    "cdSeconds": "S",
     "formulaNodes": "Nodes",
+    "formulaSoldNodes": "Nodes Sold",
     "avgPrice": "Avg Price",
     "days": " days",
     "nodeInfo": "Node Information",
     "peakAllocLabel": "PEAK allocable in the first year",
     "nodesSoldLabel": "Nodes already sold",
-    "perNodePeakLabel": "PEAK per node in the first year",
+    "perNodePeakLabel": "Current PEAK per node",
     "myInfo": "My Information",
-    "availablePeak": "Total PEAK earned",
+    "availablePeak": "PEAK Claimed (365-day linear release)",
     "peakReleased": "PEAK Released",
     "withdrawal": "Withdrawal",
     "myNodes": "My Nodes",
@@ -70,7 +76,7 @@
     "nftPromoDesc": "Node holders enjoy 10-level referral bonus points, while regular users are limited to 1-level referral points.",
     "nftWhitelistTitle": "Hold 10 Nodes to Unlock Whitelist",
     "nftWhitelistDesc": "Holding 10+ nodes grants whitelist eligibility for new project launches on the platform.",
-    "nftRewardTitle": "My NFT Reward Tokens",
+    "nftRewardTitle": "My Node NFT Rewards",
     "nftMintNo": "Mint No",
     "nftTokenId": "NFT Asset Address",
     "nftRewardToken": "Reward Token",
@@ -219,7 +225,12 @@
     "copyright": "©2026 Peak Corporation. All rights reserved."
   },
   "invite": {
-    "codeRecorded": "Invitation code recorded, please connect wallet to login"
+    "codeRecorded": "Invitation code recorded, please connect wallet to login",
+    "bindingNow": "Binding referral...",
+    "alreadyBound": "You already have a referrer",
+    "cannotBindSelf": "Cannot bind yourself as referrer",
+    "invalidCode": "Invalid invite code",
+    "bindFailed": "Failed to bind invite code, please try again"
   },
   "referral": {
     "bindSuccess": "Referral relationship bound successfully"
@@ -253,6 +264,8 @@
     "hours": "Hours",
     "minutes": "Min",
     "seconds": "Sec",
-    "desc": "Node trading will officially open on June 6, 2026. You will be able to freely buy and sell nodes on the marketplace."
+    "desc": "Node trading will officially open on June 6, 2026. You will be able to freely buy and sell nodes on the marketplace.",
+    "rewardNotice": "PEAK rewards are distributed based on Node NFT holdings",
+    "transferNotice": "Transferring your Node NFT will result in the loss of your node rewards"
   }
 }

@@ -67,8 +67,9 @@
 }
 
 .sale-text {
-  font-size: 13px;
-  color: var(--text-secondary);
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .highlight-date {
@@ -97,6 +98,47 @@
 .purchase-btn:hover {
   box-shadow: 0 4px 28px rgba(245, 166, 35, 0.4);
   transform: translateY(-1px);
+}
+
+.sale-destroy {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.sale-destroy-text {
+  line-height: 1.6;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.sale-destroy-countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cd-block {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  background: var(--accent-orange);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: 5px;
+}
+
+.cd-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0 2px;
 }
 
 .sale-benefit {
@@ -729,6 +771,26 @@
     font-size: 13px;
     padding: 8px 12px;
   }
+
+  .nft-rewards-section .ant-table-wrapper,
+  .records-table .ant-table-wrapper {
+    overflow-x: auto;
+  }
+  .nft-rewards-section .ant-table,
+  .records-table .ant-table {
+    min-width: 600px;
+  }
+
+  .sale-destroy {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .sale-formula {
+    font-size: 11px;
+    word-break: break-word;
+  }
 }
 
 @media (max-width: 480px) {
@@ -798,5 +860,14 @@
 
   .qty-control {
     justify-self: start;
+  }
+
+  .sale-destroy-countdown .cd-block {
+    min-width: 28px;
+    height: 24px;
+    font-size: 12px;
+  }
+  .info-formula {
+    font-size: 10px;
   }
 }

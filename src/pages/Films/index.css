@@ -262,6 +262,12 @@
 
   .peak-bar-left {
     justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .peak-bar-tags {
+    flex-wrap: wrap;
+    gap: 6px;
   }
 
   .peak-bar-right {
@@ -310,5 +316,19 @@
   .peak-bar-logo {
     width: 40px;
     height: 40px;
+  }
+
+  .peak-bar-inner {
+    padding: 16px;
+  }
+  .peak-bar-title,
+  .peak-bar-online {
+    font-size: 15px;
+  }
+  .content-card-title {
+    font-size: 15px;
+  }
+  .content-card-desc {
+    font-size: 12px;
   }
 }

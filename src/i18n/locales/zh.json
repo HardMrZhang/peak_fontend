@@ -18,13 +18,13 @@
     "tagNft": "NFT",
     "tagTrade": "交易",
     "shortDrama": "短剧",
-    "shortDramaDesc": "我们的短剧提供快节奏、高能量的多类型精彩内容。",
+    "shortDramaDesc": "本短剧频道提供节奏紧凑、高能精彩的迷你剧集，涵盖言情、悬疑、奇幻等多种题材。随时随地随心追看，全新故事每日更新。",
     "videoEditing": "影视",
-    "videoEditingDesc": "专注于高质量影视评论，深度解析剧情和人物角色。",
+    "videoEditingDesc": "专注优质影视解说，深度解析剧情、人物与幕后故事，带你快速看懂好片、发现佳作，轻松享受光影魅力。",
     "tvSeries": "电视剧",
-    "tvSeriesDesc": "深入解读电视剧系列，剖析剧情线索，分析人物形象。",
-    "aiAnime": "AI动漫 & 微综艺",
-    "aiAnimeDesc": "以AI生成动漫与优质微综艺为特色的创意频道。"
+    "tvSeriesDesc": "专注电视剧深度解说，梳理剧情脉络、解析人物与伏笔，带你看懂每一部好剧，轻松追剧不迷路。",
+    "aiAnime": "AI动漫+微综艺",
+    "aiAnimeDesc": "汇聚 AI 生成动漫与精品微综艺，以创新视觉与轻松内容，带来趣味、治愈、潮流的沉浸式观看体验。"
   },
   "nodes": {
     "title": "节点",
@@ -32,15 +32,21 @@
     "salePeriod": "销售期",
     "purchaseNodes": "购买节点",
     "benefitText": "限量10,000个节点NFT，平分10亿PEAK，第一年为3.6亿PEAK，先到先领",
+    "destroyNotice": "所有未售出的节点将在 {{date}} 之前销毁。",
+    "cdDays": "天",
+    "cdHours": "时",
+    "cdMinutes": "分",
+    "cdSeconds": "秒",
     "formulaNodes": "节点",
+    "formulaSoldNodes": "已售节点",
     "avgPrice": "均价",
     "days": "天",
     "nodeInfo": "节点信息",
     "peakAllocLabel": "第一年可分配的PEAK数量",
     "nodesSoldLabel": "已售节点数量",
-    "perNodePeakLabel": "第一年每个节点可获得PEAK",
+    "perNodePeakLabel": "当前每个节点可获得PEAK",
     "myInfo": "我的信息",
-    "availablePeak": "已获得PEAK数量",
+    "availablePeak": "已领取PEAK（365天线性释放）",
     "peakReleased": "已释放PEAK",
     "withdrawal": "提现",
     "myNodes": "我的节点数",
@@ -70,7 +76,7 @@
     "nftPromoDesc": "节点持有者享有10级下线积分奖励，而普通用户仅限1级下线积分奖励。",
     "nftWhitelistTitle": "持有10个节点解锁新白名单",
     "nftWhitelistDesc": "持有10个及以上节点，将获得新白名单资格，优先参与平台新项目发行，抢占未来机会。",
-    "nftRewardTitle": "我的 NFT 收益代币",
+    "nftRewardTitle": "我的节点NFT收益",
     "nftMintNo": "铸造编号",
     "nftTokenId": "NFT 资产地址",
     "nftRewardToken": "收益代币",
@@ -219,7 +225,12 @@
     "copyright": "©2026 Peak Corporation. 保留所有权利。"
   },
   "invite": {
-    "codeRecorded": "邀请码已记录，请连接钱包登录"
+    "codeRecorded": "邀请码已记录，请连接钱包登录",
+    "bindingNow": "正在绑定邀请关系...",
+    "alreadyBound": "您已绑定推荐人",
+    "cannotBindSelf": "不能绑定自己为推荐人",
+    "invalidCode": "无效的邀请码",
+    "bindFailed": "邀请码绑定失败，请稍后重试"
   },
   "referral": {
     "bindSuccess": "邀请关系绑定成功"
@@ -253,6 +264,8 @@
     "hours": "时",
     "minutes": "分",
     "seconds": "秒",
-    "desc": "节点交易将于 2026 年 6 月 6 日正式开放，届时您可以在市场上自由买卖节点。"
+    "desc": "节点交易将于 2026 年 6 月 6 日正式开放，届时您可以在市场上自由买卖节点。",
+    "rewardNotice": "PEAK的收益根据节点NFT的持有分配",
+    "transferNotice": "转让节点NFT将会失去你的节点收益"
   }
 }

@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import { useTranslation } from 'react-i18next'
 import { useAutoConnectWallet } from '@/hooks/useAutoConnectWallet'
 import './index.css'
@@ -95,10 +95,62 @@ export default function WalletButton() {
     window.location.href = wallet.deepLink(currentUrl)
   }, [])
 
+  const { setVisible: setWalletModalVisible } = useWalletModal()
+  const { publicKey, wallet, disconnect } = useWallet()
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const shortAddress = publicKey
+    ? `${publicKey.toBase58().slice(0, 4)}..${publicKey.toBase58().slice(-4)}`
+    : ''
+
+  const handleDisconnect = useCallback(() => {
+    disconnect().catch(() => {})
+    setDropdownOpen(false)
+  }, [disconnect])
+
   if (!showMobileModal) {
+    if (!connected || !publicKey) {
+      return (
+        <div className="wallet-connect-wrapper">
+          <button
+            className="wallet-adapter-button wallet-adapter-button-trigger"
+            onClick={() => setWalletModalVisible(true)}
+          >
+            {t('header.connectWallet')}
+          </button>
+        </div>
+      )
+    }
+
     return (
-      <div className="wallet-connect-wrapper">
-        <WalletMultiButton />
+      <div className="wallet-connect-wrapper" ref={dropdownRef}>
+        <button
+          className="wallet-adapter-button wallet-adapter-button-trigger"
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+        >
+          {wallet?.adapter.icon && (
+            <img src={wallet.adapter.icon} alt="" className="wallet-btn-icon" />
+          )}
+          {shortAddress}
+        </button>
+        {dropdownOpen && (
+          <div className="wallet-dropdown">
+            <button className="wallet-dropdown-item" onClick={handleDisconnect}>
+              {t('header.disconnect')}
+            </button>
+          </div>
+        )}
       </div>
     )
   }

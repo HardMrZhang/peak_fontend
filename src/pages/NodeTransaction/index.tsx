@@ -75,6 +75,8 @@ export default function NodeTransaction() {
         </div>
 
         <p className="nt-desc">{t('nodeTransaction.desc')}</p>
+        <p className="nt-warning">{t('nodeTransaction.rewardNotice')}</p>
+        <p className="nt-warning">{t('nodeTransaction.transferNotice')}</p>
       </div>
     </div>
   )

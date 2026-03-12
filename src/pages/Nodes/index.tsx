@@ -33,6 +33,26 @@ import './index.css'
 
 const BUY_NODE_DISCRIMINATOR = Buffer.from([224, 164, 165, 140, 70, 25, 52, 247])
 const MPL_CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d')
+const NODE_DESTROY_DATE = new Date('2026-04-15T00:00:00')
+
+function useCountdown(target: Date) {
+  const calc = useCallback(() => {
+    const diff = target.getTime() - Date.now()
+    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 }
+    return {
+      days: Math.floor(diff / 86400000),
+      hours: Math.floor((diff / 3600000) % 24),
+      minutes: Math.floor((diff / 60000) % 60),
+      seconds: Math.floor((diff / 1000) % 60),
+    }
+  }, [target])
+  const [timeLeft, setTimeLeft] = useState(calc)
+  useEffect(() => {
+    const timer = setInterval(() => setTimeLeft(calc()), 1000)
+    return () => clearInterval(timer)
+  }, [calc])
+  return timeLeft
+}
 
 async function waitForSignatureConfirmed(connection: ReturnType<typeof useConnection>['connection'], signature: string, timeoutMs = 60000) {
   const started = Date.now()
@@ -53,6 +73,7 @@ export default function Nodes() {
   const navigate = useNavigate()
   const { connection } = useConnection()
   const { publicKey, sendTransaction, connected } = useWallet()
+  const destroyCountdown = useCountdown(NODE_DESTROY_DATE)
   const token = useAuthStore((s) => s.token)
   const [activeTab, setActiveTab] = useState<'revenue' | 'release'>('revenue')
   const [purchaseOpen, setPurchaseOpen] = useState(false)
@@ -255,6 +276,21 @@ export default function Nodes() {
                 {t('nodes.purchaseNodes')}
               </Button>
             </div>
+            <div className="sale-destroy">
+              <span className="sale-destroy-text">
+                {t('nodes.destroyNotice', { date: 'April 15, 2026' })}
+              </span>
+              <span className="sale-destroy-countdown">
+                <span className="cd-block">{String(destroyCountdown.days).padStart(2, '0')}</span>
+                <span className="cd-label">{t('nodes.cdDays')}</span>
+                <span className="cd-block">{String(destroyCountdown.hours).padStart(2, '0')}</span>
+                <span className="cd-label">{t('nodes.cdHours')}</span>
+                <span className="cd-block">{String(destroyCountdown.minutes).padStart(2, '0')}</span>
+                <span className="cd-label">{t('nodes.cdMinutes')}</span>
+                <span className="cd-block">{String(destroyCountdown.seconds).padStart(2, '0')}</span>
+                <span className="cd-label">{t('nodes.cdSeconds')}</span>
+              </span>
+            </div>
             <div className="sale-benefit">
               ✦ {t('nodes.benefitText')}
             </div>
@@ -286,7 +322,7 @@ export default function Nodes() {
               <div className="info-card">
                 <span className="info-label">{t('nodes.perNodePeakLabel')}</span>
                 <span className="info-value orange">{infoLoading ? '--' : parseFloat(reward?.yesterdayPerNode ?? '0').toFixed(2)} PEAK</span>
-                <span className="info-formula">{PEAK_YEAR1_ALLOC.toLocaleString()} PEAK ÷ 365{t('nodes.days')} ÷ {soldNodes.toLocaleString()} {t('nodes.formulaNodes')}</span>
+                <span className="info-formula">{PEAK_YEAR1_ALLOC.toLocaleString()} PEAK ÷ {soldNodes.toLocaleString()} {t('nodes.formulaSoldNodes')}</span>
               </div>
               <div className="info-card">
                 <span className="info-label">{t('nodes.peakAllocLabel')}</span>
@@ -312,9 +348,9 @@ export default function Nodes() {
                   <div className="peak-dual-item">
                     <span className="info-label">{t('nodes.peakReleased')}</span>
                     <span className="info-value orange">{infoLoading ? '--' : parseFloat(reward?.totalReleased ?? '0').toFixed(2)} PEAK</span>
+                    <Button className="withdrawal-small-btn" onClick={() => navigate('/account/withdrawal')}>{t('nodes.withdrawal')}</Button>
                   </div>
                 </div>
-                <Button className="withdrawal-small-btn" onClick={() => navigate('/account/withdrawal')}>{t('nodes.withdrawal')}</Button>
               </div>
               <div className="info-card">
                 <span className="info-label">{t('nodes.myNodes')}</span>

@@ -107,8 +107,19 @@ export function useAuth() {
         localStorage.removeItem(INVITE_CODE_STORAGE_KEY)
         message.success(t('referral.bindSuccess'))
       })
-      .catch(() => {
+      .catch((err) => {
         localStorage.removeItem(INVITE_CODE_STORAGE_KEY)
+        const errCode = err?.response?.data?.code
+        const errMsg = err?.response?.data?.message || ''
+        if (errCode === 'REFERRER_ALREADY_BOUND') {
+          message.info(t('invite.alreadyBound'))
+        } else if (errMsg.includes('self')) {
+          message.warning(t('invite.cannotBindSelf'))
+        } else if (errCode === 'INVALID_INVITE_CODE' || errMsg.includes('Invalid invite code')) {
+          message.error(t('invite.invalidCode'))
+        } else {
+          message.error(t('invite.bindFailed'))
+        }
       })
       .finally(() => {
         inviteBindInProgress.current = false

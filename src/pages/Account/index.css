@@ -235,6 +235,13 @@
     font-size: 13px;
     padding: 8px 12px;
   }
+
+  .account-table .ant-table-wrapper {
+    overflow-x: auto;
+  }
+  .account-table .ant-table {
+    min-width: 500px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -248,6 +255,13 @@
     height: 28px;
     padding: 0 14px;
     font-size: 11px;
+  }
+
+  .balance-amount {
+    font-size: 18px;
+  }
+  .card-label {
+    font-size: 12px;
   }
 }
 

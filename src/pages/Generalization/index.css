@@ -249,6 +249,7 @@
 
 /* ===== Tabs & Table Section ===== */
 .ranking-section {
+  margin-top: 24px;
   background:
     linear-gradient(135deg, rgba(40, 28, 12, 0.5) 0%, var(--bg-card) 100%);
   border: 1px solid rgba(245, 166, 35, 0.12);
@@ -331,7 +332,7 @@
 
 /* ===== Leaderboard (standalone) ===== */
 .leaderboard-section {
-  margin-top: 20px;
+  margin-top: 24px;
   background:
     radial-gradient(ellipse at 50% 0%, rgba(245, 166, 35, 0.08) 0%, transparent 60%),
     linear-gradient(135deg, rgba(40, 28, 12, 0.5) 0%, var(--bg-card) 100%);
@@ -427,6 +428,24 @@
   .ranking-section {
     padding: 18px 16px;
   }
+
+  .leaderboard-section {
+    padding: 18px 16px;
+  }
+
+  .leaderboard-title {
+    font-size: 16px;
+  }
+
+  .ranking-section .ant-table-wrapper,
+  .leaderboard-section .ant-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .ranking-section .ant-table,
+  .leaderboard-section .ant-table {
+    min-width: 600px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -434,18 +453,62 @@
     padding: 16px;
   }
 
+  .profile-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
   .profile-avatar {
     width: 44px;
     height: 44px;
+  }
+
+  .profile-total {
+    font-size: 14px;
+  }
+
+  .profile-total strong {
+    font-size: 18px;
+  }
+
+  .profile-badges {
+    flex-direction: column;
+    gap: 8px;
   }
 
   .badge-btn {
     height: 34px;
     font-size: 12px;
     padding: 0 14px;
+    width: 100%;
+    justify-content: center;
   }
 
   .push-stat {
     padding: 12px 14px;
+  }
+
+  .push-label {
+    font-size: 12px;
+  }
+
+  .push-value {
+    font-size: 15px;
+  }
+
+  .ranking-section,
+  .leaderboard-section {
+    padding: 14px 12px;
+  }
+
+  .ranking-section .ant-table,
+  .leaderboard-section .ant-table {
+    min-width: 500px;
+  }
+
+  .ranking-pagination {
+    margin-top: 14px;
+    padding-top: 12px;
   }
 }

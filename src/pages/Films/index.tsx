@@ -85,11 +85,7 @@ export default function Films() {
             </div>
           </div>
         </div>
-        <div className="peak-bar-sub">
-          <span className="peak-bar-nodes">
-            {t('nodes.formulaNodes')}: {soldNodes.toLocaleString()} / {totalNodes.toLocaleString()}
-          </span>
-        </div>
+        <div className="peak-bar-sub" />
       </section>
 
       <section className="content-section">

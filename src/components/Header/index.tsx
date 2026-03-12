@@ -3,8 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { Dropdown } from 'antd'
 import type { MenuProps } from 'antd'
 import { GlobalOutlined, MenuOutlined, CloseOutlined } from '@ant-design/icons'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { useTranslation } from 'react-i18next'
+import WalletButton from '@/components/WalletButton'
 import { useAuth } from '@/hooks/useAuth'
 import logoImg from '@/assets/logo.png'
 import './index.css'
@@ -82,9 +82,7 @@ export default function Header() {
             </span>
           </Dropdown>
 
-          <div className="wallet-connect-wrapper">
-            <WalletMultiButton />
-          </div>
+          <WalletButton />
 
           <button
             className="mobile-menu-btn"

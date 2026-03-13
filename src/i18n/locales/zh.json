@@ -66,6 +66,7 @@
     "topUp": "充值",
     "confirmPurchase": "确认购买",
     "purchaseSuccess": "购买成功！NFT 已转入您的钱包",
+    "insufficientBalance": "USDT 余额不足，请先充值。",
     "nftTitle": "PEAK 节点 NFT",
     "nftDesc1": "欢迎来到PEAK短剧平台。PEAK是一个创新的短剧拍摄和播放平台，致力于为全球用户提供高质量、免费的短剧内容。",
     "nftDesc2": "同时，我们通过销售节点NFT为用户创建双赢的生态系统。持有节点的用户不仅可以获得丰厚的代币奖励，还可以参与平台的长期发展。",
@@ -179,7 +180,7 @@
     "syncing": "到账同步中...",
     "syncDetected": "已检测到到账，余额已自动更新",
     "syncDelayed": "充值交易已提交，到账可能有延迟，余额会自动更新",
-    "syncProgress": "已提交上链，正在检测到账进度（{current}/{max}），余额到账后将自动更新，无需手动刷新。",
+    "syncProgress": "已提交上链，正在检测到账进度（{{current}}/{{max}}），余额到账后将自动更新，无需手动刷新。",
     "okxSectionTitle": "使用 OKX 等钱包？请用直接转账",
     "okxSectionDesc": "若钱包提示「未知交易类型」或无法确认，请改用下方 USDT 收款地址，在钱包内发起标准转账，可正常显示金额并确认。请使用当前登录钱包转账，到账后自动入账。",
     "directTransferAddrLabel": "USDT 收款地址",
@@ -188,7 +189,12 @@
     "directTransferStep2": "粘贴上述地址",
     "directTransferStep3": "输入金额并确认",
     "directTransferCopyBtn": "复制 USDT 收款地址",
-    "directTransferMobileHint": "手机端请点击上方按钮复制地址，再切换到 OKX 等钱包内粘贴并转出 USDT。"
+    "directTransferMobileHint": "手机端请点击上方按钮复制地址，再切换到 OKX 等钱包内粘贴并转出 USDT。",
+    "strategyDirect": "直接转账",
+    "strategyContract": "合约调用",
+    "detectedWallet": "检测到钱包：{{wallet}}",
+    "switchStrategy": "切换方式",
+    "directStrategyTip": "直接转账模式：将 USDT 直接转入合约地址。适用于不支持合约调用的钱包（如 OKX）。"
   },
   "withdrawal": {
     "breadcrumb": "账户/",

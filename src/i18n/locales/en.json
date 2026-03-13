@@ -66,6 +66,7 @@
     "topUp": "Top Up",
     "confirmPurchase": "Confirm Purchase",
     "purchaseSuccess": "Purchase successful! NFT transferred to your wallet",
+    "insufficientBalance": "Insufficient USDT balance. Please top up first.",
     "nftTitle": "PEAK Node NFT",
     "nftDesc1": "Welcome to PEAK Shortplay Platform. PEAK is an innovative short-drama platform committed to providing high-quality, free short-drama content for global users.",
     "nftDesc2": "We create a win-win ecosystem through node NFT sales. Node holders receive abundant token rewards and participate in the platform's long-term development.",
@@ -179,7 +180,7 @@
     "syncing": "Syncing deposit...",
     "syncDetected": "Deposit detected, balance updated automatically",
     "syncDelayed": "Deposit submitted, arrival may be delayed, balance will update automatically",
-    "syncProgress": "Submitted on-chain, detecting deposit progress ({current}/{max}), balance will update automatically after arrival, no need to refresh manually.",
+    "syncProgress": "Submitted on-chain, detecting deposit progress ({{current}}/{{max}}), balance will update automatically after arrival, no need to refresh manually.",
     "okxSectionTitle": "Using OKX or similar? Use direct transfer",
     "okxSectionDesc": "If your wallet shows \"Unknown transaction type\" or disables Confirm, use the USDT receive address below and send a standard transfer from your wallet instead; the amount will display correctly. Use the same wallet you logged in with; funds will be credited automatically.",
     "directTransferAddrLabel": "USDT receive address",
@@ -188,7 +189,12 @@
     "directTransferStep2": "Paste address above",
     "directTransferStep3": "Enter amount & confirm",
     "directTransferCopyBtn": "Copy USDT receive address",
-    "directTransferMobileHint": "On mobile: tap the button above to copy, then paste in OKX or your wallet and send USDT."
+    "directTransferMobileHint": "On mobile: tap the button above to copy, then paste in OKX or your wallet and send USDT.",
+    "strategyDirect": "Direct Transfer",
+    "strategyContract": "Contract Call",
+    "detectedWallet": "Detected wallet: {{wallet}}",
+    "switchStrategy": "Switch Strategy",
+    "directStrategyTip": "Direct transfer mode: send USDT directly to the contract address. Suitable for wallets that do not support contract calls (e.g. OKX)."
   },
   "withdrawal": {
     "breadcrumb": "Account/",

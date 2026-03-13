@@ -148,9 +148,17 @@ export default function Nodes() {
     </div>
   )
 
+  const availableUsdt = parseFloat(balances.find(b => b.asset === 'USDT')?.availableAmount ?? '0')
+  const insufficientBalance = availableUsdt < estimatedCost
+
   const handlePurchase = async () => {
     if (!publicKey || !sendTransaction || !connected) {
       message.warning(t('account.walletRequired'))
+      return
+    }
+
+    if (insufficientBalance) {
+      message.warning(t('nodes.insufficientBalance'))
       return
     }
 
@@ -319,8 +327,8 @@ export default function Nodes() {
             <div className="info-cards">
               <div className="info-card">
                 <span className="info-label">{t('nodes.perNodePeakLabel')}</span>
-                <span className="info-value orange">{infoLoading ? '--' : parseFloat(reward?.yesterdayPerNode ?? '0').toFixed(2)} PEAK</span>
-                <span className="info-formula">{PEAK_YEAR1_ALLOC.toLocaleString()} PEAK ÷ {soldNodes.toLocaleString()} {t('nodes.formulaSoldNodes')}</span>
+                <span className="info-value orange">{infoLoading ? '--' : soldNodes > 0 ? (PEAK_TOTAL_SUPPLY / soldNodes).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '0'} PEAK</span>
+                <span className="info-formula">{PEAK_TOTAL_SUPPLY.toLocaleString()} PEAK ÷ {soldNodes.toLocaleString()} {t('nodes.formulaSoldNodes')}</span>
               </div>
               <div className="info-card">
                 <span className="info-label">{t('nodes.peakAllocLabel')}</span>
@@ -475,7 +483,10 @@ export default function Nodes() {
                 <span className="topup-link" onClick={() => { setPurchaseOpen(false); navigate('/account/topup') }}>{t('nodes.topUp')}</span>
               </span>
             </div>
-            <Button className="confirm-purchase-btn" block onClick={handlePurchase} loading={purchasing}>
+            {insufficientBalance && (
+              <div className="insufficient-tip">{t('nodes.insufficientBalance')}</div>
+            )}
+            <Button className="confirm-purchase-btn" block onClick={handlePurchase} loading={purchasing} disabled={insufficientBalance}>
               {t('nodes.confirmPurchase')}
             </Button>
           </div>

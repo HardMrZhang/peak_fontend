@@ -182,7 +182,7 @@
     "syncProgress": "已提交上链，正在检测到账进度（{current}/{max}），余额到账后将自动更新，无需手动刷新。",
     "okxSectionTitle": "使用 OKX 等钱包？请用直接转账",
     "okxSectionDesc": "若钱包提示「未知交易类型」或无法确认，请改用下方 USDT 收款地址，在钱包内发起标准转账，可正常显示金额并确认。请使用当前登录钱包转账，到账后自动入账。",
-    "directTransferAddrLabel": "USDT 收款地址（直接转账）",
+    "directTransferAddrLabel": "USDT 收款地址",
     "directTransferTip": "在 OKX 等钱包中：",
     "directTransferStep1": "转出 USDT",
     "directTransferStep2": "粘贴上述地址",

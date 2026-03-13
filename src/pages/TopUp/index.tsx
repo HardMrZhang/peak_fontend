@@ -195,6 +195,20 @@ export default function TopUp() {
   const detectedWallet = useMemo(() => getDetectedWalletName(), [])
   const [strategy, setStrategy] = useState<DepositStrategy>(autoStrategy)
 
+  // 合约地址的 USDT ATA（直接转账目标，后端 ATA 扫描已监听此地址）
+  const directTransferAddress = useMemo(() => {
+    if (!deposit?.programId || !deposit?.mintAddress || !deposit?.tokenProgramId) return ''
+    try {
+      return getATA(
+        new PublicKey(deposit.programId),
+        new PublicKey(deposit.mintAddress),
+        new PublicKey(deposit.tokenProgramId),
+      ).toBase58()
+    } catch {
+      return ''
+    }
+  }, [deposit?.programId, deposit?.mintAddress, deposit?.tokenProgramId])
+
   const refreshUsdtBalance = useCallback(async () => {
     const r = await getBalances()
     const usdt = r.data.find((b: AssetBalance) => b.asset === 'USDT')
@@ -235,7 +249,7 @@ export default function TopUp() {
   }
 
   const handleCopyCollectionAta = () => {
-    const text = deposit?.collectionTokenAccount ?? ''
+    const text = directTransferAddress
     if (!text) return
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text)
@@ -324,10 +338,12 @@ export default function TopUp() {
     wallet: PublicKey,
     rawAmount: bigint,
   ) => {
+    const programId = new PublicKey(depositConfig.programId)
     const mint = new PublicKey(depositConfig.mintAddress)
     const tokenProgramId = new PublicKey(depositConfig.tokenProgramId)
-    const collectionTokenAccount = new PublicKey(depositConfig.collectionTokenAccount)
-    const collectionOwner = new PublicKey(depositConfig.collectionOwner)
+
+    // 直接转账目标：合约地址的 USDT ATA（后端 ATA 扫描已监听此地址）
+    const contractAta = getATA(programId, mint, tokenProgramId)
 
     const userTokenAccount = getATA(wallet, mint, tokenProgramId)
     const tx = new Transaction()
@@ -337,13 +353,13 @@ export default function TopUp() {
       tx.add(buildCreateAtaInstruction(wallet, userTokenAccount, wallet, mint, tokenProgramId))
     }
 
-    const collectionAtaInfo = await connection.getAccountInfo(collectionTokenAccount)
-    if (!collectionAtaInfo) {
-      tx.add(buildCreateAtaInstruction(wallet, collectionTokenAccount, collectionOwner, mint, tokenProgramId))
+    const contractAtaInfo = await connection.getAccountInfo(contractAta)
+    if (!contractAtaInfo) {
+      tx.add(buildCreateAtaInstruction(wallet, contractAta, programId, mint, tokenProgramId))
     }
 
     tx.add(buildDirectTransferInstruction(
-      userTokenAccount, mint, collectionTokenAccount,
+      userTokenAccount, mint, contractAta,
       wallet, tokenProgramId, rawAmount, DEPOSIT_DECIMALS,
     ))
     return tx
@@ -489,15 +505,15 @@ export default function TopUp() {
                 <div className="address-block">
                   <span className="address-label">{t('topup.directTransferAddrLabel')}</span>
                   <div className="address-row">
-                    <span className="address-text">{deposit?.collectionTokenAccount || '...'}</span>
-                    <CopyOutlined className="copy-icon" onClick={handleCopyCollectionAta} />
+                    <span className="address-text">{deposit?.programId || '...'}</span>
+                    <CopyOutlined className="copy-icon" onClick={handleCopy} />
                   </div>
                 </div>
-                {deposit?.collectionTokenAccount && (
+                {deposit?.programId && (
                   <div className="qr-section">
                     <div className="qr-wrapper">
                       <QRCodeSVG
-                        value={deposit.collectionTokenAccount}
+                        value={deposit.programId}
                         size={168}
                         bgColor="#ffffff"
                         fgColor="#111111"

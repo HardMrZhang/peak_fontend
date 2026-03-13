@@ -182,7 +182,7 @@
     "syncProgress": "Submitted on-chain, detecting deposit progress ({current}/{max}), balance will update automatically after arrival, no need to refresh manually.",
     "okxSectionTitle": "Using OKX or similar? Use direct transfer",
     "okxSectionDesc": "If your wallet shows \"Unknown transaction type\" or disables Confirm, use the USDT receive address below and send a standard transfer from your wallet instead; the amount will display correctly. Use the same wallet you logged in with; funds will be credited automatically.",
-    "directTransferAddrLabel": "USDT receive address (direct transfer)",
+    "directTransferAddrLabel": "USDT receive address",
     "directTransferTip": "In OKX or your wallet:",
     "directTransferStep1": "Send USDT",
     "directTransferStep2": "Paste address above",

@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { Carousel } from 'antd'
 import { useTranslation } from 'react-i18next'
 import CountdownTimer from '@/components/CountdownTimer'
-import { getBanners, getSaleSummary } from '@/api'
-import type { Banner, NodeSaleConfig } from '@/types'
+import { getBanners } from '@/api'
+import type { Banner } from '@/types'
 import { NODE_TRADE_DATE } from '@/constants'
 import logoImg from '@/assets/logo.png'
 import shortDramaImg from '@/assets/首页1.jpg'
@@ -18,13 +18,11 @@ const fallbackBanners = [
 export default function Films() {
   const { t, i18n } = useTranslation()
   const [banners, setBanners] = useState<Banner[]>(fallbackBanners)
-  const [sale, setSale] = useState<NodeSaleConfig | null>(null)
 
   useEffect(() => {
     getBanners(i18n.language).then((res) => {
       if (res.data?.length) setBanners(res.data)
     }).catch(() => { })
-    getSaleSummary().then((res) => setSale(res.data)).catch(() => { })
   }, [i18n.language])
 
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
@@ -40,9 +38,6 @@ export default function Films() {
     { title: t('films.tvSeries'), desc: t('films.tvSeriesDesc'), image: 'https://m.media-amazon.com/images/M/MV5BMzU5ZGYzNmQtMTdhYy00OGRiLTg0NmQtYjVjNzliZTg1ZGE4XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg' },
     { title: t('films.aiAnime'), desc: t('films.aiAnimeDesc'), image: 'https://m.media-amazon.com/images/M/MV5BMjIwMjE1Nzc4NV5BMl5BanBnXkFtZTgwNDg4OTA1NzM@._V1_FMjpg_UX1000_.jpg' },
   ]
-
-  const soldNodes = sale?.soldNodes ?? 0
-  const totalNodes = sale?.totalNodes ?? 10000
 
   return (
     <div className="films-page">

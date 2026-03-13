@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Button, Input, Select, message, Spin } from 'antd'
-import { CopyOutlined, ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons'
+import { Button, Input, Select, message, Spin, Tag } from 'antd'
+import { CopyOutlined, ExclamationCircleOutlined, LoadingOutlined, SwapOutlined } from '@ant-design/icons'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey, TransactionInstruction, Transaction, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { QRCodeSVG } from 'qrcode.react'
@@ -14,6 +14,44 @@ import './index.css'
 
 const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
 const DEPOSIT_DECIMALS = 6
+
+type DepositStrategy = 'CONTRACT_CALL' | 'DIRECT_TRANSFER'
+
+/**
+ * Detect whether the current browser environment is inside a wallet DApp browser
+ * that does NOT support complex contract calls (only supports standard SPL transfers).
+ *
+ * Returns 'DIRECT_TRANSFER' for OKX, Binance Web3, etc.
+ * Returns 'CONTRACT_CALL' for Phantom, Solflare, and desktop browsers.
+ */
+function detectDepositStrategy(): DepositStrategy {
+  if (typeof window === 'undefined') return 'CONTRACT_CALL'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const w = window as any
+  const ua = navigator.userAgent
+
+  if (w.okxwallet?.solana || /OKApp/i.test(ua)) return 'DIRECT_TRANSFER'
+  if (w.BinanceChain) return 'DIRECT_TRANSFER'
+
+  return 'CONTRACT_CALL'
+}
+
+function getDetectedWalletName(): string | null {
+  if (typeof window === 'undefined') return null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const w = window as any
+  const ua = navigator.userAgent
+  if (w.okxwallet?.solana || /OKApp/i.test(ua)) return 'OKX Wallet'
+  if (w.BinanceChain) return 'Binance Web3'
+  if (w.phantom?.solana) return 'Phantom'
+  if (w.solflare) return 'Solflare'
+  if (w.bitkeep?.solana) return 'Bitget Wallet'
+  if (w.trustwallet?.solana) return 'Trust Wallet'
+  if (w.coinbaseSolana) return 'Coinbase Wallet'
+  if (w.coin98?.sol) return 'Coin98'
+  if (w.tokenpocket?.solana) return 'TokenPocket'
+  return null
+}
 
 function getATA(owner: PublicKey, mint: PublicKey, tokenProgramId: PublicKey): PublicKey {
   const [ata] = PublicKey.findProgramAddressSync(
@@ -66,6 +104,36 @@ function buildDepositInstruction(
   })
 }
 
+/**
+ * Build a standard SPL Token `transferChecked` instruction.
+ * This is the fallback for wallets that cannot handle custom program instructions.
+ */
+function buildDirectTransferInstruction(
+  source: PublicKey,
+  mint: PublicKey,
+  destination: PublicKey,
+  authority: PublicKey,
+  tokenProgramId: PublicKey,
+  amount: bigint,
+  decimals: number,
+): TransactionInstruction {
+  const data = Buffer.alloc(10)
+  data.writeUInt8(12, 0) // transferChecked instruction discriminator
+  data.writeBigUInt64LE(amount, 1)
+  data.writeUInt8(decimals, 9)
+
+  return new TransactionInstruction({
+    programId: tokenProgramId,
+    keys: [
+      { pubkey: source, isSigner: false, isWritable: true },
+      { pubkey: mint, isSigner: false, isWritable: false },
+      { pubkey: destination, isSigner: false, isWritable: true },
+      { pubkey: authority, isSigner: true, isWritable: false },
+    ],
+    data,
+  })
+}
+
 function buildCreateAtaInstruction(
   payer: PublicKey,
   associatedTokenAccount: PublicKey,
@@ -88,6 +156,21 @@ function buildCreateAtaInstruction(
   })
 }
 
+function isUnrecognizedTxError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err)
+  const patterns = [
+    'unknown',
+    'unrecognized',
+    'unsupported',
+    'not supported',
+    'User rejected',
+    'Transaction simulation failed',
+    'failed to simulate',
+    'WalletSignTransactionError',
+  ]
+  return patterns.some((p) => msg.toLowerCase().includes(p.toLowerCase()))
+}
+
 const quickAmounts = [500, 1000, 5000]
 
 export default function TopUp() {
@@ -107,6 +190,10 @@ export default function TopUp() {
   const [syncing, setSyncing] = useState(false)
   const [syncAttempt, setSyncAttempt] = useState(0)
   const maxSyncAttempts = 30
+
+  const autoStrategy = useMemo(() => detectDepositStrategy(), [])
+  const detectedWallet = useMemo(() => getDetectedWalletName(), [])
+  const [strategy, setStrategy] = useState<DepositStrategy>(autoStrategy)
 
   const refreshUsdtBalance = useCallback(async () => {
     const r = await getBalances()
@@ -147,6 +234,121 @@ export default function TopUp() {
     }
   }
 
+  const handleCopyCollectionAta = () => {
+    const text = deposit?.collectionTokenAccount ?? ''
+    if (!text) return
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text)
+      message.success(t('topup.copySuccess'))
+    } else {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+      message.success(t('topup.copySuccess'))
+    }
+  }
+
+  const pollForDeposit = useCallback(async () => {
+    const before = Number(balance)
+    let synced = false
+    setSyncing(true)
+    setSyncAttempt(0)
+    for (let i = 0; i < maxSyncAttempts; i += 1) {
+      setSyncAttempt(i + 1)
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const latest = await refreshUsdtBalance()
+        if (latest > before) {
+          window.dispatchEvent(new Event('balance:refresh'))
+          synced = true
+          message.success(t('topup.syncDetected'))
+          break
+        }
+      } catch (_) {
+        // ignore polling errors
+      }
+    }
+    if (!synced) {
+      message.info(t('topup.syncDelayed'))
+    }
+    setSyncing(false)
+    setSyncAttempt(0)
+  }, [balance, refreshUsdtBalance, t])
+
+  const buildContractCallTx = useCallback(async (
+    depositConfig: DepositAddress,
+    wallet: PublicKey,
+    rawAmount: bigint,
+  ) => {
+    const programId = new PublicKey(depositConfig.programId)
+    const mint = new PublicKey(depositConfig.mintAddress)
+    const tokenProgramId = new PublicKey(depositConfig.tokenProgramId)
+    const collectionTokenAccount = new PublicKey(depositConfig.collectionTokenAccount)
+    const vaultAuthority = new PublicKey(depositConfig.vaultAuthority)
+    const collectionOwner = new PublicKey(depositConfig.collectionOwner)
+
+    const [vaultState] = PublicKey.findProgramAddressSync(
+      [Buffer.from('vault'), vaultAuthority.toBuffer()],
+      programId,
+    )
+
+    const userTokenAccount = getATA(wallet, mint, tokenProgramId)
+    const tx = new Transaction()
+
+    const userAtaInfo = await connection.getAccountInfo(userTokenAccount)
+    if (!userAtaInfo) {
+      tx.add(buildCreateAtaInstruction(wallet, userTokenAccount, wallet, mint, tokenProgramId))
+    }
+
+    const collectionAtaInfo = await connection.getAccountInfo(collectionTokenAccount)
+    if (!collectionAtaInfo) {
+      tx.add(buildCreateAtaInstruction(wallet, collectionTokenAccount, collectionOwner, mint, tokenProgramId))
+    }
+
+    tx.add(buildDepositInstruction(
+      programId, vaultState, userTokenAccount, collectionTokenAccount,
+      mint, wallet, tokenProgramId, rawAmount,
+    ))
+    return tx
+  }, [connection])
+
+  const buildDirectTransferTx = useCallback(async (
+    depositConfig: DepositAddress,
+    wallet: PublicKey,
+    rawAmount: bigint,
+  ) => {
+    const mint = new PublicKey(depositConfig.mintAddress)
+    const tokenProgramId = new PublicKey(depositConfig.tokenProgramId)
+    const collectionTokenAccount = new PublicKey(depositConfig.collectionTokenAccount)
+    const collectionOwner = new PublicKey(depositConfig.collectionOwner)
+
+    const userTokenAccount = getATA(wallet, mint, tokenProgramId)
+    const tx = new Transaction()
+
+    const userAtaInfo = await connection.getAccountInfo(userTokenAccount)
+    if (!userAtaInfo) {
+      tx.add(buildCreateAtaInstruction(wallet, userTokenAccount, wallet, mint, tokenProgramId))
+    }
+
+    const collectionAtaInfo = await connection.getAccountInfo(collectionTokenAccount)
+    if (!collectionAtaInfo) {
+      tx.add(buildCreateAtaInstruction(wallet, collectionTokenAccount, collectionOwner, mint, tokenProgramId))
+    }
+
+    tx.add(buildDirectTransferInstruction(
+      userTokenAccount, mint, collectionTokenAccount,
+      wallet, tokenProgramId, rawAmount, DEPOSIT_DECIMALS,
+    ))
+    return tx
+  }, [connection])
+
   const handleDeposit = useCallback(async () => {
     if (!deposit || !publicKey || !sendTransaction) return
     const numAmount = Number(amount)
@@ -163,72 +365,32 @@ export default function TopUp() {
 
     setSubmitting(true)
     try {
-      const programId = new PublicKey(deposit.programId)
-      const mint = new PublicKey(deposit.mintAddress)
-      const tokenProgramId = new PublicKey(deposit.tokenProgramId)
-      const collectionTokenAccount = new PublicKey(deposit.collectionTokenAccount)
-      const vaultAuthority = new PublicKey(deposit.vaultAuthority)
-      const collectionOwner = new PublicKey(deposit.collectionOwner)
-
-      const [vaultState] = PublicKey.findProgramAddressSync(
-        [Buffer.from('vault'), vaultAuthority.toBuffer()],
-        programId,
-      )
-
-      const userTokenAccount = getATA(publicKey, mint, tokenProgramId)
       const rawAmount = BigInt(Math.round(numAmount * 10 ** DEPOSIT_DECIMALS))
+      let sig: string
 
-      const tx = new Transaction()
-
-      const userAtaInfo = await connection.getAccountInfo(userTokenAccount)
-      if (!userAtaInfo) {
-        tx.add(buildCreateAtaInstruction(publicKey, userTokenAccount, publicKey, mint, tokenProgramId))
-      }
-
-      const collectionAtaInfo = await connection.getAccountInfo(collectionTokenAccount)
-      if (!collectionAtaInfo) {
-        tx.add(buildCreateAtaInstruction(publicKey, collectionTokenAccount, collectionOwner, mint, tokenProgramId))
-      }
-
-      tx.add(buildDepositInstruction(
-        programId,
-        vaultState,
-        userTokenAccount,
-        collectionTokenAccount,
-        mint,
-        publicKey,
-        tokenProgramId,
-        rawAmount,
-      ))
-      const sig = await sendTransaction(tx, connection)
-      await waitForSignatureConfirmed(connection, sig)
-      message.success(`${t('topup.submitSuccess')} tx: ${sig.slice(0, 12)}...`)
-
-      // 交易上链后主动轮询一段时间，到账即刻更新页面余额
-      const before = Number(balance)
-      let synced = false
-      setSyncing(true)
-      setSyncAttempt(0)
-      for (let i = 0; i < maxSyncAttempts; i += 1) {
-        setSyncAttempt(i + 1)
-        // eslint-disable-next-line no-await-in-loop
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (strategy === 'DIRECT_TRANSFER') {
+        const tx = await buildDirectTransferTx(deposit, publicKey, rawAmount)
+        sig = await sendTransaction(tx, connection)
+      } else {
         try {
-          // eslint-disable-next-line no-await-in-loop
-          const latest = await refreshUsdtBalance()
-          if (latest > before) {
-            window.dispatchEvent(new Event('balance:refresh'))
-            synced = true
-            message.success(t('topup.syncDetected'))
-            break
+          const tx = await buildContractCallTx(deposit, publicKey, rawAmount)
+          sig = await sendTransaction(tx, connection)
+        } catch (contractErr: unknown) {
+          if (isUnrecognizedTxError(contractErr)) {
+            console.warn('Contract call rejected, falling back to direct transfer:', contractErr)
+            message.info(t('topup.fallbackToDirectTransfer'))
+            setStrategy('DIRECT_TRANSFER')
+            const tx = await buildDirectTransferTx(deposit, publicKey, rawAmount)
+            sig = await sendTransaction(tx, connection)
+          } else {
+            throw contractErr
           }
-        } catch (_) {
-          // ignore polling errors
         }
       }
-      if (!synced) {
-        message.info(t('topup.syncDelayed'))
-      }
+
+      await waitForSignatureConfirmed(connection, sig)
+      message.success(`${t('topup.submitSuccess')} tx: ${sig.slice(0, 12)}...`)
+      await pollForDeposit()
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err)
       message.error(errMsg)
@@ -237,7 +399,7 @@ export default function TopUp() {
       setSyncAttempt(0)
       setSubmitting(false)
     }
-  }, [deposit, publicKey, sendTransaction, amount, connection, t, balance, refreshUsdtBalance])
+  }, [deposit, publicKey, sendTransaction, amount, connection, t, strategy, buildContractCallTx, buildDirectTransferTx, pollForDeposit])
 
   if (!connected) {
     return (
@@ -289,6 +451,31 @@ export default function TopUp() {
         <Spin spinning={loading}>
         <div className="breadcrumb">{t('topup.breadcrumb')} <strong>{t('topup.title')}</strong></div>
 
+        {/* Deposit strategy indicator */}
+        <div className="strategy-bar">
+          <div className="strategy-info">
+            <Tag color={strategy === 'DIRECT_TRANSFER' ? 'orange' : 'green'}>
+              {strategy === 'DIRECT_TRANSFER' ? t('topup.strategyDirect') : t('topup.strategyContract')}
+            </Tag>
+            {detectedWallet && (
+              <span className="detected-wallet">{t('topup.detectedWallet', { wallet: detectedWallet })}</span>
+            )}
+          </div>
+          <Button
+            type="link"
+            size="small"
+            icon={<SwapOutlined />}
+            onClick={() => setStrategy(strategy === 'CONTRACT_CALL' ? 'DIRECT_TRANSFER' : 'CONTRACT_CALL')}
+          >
+            {t('topup.switchStrategy')}
+          </Button>
+        </div>
+        {strategy === 'DIRECT_TRANSFER' && (
+          <div className="tip-box strategy-tip">
+            ⓘ {t('topup.directStrategyTip')}
+          </div>
+        )}
+
         <div className="form-section">
           <h3 className="section-label">{t('topup.depositAddr')}</h3>
           <div className="section-content">
@@ -297,27 +484,56 @@ export default function TopUp() {
               <span className="chain-name">{deposit?.chain ?? CHAIN_NAME}</span>
             </div>
 
-            <div className="address-block">
-              <span className="address-label">{t('topup.addressLabel')}</span>
-              <div className="address-row">
-                <span className="address-text">{deposit?.programId || '...'}</span>
-                <CopyOutlined className="copy-icon" onClick={handleCopy} />
-              </div>
-            </div>
-            {deposit?.programId && (
-              <div className="qr-section">
-                <div className="qr-wrapper">
-                  <QRCodeSVG
-                    value={deposit.programId}
-                    size={168}
-                    bgColor="#ffffff"
-                    fgColor="#111111"
-                    level="M"
-                    includeMargin
-                  />
+            {strategy === 'DIRECT_TRANSFER' ? (
+              <>
+                <div className="address-block">
+                  <span className="address-label">{t('topup.directTransferAddrLabel')}</span>
+                  <div className="address-row">
+                    <span className="address-text">{deposit?.collectionTokenAccount || '...'}</span>
+                    <CopyOutlined className="copy-icon" onClick={handleCopyCollectionAta} />
+                  </div>
                 </div>
-                <span className="qr-hint">{t('topup.qrHint')}</span>
-              </div>
+                {deposit?.collectionTokenAccount && (
+                  <div className="qr-section">
+                    <div className="qr-wrapper">
+                      <QRCodeSVG
+                        value={deposit.collectionTokenAccount}
+                        size={168}
+                        bgColor="#ffffff"
+                        fgColor="#111111"
+                        level="M"
+                        includeMargin
+                      />
+                    </div>
+                    <span className="qr-hint">{t('topup.qrHint')}</span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="address-block">
+                  <span className="address-label">{t('topup.addressLabel')}</span>
+                  <div className="address-row">
+                    <span className="address-text">{deposit?.programId || '...'}</span>
+                    <CopyOutlined className="copy-icon" onClick={handleCopy} />
+                  </div>
+                </div>
+                {deposit?.programId && (
+                  <div className="qr-section">
+                    <div className="qr-wrapper">
+                      <QRCodeSVG
+                        value={deposit.programId}
+                        size={168}
+                        bgColor="#ffffff"
+                        fgColor="#111111"
+                        level="M"
+                        includeMargin
+                      />
+                    </div>
+                    <span className="qr-hint">{t('topup.qrHint')}</span>
+                  </div>
+                )}
+              </>
             )}
             <div className="tip-box">
               ⓘ {t('topup.depositTip')}

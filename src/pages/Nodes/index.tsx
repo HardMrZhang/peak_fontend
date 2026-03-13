@@ -148,9 +148,6 @@ export default function Nodes() {
     </div>
   )
 
-  const availableUsdt = parseFloat(balances.find(b => b.asset === 'USDT')?.availableAmount ?? '0')
-  const insufficientBalance = availableUsdt < estimatedCost
-
   const handlePurchase = async () => {
     if (!publicKey || !sendTransaction || !connected) {
       message.warning(t('account.walletRequired'))
@@ -225,6 +222,8 @@ export default function Nodes() {
   const totalNodes = saleConfig?.totalNodes ?? 10000
   const nodePrice = saleConfig?.nodePriceUsdt ?? '500'
   const estimatedCost = qty * (Number(nodePrice) || 0)
+  const availableUsdt = parseFloat(balances.find(b => b.asset === 'USDT')?.availableAmount ?? '0')
+  const insufficientBalance = availableUsdt < estimatedCost
   const progress = totalNodes > 0 ? (soldNodes / totalNodes) * 100 : 0
 
   const revenueColumns: ColumnsType<LedgerEntry> = [

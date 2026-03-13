@@ -101,7 +101,7 @@
     "reward": "Reward",
     "colType": "Type",
     "colAddress": "Address",
-    "colCrypto": "Cryptocurrency",
+    "colCrypto": "Currency",
     "colQuantity": "Quantity",
     "colPurpose": "Purpose",
     "colStatus": "Status",

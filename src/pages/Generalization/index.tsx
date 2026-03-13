@@ -92,70 +92,70 @@ export default function Generalization() {
     {
       title: t('generalization.colRank'),
       dataIndex: 'rank',
-      width: 80,
+      width: 60,
       render: (v: number) => (
         <span className="rank-cell">
           {v <= 3 ? <span className="rank-medal">{rankMedals[v - 1]}</span> : v}
         </span>
       ),
     },
-    { title: t('generalization.colUserAddr'), dataIndex: 'address', ellipsis: true },
+    { title: t('generalization.colUserAddr'), dataIndex: 'address', ellipsis: true, width: 160 },
     {
       title: t('generalization.colTotalPeak'),
       dataIndex: 'totalPeak',
-      width: 300,
+      width: 140,
       align: 'right',
       render: (v: string) => `${v} PEAK`,
     },
   ]
 
   const directColumns: ColumnsType<DirectReferralRecord> = [
-    { title: t('generalization.colUserAddr'), dataIndex: 'walletAddress', ellipsis: true },
-    { title: t('generalization.directPushNode'), dataIndex: 'nodeQty', width: 180, align: 'right' },
+    { title: t('generalization.colUserAddr'), dataIndex: 'walletAddress', ellipsis: true, width: 140 },
+    { title: t('generalization.directPushNode'), dataIndex: 'nodeQty', width: 80, align: 'right' },
     {
       title: t('generalization.directPushReward'),
       dataIndex: 'rewardAmount',
-      width: 220,
+      width: 120,
       align: 'right',
       render: (v: string) => `${v} USDT`,
     },
     {
       title: t('generalization.colJoinTime'),
       dataIndex: 'joinedAt',
-      width: 220,
+      width: 150,
       render: (v: string) => formatDate(v),
     },
   ]
 
   const rewardColumns: ColumnsType<ReferralReward> = [
-    { title: t('generalization.colRewardNo'), dataIndex: 'rewardNo', width: 180, ellipsis: true },
-    { title: t('generalization.colRewardLevel'), dataIndex: 'rewardLevel', width: 120, align: 'right' },
-    { title: t('generalization.colFromUser'), dataIndex: 'fromUserWallet', ellipsis: true },
-    { title: t('generalization.colOrderNo'), dataIndex: 'orderNo', width: 160, ellipsis: true },
-    { title: t('generalization.colOrderQty'), dataIndex: 'orderQty', width: 120, align: 'right' },
+    { title: t('generalization.colRewardNo'), dataIndex: 'rewardNo', width: 130, ellipsis: true },
+    { title: t('generalization.colRewardLevel'), dataIndex: 'rewardLevel', width: 80, align: 'right' },
+    { title: t('generalization.colFromUser'), dataIndex: 'fromUserWallet', width: 140, ellipsis: true },
+    { title: t('generalization.colOrderNo'), dataIndex: 'orderNo', width: 130, ellipsis: true },
+    { title: t('generalization.colOrderQty'), dataIndex: 'orderQty', width: 80, align: 'right' },
     {
       title: t('generalization.directPushReward'),
       dataIndex: 'amount',
-      width: 180,
+      width: 120,
       align: 'right',
       render: (v: string) => `${v} USDT`,
     },
     {
       title: t('generalization.colRewardTime'),
       dataIndex: 'createdAt',
-      width: 220,
+      width: 150,
       render: (v: string) => formatDate(v),
     },
   ]
 
   const teamColumns: ColumnsType<TeamNodeRecord> = [
-    { title: t('generalization.colUserAddr'), dataIndex: 'walletAddress', ellipsis: true },
-    { title: t('generalization.colTeamLevel'), dataIndex: 'level', width: 120, align: 'right' },
-    { title: t('generalization.teamNode'), dataIndex: 'nodeQty', width: 180, align: 'right' },
+    { title: t('generalization.colUserAddr'), dataIndex: 'walletAddress', ellipsis: true, width: 140 },
+    { title: t('generalization.colTeamLevel'), dataIndex: 'level', width: 80, align: 'right' },
+    { title: t('generalization.teamNode'), dataIndex: 'nodeQty', width: 80, align: 'right' },
     {
       title: t('generalization.colJoinTime'),
       dataIndex: 'joinedAt',
-      width: 220,
+      width: 150,
       render: (v: string) => formatDate(v),
     },
   ]
@@ -236,6 +236,7 @@ export default function Generalization() {
             rowKey={(r) => `${r.walletAddress}-${r.level}-${r.joinedAt}`}
             pagination={false}
             size="small"
+            scroll={{ x: 'max-content' }}
             loading={tableLoading}
             locale={{ emptyText }}
           />
@@ -273,6 +274,7 @@ export default function Generalization() {
                 rowKey={(r) => r.id}
                 pagination={false}
                 size="small"
+                scroll={{ x: 'max-content' }}
                 loading={tableLoading}
                 locale={{ emptyText }}
               />
@@ -300,6 +302,7 @@ export default function Generalization() {
                 rowKey={(r) => `${r.walletAddress}-${r.joinedAt}`}
                 pagination={false}
                 size="small"
+                scroll={{ x: 'max-content' }}
                 loading={tableLoading}
                 locale={{ emptyText }}
               />
@@ -332,6 +335,7 @@ export default function Generalization() {
             rowKey={(r) => `${r.rank}-${r.address}`}
             pagination={false}
             size="small"
+            scroll={{ x: 'max-content' }}
             loading={tableLoading}
             locale={{ emptyText }}
           />

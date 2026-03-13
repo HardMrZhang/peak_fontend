@@ -440,11 +440,7 @@
   .ranking-section .ant-table-wrapper,
   .leaderboard-section .ant-table-wrapper {
     overflow-x: auto;
-  }
-
-  .ranking-section .ant-table,
-  .leaderboard-section .ant-table {
-    min-width: 600px;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -500,11 +496,6 @@
   .ranking-section,
   .leaderboard-section {
     padding: 14px 12px;
-  }
-
-  .ranking-section .ant-table,
-  .leaderboard-section .ant-table {
-    min-width: 500px;
   }
 
   .ranking-pagination {

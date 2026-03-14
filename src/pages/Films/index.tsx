@@ -6,7 +6,7 @@ import { getBanners } from '@/api'
 import type { Banner } from '@/types'
 import { NODE_TRADE_DATE } from '@/constants'
 import logoImg from '@/assets/logo.png'
-import shortDramaImg from '@/assets/首页1.jpg'
+import shortDramaImg from '@/assets/short-drama.png'
 import './index.css'
 
 const fallbackBanners = [

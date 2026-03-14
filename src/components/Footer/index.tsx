@@ -1,15 +1,19 @@
 import { useTranslation } from 'react-i18next'
 import './index.css'
 
-const socialLinks = [
-  { label: 'X', icon: '𝕏', url: '#' },
-  { label: 'Telegram', icon: '●', url: '#' },
-  { label: 'Email', icon: '✉', url: '#' },
-  { label: 'White paper', icon: '■', url: '#' },
-]
-
 export default function Footer() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const whitepaperUrl = i18n.language?.startsWith('zh')
+    ? '/PEAK-Whitepaper-zh.docx'
+    : '/PEAK-Whitepaper-en.docx'
+
+  const socialLinks = [
+    { label: 'X', url: 'https://x.com/peak_solana' },
+    { label: 'Telegram', url: '#' },
+    { label: 'Email', url: 'mailto:peakpeaknode@gmail.com' },
+    { label: 'White paper', url: whitepaperUrl },
+  ]
+
   return (
     <footer className="site-footer">
       <div className="footer-inner">

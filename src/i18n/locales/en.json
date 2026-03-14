@@ -52,7 +52,7 @@
     "withdrawal": "Withdrawal",
     "myNodes": "My Nodes",
     "yesterdayRevenue": "Yesterday's Revenue",
-    "yesterdayRevenueFormula": "360,000,000 PEAK ÷ 365 days ÷ Nodes Sold",
+    "yesterdayRevenueFormula": "360M PEAK ÷ 365 days ÷ Nodes Sold × My Nodes",
     "revenueRecord": "Revenue Record",
     "releaseRecord": "Release Record",
     "purchaseTitle": "Purchase Nodes",

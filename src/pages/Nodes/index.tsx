@@ -301,9 +301,7 @@ export default function Nodes() {
               </div>
               <span className="progress-total">/{totalNodes}</span>
             </div>
-            <div className="sale-formula">
-              {PEAK_TOTAL_SUPPLY.toLocaleString()} PEAK ÷ {totalNodes.toLocaleString()} {t('nodes.formulaNodes')} = {totalNodes > 0 ? (PEAK_TOTAL_SUPPLY / totalNodes).toLocaleString() : '—'} PEAK &nbsp;&nbsp; {t('nodes.avgPrice')} = 0.005 USDT
-            </div>
+            
           </div>
         </div>
       </div>

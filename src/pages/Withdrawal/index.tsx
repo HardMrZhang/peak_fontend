@@ -21,7 +21,7 @@ export default function Withdrawal() {
   const loginFailed = useAuthStore((s) => s.loginFailed)
   const setLoginFailed = useAuthStore((s) => s.setLoginFailed)
   const [tokenType, setTokenType] = useState<TokenType>('USDT')
-  const [amount, setAmount] = useState('500')
+  const [amount, setAmount] = useState('')
   const [walletAddress, setWalletAddress] = useState('')
   const [balances, setBalances] = useState<AssetBalance[]>([])
   const [estimate, setEstimate] = useState<WithdrawEstimate | null>(null)
@@ -162,13 +162,13 @@ export default function Withdrawal() {
               <div className="token-toggle">
                 <span
                   className={`token-option ${tokenType === 'USDT' ? 'active' : ''}`}
-                  onClick={() => setTokenType('USDT')}
+                  onClick={() => { setTokenType('USDT'); setAmount(''); setEstimate(null) }}
                 >
                   <span className="token-dot usdt" /> USDT
                 </span>
                 <span
                   className={`token-option ${tokenType === 'PEAK' ? 'active' : ''}`}
-                  onClick={() => setTokenType('PEAK')}
+                  onClick={() => { setTokenType('PEAK'); setAmount(''); setEstimate(null) }}
                 >
                   <span className="token-dot peak" /> PEAK
                 </span>

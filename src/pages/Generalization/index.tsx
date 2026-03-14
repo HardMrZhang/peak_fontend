@@ -105,7 +105,7 @@ export default function Generalization() {
       dataIndex: 'totalPeak',
       width: 140,
       align: 'right',
-      render: (v: string) => `${v} PEAK`,
+      render: (v: string) => `${v} USDT`,
     },
   ]
 

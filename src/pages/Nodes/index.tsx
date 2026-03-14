@@ -355,7 +355,6 @@ export default function Nodes() {
               <div className="info-card">
                 <span className="info-label">{t('nodes.yesterdayRevenue')}</span>
                 <span className="info-value orange">{infoLoading ? '--' : parseFloat(reward?.myYesterdayReward ?? '0').toFixed(2)} PEAK</span>
-                <span className="info-formula">{t('nodes.yesterdayRevenueFormula')}</span>
               </div>
             </div>
           </div>

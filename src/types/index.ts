@@ -176,19 +176,12 @@ export interface NodeBuyParams {
   nextNodeIndex: number
   asset: string
   collection: string
-  usdtMint: string
-  treasury: string
   configPda: string
   saleStatePda: string
   emissionPda: string
   inventoryPda: string
   nodeInfoPda: string
-  referralVaultPda: string
   buyerReferralPda: string
-  buyerUsdtAta: string
-  treasuryUsdtAta: string
-  tokenProgramId: string
-  referrerInfoPda?: string | null
   nodePriceUsdt: string
 }
 

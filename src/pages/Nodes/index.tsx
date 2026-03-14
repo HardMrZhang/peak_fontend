@@ -174,19 +174,10 @@ export default function Nodes() {
           { pubkey: new PublicKey(p.collection), isSigner: false, isWritable: true },
           { pubkey: new PublicKey(p.inventoryPda), isSigner: false, isWritable: true },
           { pubkey: new PublicKey(p.nodeInfoPda), isSigner: false, isWritable: true },
-          { pubkey: new PublicKey(p.usdtMint), isSigner: false, isWritable: false },
-          { pubkey: new PublicKey(p.buyerUsdtAta), isSigner: false, isWritable: true },
-          { pubkey: new PublicKey(p.treasuryUsdtAta), isSigner: false, isWritable: true },
-          { pubkey: new PublicKey(p.referralVaultPda), isSigner: false, isWritable: true },
           { pubkey: new PublicKey(p.buyerReferralPda), isSigner: false, isWritable: true },
-          { pubkey: new PublicKey(p.tokenProgramId), isSigner: false, isWritable: false },
           { pubkey: new PublicKey('11111111111111111111111111111111'), isSigner: false, isWritable: false },
           { pubkey: MPL_CORE_PROGRAM_ID, isSigner: false, isWritable: false },
         ]
-
-        if (p.referrerInfoPda) {
-          keys.push({ pubkey: new PublicKey(p.referrerInfoPda), isSigner: false, isWritable: true })
-        }
 
         const ix = new TransactionInstruction({
           programId: new PublicKey(p.peakProgramId),

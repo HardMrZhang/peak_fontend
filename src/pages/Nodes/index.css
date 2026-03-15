@@ -1,6 +1,7 @@
 .nodes-page {
   background: var(--bg-primary);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .nodes-inner {
@@ -692,6 +693,23 @@
   color: #fff;
 }
 
+@media (max-width: 768px) {
+  .purchase-cool-modal {
+    max-width: calc(100vw - 32px) !important;
+    margin: 16px auto !important;
+  }
+  .purchase-cool-modal .ant-modal {
+    max-width: calc(100vw - 32px) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .purchase-cool-modal {
+    max-width: calc(100vw - 24px) !important;
+    margin: 12px auto !important;
+  }
+}
+
 @media (max-width: 1024px) {
   .nodes-inner {
     padding: 0 24px;
@@ -708,11 +726,21 @@
 
 @media (max-width: 768px) {
   .nodes-inner {
-    padding: 0 16px;
+    padding: 0 14px;
   }
 
   .sale-section {
-    padding: 18px 16px;
+    padding: 16px 14px;
+    border-radius: 12px;
+  }
+
+  .sale-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .sale-title {
+    font-size: 15px;
   }
 
   .sale-info {
@@ -721,17 +749,86 @@
     gap: 10px;
   }
 
+  .sale-text {
+    font-size: 13px;
+    word-break: break-word;
+  }
+
   .purchase-btn {
     margin-left: 0;
     width: 100%;
+  }
+
+  .sale-destroy {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .sale-destroy-text {
+    font-size: 13px;
+    word-break: break-word;
+  }
+
+  .sale-destroy-countdown {
+    flex-wrap: wrap;
+  }
+
+  .sale-benefit {
+    font-size: 12px;
+    padding: 8px 12px;
+    word-break: break-word;
+  }
+
+  .sale-formula {
+    font-size: 11px;
+    word-break: break-all;
+    overflow-wrap: break-word;
   }
 
   .info-cards {
     grid-template-columns: 1fr;
   }
 
+  .info-card {
+    padding: 16px 14px;
+  }
+
+  .info-label {
+    white-space: normal;
+    font-size: 12px;
+  }
+
   .info-value {
-    font-size: 22px;
+    font-size: 20px;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .info-formula {
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+
+  .peak-dual {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .peak-dual-divider {
+    width: 100%;
+    height: 1px;
+    margin: 0;
+  }
+
+  .peak-dual-item {
+    width: 100%;
+  }
+
+  .peak-released-row {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .purchase-content {
@@ -744,15 +841,50 @@
   .purchase-nft-preview {
     width: 100%;
     min-width: 0;
-    min-height: 260px;
+    min-height: 220px;
     display: flex;
     justify-content: center;
     border-right: none;
     border-bottom: 1px solid rgba(245, 166, 35, 0.14);
   }
 
+  .preview-video {
+    width: 60%;
+    max-width: 260px;
+  }
+
   .purchase-form {
-    padding: 10px 18px 16px;
+    padding: 10px 14px 16px;
+  }
+
+  .form-row {
+    grid-template-columns: 90px 1fr;
+    gap: 8px;
+  }
+
+  .form-label {
+    font-size: 13px;
+  }
+
+  .form-value {
+    font-size: 13px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .purchase-modal-title {
+    font-size: 18px;
+    padding: 16px 16px 4px;
+  }
+
+  .purchase-nft-note {
+    padding: 0 16px 10px;
+    font-size: 11px;
+  }
+
+  .confirm-purchase-btn {
+    height: 44px;
+    font-size: 15px;
   }
 
   .atom-decor {
@@ -790,9 +922,14 @@
     height: 48px;
   }
 
+  .records-section {
+    margin-top: 28px;
+    padding-bottom: 48px;
+  }
+
   .records-layout {
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
   }
 
   .records-tabs {
@@ -809,27 +946,60 @@
   .nft-rewards-section .ant-table-wrapper,
   .records-table .ant-table-wrapper {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
+
   .nft-rewards-section .ant-table,
   .records-table .ant-table {
-    min-width: 600px;
+    min-width: 560px;
   }
 
-  .sale-destroy {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .sale-formula {
-    font-size: 11px;
-    word-break: break-word;
+  .info-section,
+  .my-section {
+    margin-top: 24px;
   }
 }
 
 @media (max-width: 480px) {
-  .sale-header {
-    flex-wrap: wrap;
+  .nodes-inner {
+    padding: 0 12px;
+  }
+
+  .sale-section {
+    padding: 14px 12px;
+  }
+
+  .sale-title {
+    font-size: 14px;
+  }
+
+  .sale-text {
+    font-size: 12px;
+  }
+
+  .sale-destroy-text {
+    font-size: 12px;
+  }
+
+  .sale-destroy-countdown .cd-block {
+    min-width: 26px;
+    height: 22px;
+    font-size: 11px;
+    border-radius: 4px;
+  }
+
+  .cd-label {
+    font-size: 11px;
+  }
+
+  .sale-benefit {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
+  .sale-formula {
+    font-size: 10px;
+    padding: 8px 10px;
   }
 
   .progress-bar-wrapper {
@@ -838,13 +1008,30 @@
     gap: 6px;
   }
 
+  .progress-bar {
+    height: 22px;
+  }
+
   .progress-total {
     text-align: right;
+    font-size: 13px;
+  }
+
+  .info-value {
+    font-size: 18px;
+  }
+
+  .info-formula {
+    font-size: 10px;
   }
 
   .purchase-nft-preview {
-    width: 200px;
-    min-height: 250px;
+    min-height: 180px;
+  }
+
+  .preview-video {
+    width: 50%;
+    max-width: 200px;
   }
 
   .atom-decor {
@@ -884,24 +1071,33 @@
 
   .form-row {
     grid-template-columns: 1fr;
-    gap: 6px;
+    gap: 4px;
   }
 
   .form-value {
     justify-content: flex-start;
     text-align: left;
+    font-size: 13px;
   }
 
   .qty-control {
     justify-self: start;
   }
 
-  .sale-destroy-countdown .cd-block {
-    min-width: 28px;
-    height: 24px;
-    font-size: 12px;
+  .purchase-modal-title {
+    font-size: 16px;
+    padding: 14px 12px 4px;
   }
-  .info-formula {
-    font-size: 10px;
+
+  .confirm-purchase-btn {
+    height: 42px;
+    font-size: 14px;
+    border-radius: 22px;
+  }
+
+  .withdrawal-small-btn {
+    height: 28px;
+    padding: 0 14px;
+    font-size: 11px;
   }
 }

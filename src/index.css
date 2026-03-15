@@ -41,6 +41,7 @@ html, body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 #root {
@@ -177,6 +178,30 @@ a:hover {
 
 .table-empty-text {
   font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 20px;
+    padding: 20px 0 16px;
+  }
+
+  .section-title {
+    font-size: 15px;
+    margin-bottom: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 18px;
+    padding: 16px 0 14px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
 }
 
 /* Solana wallet-adapter modal overrides */

@@ -129,7 +129,8 @@
       "REWARD_RELEASE": "奖励释放",
       "DEPOSIT_REVERSAL": "充值冲正",
       "NODE_REWARD_CREDIT": "节点收益入账",
-      "NODE_PURCHASE_REFUND": "节点购买退款"
+      "NODE_PURCHASE_REFUND": "节点购买退款",
+      "REFERRAL_REWARD_CREDIT": "推荐奖励入账"
     },
     "bizType": {
       "NODE_PURCHASE": "节点购买",
@@ -140,7 +141,8 @@
       "REWARD_RELEASE": "释放",
       "DEPOSIT_REVERSAL": "充值冲正",
       "NODE_DAILY": "节点每日收益",
-      "NODE_REWARD": "节点奖励"
+      "NODE_REWARD": "节点奖励",
+      "REFERRAL_REWARD": "推荐奖励"
     },
     "status": {
       "PENDING": "待处理",
@@ -183,6 +185,7 @@
     "amountRequired": "请输入有效的充值金额",
     "submitSuccess": "充值请求已提交",
     "submitBtn": "充值",
+    "configIncomplete": "充值配置不完整，请刷新后重试。",
     "syncing": "到账同步中...",
     "syncDetected": "已检测到到账，余额已自动更新",
     "syncDelayed": "充值交易已提交，到账可能有延迟，余额会自动更新",
@@ -218,7 +221,8 @@
     "commission": "手续费：",
     "estimatedArrival": "预计到账",
     "submitBtn": "提现",
-    "locked": "锁仓中"
+    "locked": "锁仓中",
+    "max": "最大"
   },
   "generalization": {
     "title": "推广",
@@ -245,7 +249,11 @@
   },
   "footer": {
     "contact": "联系我们：",
-    "copyright": "©2026 Peak Corporation. 保留所有权利。"
+    "copyright": "©2026 Peak Corporation. 保留所有权利。",
+    "x": "X",
+    "telegram": "Telegram",
+    "email": "邮箱",
+    "whitePaper": "白皮书"
   },
   "invite": {
     "codeRecorded": "邀请码已记录，请连接钱包登录",

@@ -8,10 +8,10 @@ export default function Footer() {
     : '/PEAK-Whitepaper-en.docx'
 
   const socialLinks = [
-    { label: 'X', url: 'https://x.com/peak_solana' },
-    { label: 'Telegram', url: '#' },
-    { label: 'Email', url: 'mailto:peakpeaknode@gmail.com' },
-    { label: 'White paper', url: whitepaperUrl },
+    { label: t('footer.x'), url: 'https://x.com/peak_solana' },
+    { label: t('footer.telegram'), url: '#' },
+    { label: t('footer.email'), url: 'mailto:peakpeaknode@gmail.com' },
+    { label: t('footer.whitePaper'), url: whitepaperUrl },
   ]
 
   return (

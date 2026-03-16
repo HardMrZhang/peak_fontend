@@ -226,7 +226,6 @@ export default function Nodes() {
 
   const releaseColumns: ColumnsType<DailyRelease> = [
     { title: t('nodes.colDate'), dataIndex: 'bizDate', width: 120 },
-    { title: t('nodes.colPerNodeRelease'), dataIndex: 'perNodeRelease', width: 160, render: (v: string) => <span style={{ color: '#52c41a' }}>+{parseFloat(v).toFixed(4)} PEAK</span> },
     { title: t('nodes.colMyNodes'), dataIndex: 'myNodes', width: 100 },
     { title: t('nodes.colMyTotalRelease'), dataIndex: 'totalRelease', width: 160, render: (v: string) => <span style={{ color: '#52c41a' }}>+{parseFloat(v).toFixed(4)} PEAK</span> },
   ]

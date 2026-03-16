@@ -374,7 +374,7 @@ export default function TopUp() {
     }
 
     if (!deposit.programId || !deposit.mintAddress || !deposit.tokenProgramId || !deposit.collectionTokenAccount || !deposit.vaultAuthority || !deposit.collectionOwner) {
-      message.error('Deposit config incomplete. Please refresh and try again.')
+      message.error(t('topup.configIncomplete'))
       console.error('Deposit config:', deposit)
       return
     }

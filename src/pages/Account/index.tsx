@@ -112,6 +112,7 @@ export default function Account() {
     DEPOSIT_REVERSAL: t('account.changeType.DEPOSIT_REVERSAL'),
     NODE_REWARD_CREDIT: t('account.changeType.NODE_REWARD_CREDIT'),
     NODE_PURCHASE_REFUND: t('account.changeType.NODE_PURCHASE_REFUND'),
+    REFERRAL_REWARD_CREDIT: t('account.changeType.REFERRAL_REWARD_CREDIT'),
   }
   const bizTypeLabelMap: Record<string, string> = {
     NODE_PURCHASE: t('account.bizType.NODE_PURCHASE'),
@@ -123,6 +124,7 @@ export default function Account() {
     DEPOSIT_REVERSAL: t('account.bizType.DEPOSIT_REVERSAL'),
     NODE_DAILY: t('account.bizType.NODE_DAILY'),
     NODE_REWARD: t('account.bizType.NODE_REWARD'),
+    REFERRAL_REWARD: t('account.bizType.REFERRAL_REWARD'),
   }
   const statusLabelMap: Record<string, string> = {
     PENDING: t('account.status.PENDING'),

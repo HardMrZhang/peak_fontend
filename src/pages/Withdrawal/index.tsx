@@ -191,7 +191,7 @@ export default function Withdrawal() {
                   size="large"
                   prefix={<span className={`token-dot ${tokenType.toLowerCase()}`} />}
                 />
-                <button className="max-btn" onClick={handleMax}>MAX</button>
+                <button className="max-btn" onClick={handleMax}>{t('withdrawal.max')}</button>
               </div>
               <div className="commission-text">{t('withdrawal.commission')} {fee} {tokenType}</div>
               <div className="estimate-bar">

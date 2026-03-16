@@ -129,7 +129,8 @@
       "REWARD_RELEASE": "Reward Release",
       "DEPOSIT_REVERSAL": "Deposit Reversal",
       "NODE_REWARD_CREDIT": "Node Reward Credit",
-      "NODE_PURCHASE_REFUND": "Node Purchase Refund"
+      "NODE_PURCHASE_REFUND": "Node Purchase Refund",
+      "REFERRAL_REWARD_CREDIT": "Referral Reward Credit"
     },
     "bizType": {
       "NODE_PURCHASE": "Node Purchase",
@@ -140,7 +141,8 @@
       "REWARD_RELEASE": "Release",
       "DEPOSIT_REVERSAL": "Deposit Reversal",
       "NODE_DAILY": "Daily Node Reward",
-      "NODE_REWARD": "Node Reward"
+      "NODE_REWARD": "Node Reward",
+      "REFERRAL_REWARD": "Referral Reward"
     },
     "status": {
       "PENDING": "Pending",
@@ -183,6 +185,7 @@
     "amountRequired": "Please enter a valid top-up amount",
     "submitSuccess": "Top-up request submitted",
     "submitBtn": "Top Up",
+    "configIncomplete": "Deposit config incomplete. Please refresh and try again.",
     "syncing": "Syncing deposit...",
     "syncDetected": "Deposit detected, balance updated automatically",
     "syncDelayed": "Deposit submitted, arrival may be delayed, balance will update automatically",
@@ -218,7 +221,8 @@
     "commission": "Commission:",
     "estimatedArrival": "Estimated arrival",
     "submitBtn": "Withdrawal",
-    "locked": "Locked"
+    "locked": "Locked",
+    "max": "MAX"
   },
   "generalization": {
     "title": "Generalization",
@@ -244,8 +248,12 @@
     "copySuccess": "Invitation link copied!"
   },
   "footer": {
-    "contact": "Contact us：",
-    "copyright": "©2026 Peak Corporation. All rights reserved."
+    "contact": "Contact us:",
+    "copyright": "©2026 Peak Corporation. All rights reserved.",
+    "x": "X",
+    "telegram": "Telegram",
+    "email": "Email",
+    "whitePaper": "White Paper"
   },
   "invite": {
     "codeRecorded": "Invitation code recorded, please connect wallet to login",

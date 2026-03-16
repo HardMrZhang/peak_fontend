@@ -86,7 +86,13 @@
     "nftMintDate": "Mint Date",
     "nftAccumulatedReward": "Accumulated Reward",
     "recordTime": "Record Time",
-    "clickDetails": "Click for details"
+    "clickDetails": "Click for details",
+    "colDate": "Date",
+    "colPerNodeEarning": "Per-node Earning",
+    "colMyNodes": "My Nodes",
+    "colMyTotal": "My Total Earning",
+    "colPerNodeRelease": "Per-node Release",
+    "colMyTotalRelease": "My Total Release"
   },
   "account": {
     "title": "Account",

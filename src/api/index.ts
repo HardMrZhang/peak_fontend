@@ -18,6 +18,8 @@ import type {
   WithdrawEstimate,
   WithdrawRequest,
   NftRecord,
+  DailyEarning,
+  DailyRelease,
   Banner,
   PageResult,
 } from '@/types'
@@ -97,6 +99,14 @@ export function getRewardLots(params?: { status?: string; page?: number; pageSiz
 
 export function getReleaseProgress(lotId: string) {
   return get(`/reward/lots/${lotId}/progress`)
+}
+
+export function getDailyEarnings(params?: { page?: number; pageSize?: number }) {
+  return get<PageResult<DailyEarning>>('/reward/daily-earnings', { params })
+}
+
+export function getDailyReleases(params?: { page?: number; pageSize?: number }) {
+  return get<PageResult<DailyRelease>>('/reward/daily-releases', { params })
 }
 
 // ==================== Referral ====================

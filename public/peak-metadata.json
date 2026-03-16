@@ -2,20 +2,25 @@
   "name": "PEAK",
   "symbol": "PEAK",
   "description": "PEAK Node NFT - Global Web3 Video Ecosystem",
-  "image": "https://bafybeidddihchqv4jipzg3egfuv75zwr2oaopzluishhjt57uwoyraovhm.ipfs.dweb.link?filename=3fbe6513181dfc9140d386340eda7949.mp4",
-  "animation_url": "https://bafybeidddihchqv4jipzg3egfuv75zwr2oaopzluishhjt57uwoyraovhm.ipfs.dweb.link?filename=3fbe6513181dfc9140d386340eda7949.mp4",
+  "image": "https://node1.irys.xyz/Kfx3cA4ZXHcpfKApzZNJjqtXMdlR7DG9Zq94FejOtFc",
   "external_url": "https://peak.example.com",
   "attributes": [
-    { "trait_type": "Type", "value": "Node" },
-    { "trait_type": "Collection", "value": "PEAK" }
+    {
+      "trait_type": "Type",
+      "value": "Node"
+    },
+    {
+      "trait_type": "Collection",
+      "value": "PEAK"
+    }
   ],
   "properties": {
     "files": [
       {
-        "uri": "https://bafybeidddihchqv4jipzg3egfuv75zwr2oaopzluishhjt57uwoyraovhm.ipfs.dweb.link?filename=3fbe6513181dfc9140d386340eda7949.mp4",
-        "type": "video/mp4"
+        "uri": "https://node1.irys.xyz/Kfx3cA4ZXHcpfKApzZNJjqtXMdlR7DG9Zq94FejOtFc",
+        "type": "image/png"
       }
     ],
-    "category": "video"
+    "category": "image"
   }
 }

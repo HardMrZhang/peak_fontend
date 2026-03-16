@@ -201,6 +201,22 @@ export interface NftRecord {
   accumulatedReward?: string
 }
 
+export interface DailyEarning {
+  id: string
+  bizDate: string
+  perNodePeak: string
+  myNodes: number
+  myTotal: string
+}
+
+export interface DailyRelease {
+  id: string
+  bizDate: string
+  totalRelease: string
+  perNodeRelease: string
+  myNodes: number
+}
+
 export interface Banner {
   id: string
   title: string | null

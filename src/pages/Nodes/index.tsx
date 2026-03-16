@@ -11,8 +11,8 @@ import {
   getNodeBuyParams,
   confirmNodeBuy,
   getRewardSummary,
-  getRewardLots,
-  getLedger,
+  getDailyEarnings,
+  getDailyReleases,
   getBalances,
   getMyNfts,
   getSaleSummary,
@@ -20,8 +20,8 @@ import {
 import type {
   NodeSaleConfig,
   RewardSummary,
-  RewardLot,
-  LedgerEntry,
+  DailyEarning,
+  DailyRelease,
   AssetBalance,
   NftRecord,
   PageResult,
@@ -86,8 +86,8 @@ export default function Nodes() {
   const [saleConfig, setSaleConfig] = useState<NodeSaleConfig | null>(null)
   const [userNodes, setUserNodes] = useState(0)
   const [reward, setReward] = useState<RewardSummary | null>(null)
-  const [revenueData, setRevenueData] = useState<PageResult<LedgerEntry> | null>(null)
-  const [releaseData, setReleaseData] = useState<PageResult<RewardLot> | null>(null)
+  const [revenueData, setRevenueData] = useState<PageResult<DailyEarning> | null>(null)
+  const [releaseData, setReleaseData] = useState<PageResult<DailyRelease> | null>(null)
   const [balances, setBalances] = useState<AssetBalance[]>([])
   const [nftData, setNftData] = useState<PageResult<NftRecord> | null>(null)
   const [infoLoading, setInfoLoading] = useState(true)
@@ -133,9 +133,9 @@ export default function Nodes() {
     setTableLoading(true)
     const done = () => setTableLoading(false)
     if (activeTab === 'revenue') {
-      getLedger({ asset: 'PEAK', page, pageSize }).then((r) => setRevenueData(r.data)).catch(() => { }).finally(done)
+      getDailyEarnings({ page, pageSize }).then((r) => setRevenueData(r.data)).catch(() => { }).finally(done)
     } else {
-      getRewardLots({ page, pageSize }).then((r) => setReleaseData(r.data)).catch(() => { }).finally(done)
+      getDailyReleases({ page, pageSize }).then((r) => setReleaseData(r.data)).catch(() => { }).finally(done)
     }
   }, [token, activeTab, page, pageSize])
 
@@ -217,18 +217,18 @@ export default function Nodes() {
   const insufficientBalance = availableUsdt < estimatedCost
   const progress = totalNodes > 0 ? (soldNodes / totalNodes) * 100 : 0
 
-  const revenueColumns: ColumnsType<LedgerEntry> = [
-    { title: t('table.type'), dataIndex: 'changeType', width: 120, render: (v: string) => t(`account.changeType.${v}`, v) },
-    { title: t('table.time'), dataIndex: 'createdAt', width: 160, render: (v: string) => v?.slice(0, 19).replace('T', ' ') },
-    { title: t('table.status'), dataIndex: 'direction', width: 100, render: (v: string) => v === 'IN' ? t('data.revenue') : t('data.purchase') },
-    { title: t('table.quantity'), dataIndex: 'amount', width: 120, render: (v: string, r: LedgerEntry) => <span style={{ color: r.direction === 'IN' ? '#52c41a' : '#ff4d4f' }}>{r.direction === 'IN' ? '+' : '-'}{parseFloat(v).toFixed(2)}</span> },
+  const revenueColumns: ColumnsType<DailyEarning> = [
+    { title: t('nodes.colDate'), dataIndex: 'bizDate', width: 120 },
+    { title: t('nodes.colPerNodeEarning'), dataIndex: 'perNodePeak', width: 160, render: (v: string) => <span style={{ color: '#52c41a' }}>+{parseFloat(v).toFixed(4)} PEAK</span> },
+    { title: t('nodes.colMyNodes'), dataIndex: 'myNodes', width: 100 },
+    { title: t('nodes.colMyTotal'), dataIndex: 'myTotal', width: 160, render: (v: string) => <span style={{ color: '#52c41a' }}>+{parseFloat(v).toFixed(4)} PEAK</span> },
   ]
 
-  const releaseColumns: ColumnsType<RewardLot> = [
-    { title: t('table.type'), dataIndex: 'sourceType', width: 140, render: (v: string) => t(`account.bizType.${v}`, v) },
-    { title: t('table.quantity'), dataIndex: 'lockedAmount', width: 120, render: (v: string) => <span style={{ color: '#52c41a' }}>+{parseFloat(v).toFixed(2)}</span> },
-    { title: t('table.status'), dataIndex: 'status', width: 120, render: (v: string) => t(`account.status.${v}`, v) },
-    { title: t('table.time'), dataIndex: 'startDate', width: 160 },
+  const releaseColumns: ColumnsType<DailyRelease> = [
+    { title: t('nodes.colDate'), dataIndex: 'bizDate', width: 120 },
+    { title: t('nodes.colPerNodeRelease'), dataIndex: 'perNodeRelease', width: 160, render: (v: string) => <span style={{ color: '#52c41a' }}>+{parseFloat(v).toFixed(4)} PEAK</span> },
+    { title: t('nodes.colMyNodes'), dataIndex: 'myNodes', width: 100 },
+    { title: t('nodes.colMyTotalRelease'), dataIndex: 'totalRelease', width: 160, render: (v: string) => <span style={{ color: '#52c41a' }}>+{parseFloat(v).toFixed(4)} PEAK</span> },
   ]
 
   const currentData = activeTab === 'revenue' ? revenueData : releaseData

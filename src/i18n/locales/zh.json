@@ -86,7 +86,13 @@
     "nftMintDate": "铸造日期",
     "nftAccumulatedReward": "累计收益",
     "recordTime": "记录时间",
-    "clickDetails": "点击查看详情"
+    "clickDetails": "点击查看详情",
+    "colDate": "日期",
+    "colPerNodeEarning": "单节点收益",
+    "colMyNodes": "我的节点数",
+    "colMyTotal": "我的总收益",
+    "colPerNodeRelease": "单节点释放",
+    "colMyTotalRelease": "我的总释放"
   },
   "account": {
     "title": "账户",

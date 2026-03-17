@@ -283,6 +283,7 @@ export default function TopUp() {
           window.dispatchEvent(new Event('balance:refresh'))
           synced = true
           message.success(t('topup.syncDetected'))
+          setTimeout(() => navigate('/nodes'), 1000)
           break
         }
       } catch (_) {
@@ -294,7 +295,7 @@ export default function TopUp() {
     }
     setSyncing(false)
     setSyncAttempt(0)
-  }, [balance, refreshUsdtBalance, t])
+  }, [balance, refreshUsdtBalance, t, navigate])
 
   const buildContractCallTx = useCallback(async (
     depositConfig: DepositAddress,

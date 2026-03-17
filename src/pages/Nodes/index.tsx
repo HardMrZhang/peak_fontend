@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Button, Modal, InputNumber, Table, Pagination, message, Spin } from 'antd'
@@ -81,6 +81,7 @@ export default function Nodes() {
   const [qty, setQty] = useState(1)
   const [page, setPage] = useState(1)
   const [purchasing, setPurchasing] = useState(false)
+  const purchasingLock = useRef(false)
   const pageSize = 10
 
   const [saleConfig, setSaleConfig] = useState<NodeSaleConfig | null>(null)
@@ -148,7 +149,22 @@ export default function Nodes() {
     </div>
   )
 
+  const confirmWithRetry = useCallback(async (sig: string, asset: string, maxRetries = 5) => {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await confirmNodeBuy(sig, asset)
+        return
+      } catch (err) {
+        if (attempt === maxRetries - 1) throw err
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)))
+      }
+    }
+  }, [])
+
   const handlePurchase = async () => {
+    if (purchasingLock.current) return
     if (!publicKey || !sendTransaction || !connected) {
       message.warning(t('account.walletRequired'))
       return
@@ -159,6 +175,7 @@ export default function Nodes() {
       return
     }
 
+    purchasingLock.current = true
     setPurchasing(true)
     try {
       for (let i = 0; i < qty; i++) {
@@ -189,7 +206,7 @@ export default function Nodes() {
         const sig = await sendTransaction(tx, connection)
         await waitForSignatureConfirmed(connection, sig)
 
-        await confirmNodeBuy(sig, p.asset)
+        await confirmWithRetry(sig, p.asset)
 
         if (qty > 1) {
           message.success(`${t('nodes.purchaseSuccess')} (${i + 1}/${qty})`)
@@ -204,7 +221,9 @@ export default function Nodes() {
       if (!errMsg.includes('User rejected')) {
         message.error(errMsg)
       }
+      refreshData()
     } finally {
+      purchasingLock.current = false
       setPurchasing(false)
     }
   }

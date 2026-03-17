@@ -130,7 +130,8 @@
       "DEPOSIT_REVERSAL": "充值冲正",
       "NODE_REWARD_CREDIT": "节点收益入账",
       "NODE_PURCHASE_REFUND": "节点购买退款",
-      "REFERRAL_REWARD_CREDIT": "推荐奖励入账"
+      "REFERRAL_REWARD_CREDIT": "推荐奖励入账",
+      "WITHDRAW_SUCCESS_DEBIT": "提现成功扣款"
     },
     "bizType": {
       "NODE_PURCHASE": "节点购买",

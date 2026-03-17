@@ -130,7 +130,8 @@
       "DEPOSIT_REVERSAL": "Deposit Reversal",
       "NODE_REWARD_CREDIT": "Node Reward Credit",
       "NODE_PURCHASE_REFUND": "Node Purchase Refund",
-      "REFERRAL_REWARD_CREDIT": "Referral Reward Credit"
+      "REFERRAL_REWARD_CREDIT": "Referral Reward Credit",
+      "WITHDRAW_SUCCESS_DEBIT": "Withdraw Success Debit"
     },
     "bizType": {
       "NODE_PURCHASE": "Node Purchase",

@@ -75,7 +75,7 @@
     "nftBonusTitle": "NFT Bonus Points",
     "nftBonusDesc": "Hold 1 NFT for 2x points; 2 NFTs for 3x points; N NFTs for (N+1)x points, and so on.",
     "nftPromoTitle": "Multi-level Promotion Rewards",
-    "nftPromoDesc": "Direct referral reward of 50U is limited to 1 level only. Node holders enjoy up to 10 levels of referral points, while regular users are limited to 1 level.",
+    "nftPromoDesc": "Direct referral reward of 50U is limited to 1 level only. Node holders enjoy multi-level referral points, while regular users are limited to 1 level.",
     "nftWhitelistTitle": "Hold 10 Nodes to Unlock Whitelist",
     "nftWhitelistDesc": "Holding 10+ nodes grants whitelist eligibility for new project launches on the platform.",
     "nftRewardTitle": "My Node NFT Rewards",

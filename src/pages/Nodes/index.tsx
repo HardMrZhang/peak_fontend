@@ -118,15 +118,13 @@ export default function Nodes() {
 
   useEffect(() => {
     setInfoLoading(true)
-    refreshSaleConfig()
-    setInfoLoading(false)
+    refreshSaleConfig().finally(() => setInfoLoading(false))
   }, [refreshSaleConfig])
 
   useEffect(() => {
     if (!token) { return }
     setInfoLoading(true)
-    refreshUserData()
-    setInfoLoading(false)
+    refreshUserData().finally(() => setInfoLoading(false))
   }, [token, refreshUserData])
 
   const fetchTab = useCallback(() => {

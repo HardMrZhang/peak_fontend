@@ -38,7 +38,7 @@ const MOBILE_WALLETS: WalletOption[] = [
   },
   {
     name: 'Binance Web3',
-    icon: 'https://public.bnbstatic.com/static/images/common/favicon.ico',
+    icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI0IiBmaWxsPSIjRjBCOTBCIi8+PGcgZmlsbD0iI2ZmZiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQsNjQpIj48cG9seWdvbiBwb2ludHM9IjAsLTM2IDEyLC0yNCAwLC0xMiAtMTIsLTI0Ii8+PHBvbHlnb24gcG9pbnRzPSIwLDM2IDEyLDI0IDAsMTIgLTEyLDI0Ii8+PHBvbHlnb24gcG9pbnRzPSItMzYsMCAtMjQsLTEyIC0xMiwwIC0yNCwxMiIvPjxwb2x5Z29uIHBvaW50cz0iMzYsMCAyNCwtMTIgMTIsMCAyNCwxMiIvPjxwb2x5Z29uIHBvaW50cz0iMCwtMjAgMjAsMCAwLDIwIC0yMCwwIi8+PHBvbHlnb24gcG9pbnRzPSIwLC0zNiAyMCwtMTYgMTIsLTggMCwtMjAgLTEyLC04IC0yMCwtMTYiLz48cG9seWdvbiBwb2ludHM9IjAsMzYgMjAsMTYgMTIsOCAwLDIwIC0xMiw4IC0yMCwxNiIvPjwvZz48L3N2Zz4K',
     deepLink: (url) => `bnc://app.binance.com/cedefi/web3/browser?url=${encodeURIComponent(url)}`,
   },
   {
@@ -248,7 +248,12 @@ export default function WalletButton() {
                     alt={wallet.name}
                     className="mobile-wallet-icon"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none'
+                      const img = e.target as HTMLImageElement
+                      img.style.display = 'none'
+                      const fallback = document.createElement('span')
+                      fallback.className = 'mobile-wallet-icon-fallback'
+                      fallback.textContent = wallet.name.charAt(0)
+                      img.parentElement?.insertBefore(fallback, img)
                     }}
                   />
                   <span className="mobile-wallet-name">{wallet.name}</span>

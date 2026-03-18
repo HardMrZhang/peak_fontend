@@ -95,12 +95,14 @@ export default function Nodes() {
   const [tableLoading, setTableLoading] = useState(false)
 
   const refreshSaleConfig = useCallback(() => {
-    getSaleSummary().then((r) => setSaleConfig(r.data)).catch(() => { })
+    return getSaleSummary()
+      .then((r) => setSaleConfig(r.data))
+      .catch(() => { })
   }, [])
 
   const refreshUserData = useCallback(() => {
-    if (!token) return
-    Promise.all([
+    if (!token) return Promise.resolve()
+    return Promise.all([
       getNodeInfo().then((r) => {
         setSaleConfig(r.data.config)
         setUserNodes(r.data.userNodes)

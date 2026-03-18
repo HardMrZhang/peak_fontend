@@ -248,6 +248,12 @@
     "colTeamLevel": "团队层级",
     "copySuccess": "邀请链接已复制！"
   },
+  "contact": {
+    "title": "联系我们",
+    "subtitle": "联系我们的团队",
+    "emailLabel": "Email",
+    "emailValue": "peakpeaknode@gmail.com"
+  },
   "footer": {
     "contact": "联系我们：",
     "copyright": "©2026 Peak Corporation. 保留所有权利。",

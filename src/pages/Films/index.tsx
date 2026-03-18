@@ -107,6 +107,19 @@ export default function Films() {
           ))}
         </div>
       </section>
+
+      <section className="contact-section">
+        <div className="contact-inner">
+          <h2 className="contact-title">{t('contact.title')}</h2>
+          <p className="contact-subtitle">{t('contact.subtitle')}</p>
+          <div className="contact-email">
+            <span className="contact-email-label">{t('contact.emailLabel')}</span>
+            <a href={`mailto:${t('contact.emailValue')}`} className="contact-email-value">
+              {t('contact.emailValue')}
+            </a>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }

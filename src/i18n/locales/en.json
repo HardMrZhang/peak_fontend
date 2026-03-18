@@ -248,6 +248,12 @@
     "colTeamLevel": "Team level",
     "copySuccess": "Invitation link copied!"
   },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Get in touch with our team",
+    "emailLabel": "Email",
+    "emailValue": "peakpeaknode@gmail.com"
+  },
   "footer": {
     "contact": "Contact us:",
     "copyright": "©2026 Peak Corporation. All rights reserved.",

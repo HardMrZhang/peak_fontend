@@ -9,7 +9,7 @@ export default function Footer() {
 
   const socialLinks = [
     { label: t('footer.x'), url: 'https://x.com/peak_solana' },
-    { label: t('footer.telegram'), url: '#' },
+    { label: t('footer.telegram'), url: 'https://t.me/PEAK_Solana' },
     { label: t('footer.email'), url: 'mailto:peakpeaknode@gmail.com' },
     { label: t('footer.whitePaper'), url: whitepaperUrl },
   ]

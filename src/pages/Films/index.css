@@ -232,55 +232,51 @@
 
 /* Contact Section */
 .contact-section {
-  padding: 64px 40px 80px;
+  padding: 28px 40px 32px;
   border-top: 1px solid var(--border-color);
 }
 
 .contact-inner {
   max-width: 2000px;
   margin: 0 auto;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
 .contact-title {
-  font-size: 32px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 12px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .contact-subtitle {
-  font-size: 15px;
+  font-size: 13px;
   color: var(--text-secondary);
-  margin-bottom: 40px;
+}
+
+.contact-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color);
 }
 
 .contact-email {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  background: var(--bg-card);
-  background-image: var(--gradient-card);
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  padding: 18px 36px;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.contact-email:hover {
-  border-color: var(--border-glow);
-  box-shadow: 0 0 20px rgba(245, 166, 35, 0.06);
+  gap: 8px;
+  font-size: 13px;
 }
 
 .contact-email-label {
-  font-size: 14px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 .contact-email-value {
-  font-size: 16px;
   font-weight: 600;
   color: var(--accent-orange) !important;
   transition: opacity 0.2s;
@@ -351,15 +347,11 @@
   }
 
   .contact-section {
-    padding: 48px 16px 56px;
+    padding: 20px 16px 24px;
   }
 
-  .contact-title {
-    font-size: 24px;
-  }
-
-  .contact-email {
-    padding: 14px 24px;
+  .contact-divider {
+    display: none;
   }
 }
 
@@ -405,25 +397,15 @@
   }
 
   .contact-section {
-    padding: 40px 16px 48px;
+    padding: 16px 16px 20px;
+  }
+
+  .contact-inner {
+    gap: 8px 16px;
+    justify-content: center;
   }
 
   .contact-title {
-    font-size: 22px;
-  }
-
-  .contact-subtitle {
-    font-size: 13px;
-    margin-bottom: 28px;
-  }
-
-  .contact-email {
-    flex-direction: column;
-    gap: 6px;
-    padding: 16px 24px;
-  }
-
-  .contact-email-value {
-    font-size: 14px;
+    font-size: 15px;
   }
 }

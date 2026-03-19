@@ -172,6 +172,7 @@ export interface WithdrawRequest {
 }
 
 export interface NodeBuyParams {
+  intentId: string
   peakProgramId: string
   nextNodeIndex: number
   asset: string

@@ -149,11 +149,11 @@ export default function Nodes() {
     </div>
   )
 
-  const confirmWithRetry = useCallback(async (sig: string, asset: string, maxRetries = 5) => {
+  const confirmWithRetry = useCallback(async (sig: string, asset: string, intentId: string, maxRetries = 5) => {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
         // eslint-disable-next-line no-await-in-loop
-        await confirmNodeBuy(sig, asset)
+        await confirmNodeBuy(sig, asset, intentId)
         return
       } catch (err) {
         if (attempt === maxRetries - 1) throw err
@@ -206,7 +206,7 @@ export default function Nodes() {
         const sig = await sendTransaction(tx, connection)
         await waitForSignatureConfirmed(connection, sig)
 
-        await confirmWithRetry(sig, p.asset)
+        await confirmWithRetry(sig, p.asset, p.intentId)
 
         if (qty > 1) {
           message.success(`${t('nodes.purchaseSuccess')} (${i + 1}/${qty})`)

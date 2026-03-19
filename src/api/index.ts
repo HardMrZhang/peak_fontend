@@ -84,8 +84,8 @@ export function getNodeBuyParams() {
   return get<NodeBuyParams>('/node/buy-params')
 }
 
-export function confirmNodeBuy(txHash: string, asset: string) {
-  return post<NodeOrder>('/node/confirm-buy', { txHash, asset })
+export function confirmNodeBuy(txHash: string, asset: string, intentId: string) {
+  return post<NodeOrder>('/node/confirm-buy', { txHash, asset, intentId })
 }
 
 // ==================== Reward ====================

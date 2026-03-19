@@ -14,7 +14,7 @@ const router = createBrowserRouter([
     path: '/',
     element: <MainLayout />,
     children: [
-      { index: true, element: <Navigate to="/films" replace /> },
+      { index: true, element: <Navigate to="/nodes" replace /> },
       { path: 'films', element: <Films /> },
       { path: 'account', element: <Account /> },
       { path: 'account/topup', element: <TopUp /> },
@@ -25,7 +25,7 @@ const router = createBrowserRouter([
       { path: 'invite/:code', element: <InvitePage /> },
     ],
   },
-  { path: '*', element: <Navigate to="/films" replace /> },
+  { path: '*', element: <Navigate to="/nodes" replace /> },
 ])
 
 export default router

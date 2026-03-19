@@ -28,7 +28,8 @@
   },
   "nodes": {
     "title": "节点",
-    "nodeSales": "节点销售",
+    "nodeSales": "PEAK节点NFT",
+    "saleSubtitle": "先到先领，每日02:00快照，03:00分配节点收益",
     "whatIsNft": "什么是节点NFT？",
     "salePeriod": "销售期",
     "purchaseNodes": "购买节点",

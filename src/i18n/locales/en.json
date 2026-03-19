@@ -28,7 +28,8 @@
   },
   "nodes": {
     "title": "Nodes",
-    "nodeSales": "Node Sales",
+    "nodeSales": "PEAK Node NFT",
+    "saleSubtitle": "First come, first served. Daily snapshot at 02:00, rewards distributed at 03:00",
     "whatIsNft": "What is Node NFT?",
     "salePeriod": "Sale Period",
     "purchaseNodes": "Purchase Nodes",

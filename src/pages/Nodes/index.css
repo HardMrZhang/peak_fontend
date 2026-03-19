@@ -44,7 +44,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 6px;
+}
+
+.sale-subtitle {
+  font-size: 13px;
+  color: var(--accent-orange);
   margin-bottom: 14px;
+  letter-spacing: 0.3px;
+  opacity: 0.9;
 }
 
 .sale-icon {

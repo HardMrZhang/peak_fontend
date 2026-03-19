@@ -239,7 +239,6 @@ export default function Nodes() {
   const revenueColumns: ColumnsType<DailyEarning> = [
     { title: t('nodes.colDate'), dataIndex: 'bizDate', width: 120 },
     { title: t('nodes.colPerNodeEarning'), dataIndex: 'perNodePeak', width: 160, render: (v: string) => <span style={{ color: '#52c41a' }}>+{parseFloat(v).toFixed(4)} PEAK</span> },
-    { title: t('nodes.colMyNodes'), dataIndex: 'myNodes', width: 100 },
     { title: t('nodes.colMyTotal'), dataIndex: 'myTotal', width: 160, render: (v: string) => <span style={{ color: '#52c41a' }}>+{parseFloat(v).toFixed(4)} PEAK</span> },
   ]
 

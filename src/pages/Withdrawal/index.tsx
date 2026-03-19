@@ -15,18 +15,24 @@ type TokenType = 'USDT' | 'PEAK'
 export default function Withdrawal() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { connected } = useWallet()
+  const { connected, publicKey } = useWallet()
   const token = useAuthStore((s) => s.token)
   const loginLoading = useAuthStore((s) => s.loginLoading)
   const loginFailed = useAuthStore((s) => s.loginFailed)
   const setLoginFailed = useAuthStore((s) => s.setLoginFailed)
   const [tokenType, setTokenType] = useState<TokenType>('USDT')
   const [amount, setAmount] = useState('')
-  const [walletAddress, setWalletAddress] = useState('')
+  const [walletAddress, setWalletAddress] = useState(publicKey?.toBase58() ?? '')
   const [balances, setBalances] = useState<AssetBalance[]>([])
   const [estimate, setEstimate] = useState<WithdrawEstimate | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (publicKey && !walletAddress) {
+      setWalletAddress(publicKey.toBase58())
+    }
+  }, [publicKey])
 
   useEffect(() => {
     if (!connected || !token) {

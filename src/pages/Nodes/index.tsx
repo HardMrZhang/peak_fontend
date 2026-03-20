@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Button, Modal, InputNumber, Table, Pagination, message, Spin } from 'antd'
-import { MinusOutlined, PlusOutlined, InboxOutlined } from '@ant-design/icons'
+import { Button, Modal, Table, Pagination, message, Spin } from 'antd'
+import { InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey, TransactionInstruction, Transaction } from '@solana/web3.js'
@@ -78,7 +78,6 @@ export default function Nodes() {
   const [activeTab, setActiveTab] = useState<'revenue' | 'release'>('revenue')
   const [purchaseOpen, setPurchaseOpen] = useState(false)
   const [infoOpen, setInfoOpen] = useState(false)
-  const [qty, setQty] = useState(1)
   const [page, setPage] = useState(1)
   const [purchasing, setPurchasing] = useState(false)
   const purchasingLock = useRef(false)
@@ -178,40 +177,34 @@ export default function Nodes() {
     purchasingLock.current = true
     setPurchasing(true)
     try {
-      for (let i = 0; i < qty; i++) {
-        const paramsRes = await getNodeBuyParams()
-        const p = paramsRes.data
+      const paramsRes = await getNodeBuyParams()
+      const p = paramsRes.data
 
-        const keys = [
-          { pubkey: publicKey, isSigner: true, isWritable: true },
-          { pubkey: new PublicKey(p.configPda), isSigner: false, isWritable: false },
-          { pubkey: new PublicKey(p.saleStatePda), isSigner: false, isWritable: true },
-          { pubkey: new PublicKey(p.emissionPda), isSigner: false, isWritable: false },
-          { pubkey: new PublicKey(p.asset), isSigner: false, isWritable: true },
-          { pubkey: new PublicKey(p.collection), isSigner: false, isWritable: true },
-          { pubkey: new PublicKey(p.inventoryPda), isSigner: false, isWritable: true },
-          { pubkey: new PublicKey(p.nodeInfoPda), isSigner: false, isWritable: true },
-          { pubkey: new PublicKey(p.buyerReferralPda), isSigner: false, isWritable: true },
-          { pubkey: new PublicKey('11111111111111111111111111111111'), isSigner: false, isWritable: false },
-          { pubkey: MPL_CORE_PROGRAM_ID, isSigner: false, isWritable: false },
-        ]
+      const keys = [
+        { pubkey: publicKey, isSigner: true, isWritable: true },
+        { pubkey: new PublicKey(p.configPda), isSigner: false, isWritable: false },
+        { pubkey: new PublicKey(p.saleStatePda), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(p.emissionPda), isSigner: false, isWritable: false },
+        { pubkey: new PublicKey(p.asset), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(p.collection), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(p.inventoryPda), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(p.nodeInfoPda), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(p.buyerReferralPda), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey('11111111111111111111111111111111'), isSigner: false, isWritable: false },
+        { pubkey: MPL_CORE_PROGRAM_ID, isSigner: false, isWritable: false },
+      ]
 
-        const ix = new TransactionInstruction({
-          programId: new PublicKey(p.peakProgramId),
-          keys,
-          data: BUY_NODE_DISCRIMINATOR,
-        })
+      const ix = new TransactionInstruction({
+        programId: new PublicKey(p.peakProgramId),
+        keys,
+        data: BUY_NODE_DISCRIMINATOR,
+      })
 
-        const tx = new Transaction().add(ix)
-        const sig = await sendTransaction(tx, connection)
-        await waitForSignatureConfirmed(connection, sig)
+      const tx = new Transaction().add(ix)
+      const sig = await sendTransaction(tx, connection)
+      await waitForSignatureConfirmed(connection, sig)
 
-        await confirmWithRetry(sig, p.asset, p.intentId)
-
-        if (qty > 1) {
-          message.success(`${t('nodes.purchaseSuccess')} (${i + 1}/${qty})`)
-        }
-      }
+      await confirmWithRetry(sig, p.asset, p.intentId)
 
       message.success(t('nodes.purchaseSuccess'))
       setPurchaseOpen(false)
@@ -231,7 +224,7 @@ export default function Nodes() {
   const soldNodes = saleConfig?.soldNodes ?? 0
   const totalNodes = saleConfig?.totalNodes ?? 10000
   const nodePrice = saleConfig?.nodePriceUsdt ?? '500'
-  const estimatedCost = qty * (Number(nodePrice) || 0)
+  const estimatedCost = Number(nodePrice) || 0
   const availableUsdt = parseFloat(balances.find(b => b.asset === 'USDT')?.availableAmount ?? '0')
   const insufficientBalance = availableUsdt < estimatedCost
   const progress = totalNodes > 0 ? (soldNodes / totalNodes) * 100 : 0
@@ -449,7 +442,7 @@ export default function Nodes() {
         <div className="purchase-content">
           <div className="purchase-nft-preview">
             <video src={nftPreviewVideo} autoPlay loop muted playsInline className="preview-video" />
-            <span className="nft-qty">x{qty}</span>
+            <span className="nft-qty">x1</span>
           </div>
           <div className="purchase-form">
             <div className="form-row">
@@ -462,18 +455,7 @@ export default function Nodes() {
             </div>
             <div className="form-row">
               <span className="form-label">{t('nodes.qtyLabel')}</span>
-              <div className="qty-control">
-                <button className="qty-btn" onClick={() => setQty(Math.max(1, qty - 1))}><MinusOutlined /></button>
-                <InputNumber
-                  min={1}
-                  max={10}
-                  value={qty}
-                  onChange={(v) => setQty(v ?? 1)}
-                  controls={false}
-                  className="qty-input"
-                />
-                <button className="qty-btn" onClick={() => setQty(Math.min(10, qty + 1))}><PlusOutlined /></button>
-              </div>
+              <span className="form-value">1</span>
             </div>
             <div className="form-row form-row-emphasis">
               <span className="form-label">{t('nodes.estimatedCost')}</span>

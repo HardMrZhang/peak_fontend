@@ -114,6 +114,8 @@ export default function Account() {
     NODE_PURCHASE_REFUND: t('account.changeType.NODE_PURCHASE_REFUND'),
     REFERRAL_REWARD_CREDIT: t('account.changeType.REFERRAL_REWARD_CREDIT'),
     WITHDRAW_SUCCESS_DEBIT: t('account.changeType.WITHDRAW_SUCCESS_DEBIT'),
+    PURCHASE_FREEZE: t('account.changeType.PURCHASE_FREEZE'),
+    PURCHASE_UNFREEZE: t('account.changeType.PURCHASE_UNFREEZE'),
   }
   const bizTypeLabelMap: Record<string, string> = {
     NODE_PURCHASE: t('account.bizType.NODE_PURCHASE'),

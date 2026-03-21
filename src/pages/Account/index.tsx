@@ -116,6 +116,7 @@ export default function Account() {
     WITHDRAW_SUCCESS_DEBIT: t('account.changeType.WITHDRAW_SUCCESS_DEBIT'),
     PURCHASE_FREEZE: t('account.changeType.PURCHASE_FREEZE'),
     PURCHASE_UNFREEZE: t('account.changeType.PURCHASE_UNFREEZE'),
+    REWARD_RELEASE_REVERSAL: t('account.changeType.REWARD_RELEASE_REVERSAL'),
   }
   const bizTypeLabelMap: Record<string, string> = {
     NODE_PURCHASE: t('account.bizType.NODE_PURCHASE'),

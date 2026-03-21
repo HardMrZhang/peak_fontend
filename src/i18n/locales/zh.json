@@ -137,7 +137,8 @@
       "REFERRAL_REWARD_CREDIT": "推荐奖励入账",
       "WITHDRAW_SUCCESS_DEBIT": "提现成功扣款",
       "PURCHASE_FREEZE": "购买冻结",
-      "PURCHASE_UNFREEZE": "购买解冻"
+      "PURCHASE_UNFREEZE": "购买解冻",
+      "REWARD_RELEASE_REVERSAL": "释放冲正回滚"
     },
     "bizType": {
       "NODE_PURCHASE": "节点购买",

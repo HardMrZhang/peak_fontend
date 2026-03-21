@@ -137,7 +137,8 @@
       "REFERRAL_REWARD_CREDIT": "Referral Reward Credit",
       "WITHDRAW_SUCCESS_DEBIT": "Withdraw Success Debit",
       "PURCHASE_FREEZE": "Purchase Freeze",
-      "PURCHASE_UNFREEZE": "Purchase Unfreeze"
+      "PURCHASE_UNFREEZE": "Purchase Unfreeze",
+      "REWARD_RELEASE_REVERSAL": "Reward Release Reversal"
     },
     "bizType": {
       "NODE_PURCHASE": "Node Purchase",

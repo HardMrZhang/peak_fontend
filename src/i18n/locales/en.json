@@ -138,7 +138,8 @@
       "WITHDRAW_SUCCESS_DEBIT": "Withdraw Success Debit",
       "PURCHASE_FREEZE": "Purchase Freeze",
       "PURCHASE_UNFREEZE": "Purchase Unfreeze",
-      "REWARD_RELEASE_REVERSAL": "Reward Release Reversal"
+      "REWARD_RELEASE_REVERSAL": "Reward Release Reversal",
+      "TRIPLE_REWARD_FIX": "Reward Correction"
     },
     "bizType": {
       "NODE_PURCHASE": "Node Purchase",
@@ -150,7 +151,8 @@
       "DEPOSIT_REVERSAL": "Deposit Reversal",
       "NODE_DAILY": "Daily Node Reward",
       "NODE_REWARD": "Node Reward",
-      "REFERRAL_REWARD": "Referral Reward"
+      "REFERRAL_REWARD": "Referral Reward",
+      "REWARD_FIX": "Reward Correction"
     },
     "status": {
       "PENDING": "Pending",

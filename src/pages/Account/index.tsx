@@ -117,6 +117,7 @@ export default function Account() {
     PURCHASE_FREEZE: t('account.changeType.PURCHASE_FREEZE'),
     PURCHASE_UNFREEZE: t('account.changeType.PURCHASE_UNFREEZE'),
     REWARD_RELEASE_REVERSAL: t('account.changeType.REWARD_RELEASE_REVERSAL'),
+    TRIPLE_REWARD_FIX: t('account.changeType.TRIPLE_REWARD_FIX'),
   }
   const bizTypeLabelMap: Record<string, string> = {
     NODE_PURCHASE: t('account.bizType.NODE_PURCHASE'),
@@ -129,6 +130,7 @@ export default function Account() {
     NODE_DAILY: t('account.bizType.NODE_DAILY'),
     NODE_REWARD: t('account.bizType.NODE_REWARD'),
     REFERRAL_REWARD: t('account.bizType.REFERRAL_REWARD'),
+    REWARD_FIX: t('account.bizType.REWARD_FIX'),
   }
   const statusLabelMap: Record<string, string> = {
     PENDING: t('account.status.PENDING'),

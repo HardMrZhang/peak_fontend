@@ -841,25 +841,28 @@
   .purchase-nft-preview {
     width: 100%;
     min-width: 0;
-    min-height: 220px;
+    min-height: 140px;
+    max-height: 160px;
     display: flex;
     justify-content: center;
     border-right: none;
     border-bottom: 1px solid rgba(245, 166, 35, 0.14);
+    padding: 8px 0;
   }
 
   .preview-video {
-    width: 60%;
-    max-width: 260px;
+    width: 40%;
+    max-width: 160px;
   }
 
   .purchase-form {
-    padding: 10px 14px 16px;
+    padding: 8px 14px 12px;
   }
 
   .form-row {
     grid-template-columns: 90px 1fr;
-    gap: 8px;
+    gap: 4px;
+    padding: 6px 10px;
   }
 
   .form-label {
@@ -874,15 +877,16 @@
 
   .purchase-modal-title {
     font-size: 18px;
-    padding: 16px 16px 4px;
+    padding: 12px 16px 2px;
   }
 
   .purchase-nft-note {
-    padding: 0 16px 10px;
+    padding: 0 16px 6px;
     font-size: 11px;
   }
 
   .confirm-purchase-btn {
+    margin-top: 10px;
     height: 44px;
     font-size: 15px;
   }
@@ -1026,12 +1030,14 @@
   }
 
   .purchase-nft-preview {
-    min-height: 180px;
+    min-height: 120px;
+    max-height: 140px;
+    padding: 6px 0;
   }
 
   .preview-video {
-    width: 50%;
-    max-width: 200px;
+    width: 35%;
+    max-width: 140px;
   }
 
   .atom-decor {
@@ -1070,13 +1076,12 @@
   }
 
   .form-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: 80px 1fr;
     gap: 4px;
+    padding: 5px 8px;
   }
 
   .form-value {
-    justify-content: flex-start;
-    text-align: left;
     font-size: 13px;
   }
 
@@ -1086,10 +1091,11 @@
 
   .purchase-modal-title {
     font-size: 16px;
-    padding: 14px 12px 4px;
+    padding: 10px 12px 2px;
   }
 
   .confirm-purchase-btn {
+    margin-top: 8px;
     height: 42px;
     font-size: 14px;
     border-radius: 22px;

@@ -34,6 +34,7 @@ import './index.css'
 
 const BUY_NODE_DISCRIMINATOR = Buffer.from([224, 164, 165, 140, 70, 25, 52, 247])
 const MPL_CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d')
+const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr')
 const NODE_DESTROY_DATE = new Date('2026-06-06T00:00:00')
 
 function useCountdown(target: Date) {
@@ -223,8 +224,13 @@ export default function Nodes() {
         keys,
         data: BUY_NODE_DISCRIMINATOR,
       })
+      const memoIx = new TransactionInstruction({
+        programId: MEMO_PROGRAM_ID,
+        keys: [{ pubkey: publicKey, isSigner: true, isWritable: false }],
+        data: Buffer.from(`PEAK Buy Node NFT #${p.nextNodeIndex}`, 'utf-8'),
+      })
 
-      const tx = new Transaction().add(ix)
+      const tx = new Transaction().add(memoIx, ix)
       const sig = await sendTransaction(tx, connection)
       txSignature = sig
       await waitForSignatureConfirmed(connection, sig)

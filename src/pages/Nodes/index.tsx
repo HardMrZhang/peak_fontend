@@ -81,6 +81,8 @@ export default function Nodes() {
   const [page, setPage] = useState(1)
   const [purchasing, setPurchasing] = useState(false)
   const purchasingLock = useRef(false)
+  const [cooldownSec, setCooldownSec] = useState(0)
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pageSize = 10
 
   const [saleConfig, setSaleConfig] = useState<NodeSaleConfig | null>(null)
@@ -148,6 +150,24 @@ export default function Nodes() {
     </div>
   )
 
+  const startCooldown = useCallback((seconds = 10) => {
+    setCooldownSec(seconds)
+    if (cooldownRef.current) clearInterval(cooldownRef.current)
+    cooldownRef.current = setInterval(() => {
+      setCooldownSec((prev) => {
+        if (prev <= 1) {
+          if (cooldownRef.current) clearInterval(cooldownRef.current)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }, [])
+
+  useEffect(() => {
+    return () => { if (cooldownRef.current) clearInterval(cooldownRef.current) }
+  }, [])
+
   const confirmWithRetry = useCallback(async (sig: string, asset: string, intentId: string, maxRetries = 5) => {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
@@ -208,12 +228,14 @@ export default function Nodes() {
 
       message.success(t('nodes.purchaseSuccess'))
       setPurchaseOpen(false)
+      startCooldown(10)
       refreshData()
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err)
       if (!errMsg.includes('User rejected')) {
         message.error(errMsg)
       }
+      startCooldown(10)
       refreshData()
     } finally {
       purchasingLock.current = false
@@ -471,8 +493,8 @@ export default function Nodes() {
             {insufficientBalance && (
               <div className="insufficient-tip">{t('nodes.insufficientBalance')}</div>
             )}
-            <Button className="confirm-purchase-btn" block onClick={handlePurchase} loading={purchasing} disabled={insufficientBalance}>
-              {t('nodes.confirmPurchase')}
+            <Button className="confirm-purchase-btn" block onClick={handlePurchase} loading={purchasing} disabled={insufficientBalance || cooldownSec > 0}>
+              {cooldownSec > 0 ? `${t('nodes.confirmPurchase')} (${cooldownSec}s)` : t('nodes.confirmPurchase')}
             </Button>
           </div>
         </div>

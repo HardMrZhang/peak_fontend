@@ -7,7 +7,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { estimateWithdraw, submitWithdraw, getBalances } from '@/api'
 import type { AssetBalance, WithdrawEstimate } from '@/types'
 import { useAuthStore } from '@/store/useAuthStore'
-import { CHAIN_NAME, DEFAULT_FEE } from '@/constants'
+import { CHAIN_NAME, DEFAULT_WITHDRAW_FEE_BY_ASSET } from '@/constants'
 import './index.css'
 
 type TokenType = 'USDT' | 'PEAK'
@@ -86,8 +86,9 @@ export default function Withdrawal() {
     }
   }
 
-  const fee = parseFloat(String(estimate?.fee ?? DEFAULT_FEE)).toFixed(2)
-  const actual = parseFloat(String(estimate?.actual ?? Math.max(0, Number(amount || 0) - Number(estimate?.fee ?? DEFAULT_FEE)))).toFixed(2)
+  const defaultFee = DEFAULT_WITHDRAW_FEE_BY_ASSET[tokenType]
+  const fee = parseFloat(String(estimate?.fee ?? defaultFee)).toFixed(2)
+  const actual = parseFloat(String(estimate?.actual ?? Math.max(0, Number(amount || 0) - Number(estimate?.fee ?? defaultFee)))).toFixed(2)
 
   if (!connected) {
     return (

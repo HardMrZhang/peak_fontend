@@ -88,6 +88,10 @@ export function confirmNodeBuy(txHash: string, asset: string, intentId: string) 
   return post<NodeOrder>('/node/confirm-buy', { txHash, asset, intentId })
 }
 
+export function cancelNodeBuyIntent(intentId: string) {
+  return post('/node/cancel-buy-intent', { intentId })
+}
+
 // ==================== Reward ====================
 export function getRewardSummary() {
   return get<RewardSummary>('/reward/summary')

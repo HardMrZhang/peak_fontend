@@ -10,6 +10,7 @@ import {
   getNodeInfo,
   getNodeBuyParams,
   confirmNodeBuy,
+  cancelNodeBuyIntent,
   getRewardSummary,
   getDailyEarnings,
   getDailyReleases,
@@ -196,9 +197,12 @@ export default function Nodes() {
 
     purchasingLock.current = true
     setPurchasing(true)
+    let intentIdForCancel = ''
+    let txSignature = ''
     try {
       const paramsRes = await getNodeBuyParams()
       const p = paramsRes.data
+      intentIdForCancel = p.intentId
 
       const keys = [
         { pubkey: publicKey, isSigner: true, isWritable: true },
@@ -222,6 +226,7 @@ export default function Nodes() {
 
       const tx = new Transaction().add(ix)
       const sig = await sendTransaction(tx, connection)
+      txSignature = sig
       await waitForSignatureConfirmed(connection, sig)
 
       await confirmWithRetry(sig, p.asset, p.intentId)
@@ -232,6 +237,16 @@ export default function Nodes() {
       refreshData()
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err)
+      const isUserRejected = errMsg.includes('User rejected') || errMsg.includes('rejected the request')
+      const shouldCancelIntent = !!intentIdForCancel && !txSignature && isUserRejected
+      if (shouldCancelIntent) {
+        try {
+          await cancelNodeBuyIntent(intentIdForCancel)
+          message.info('Purchase cancelled, funds released')
+        } catch {
+          // keep original error as main output
+        }
+      }
       if (!errMsg.includes('User rejected')) {
         message.error(errMsg)
       }

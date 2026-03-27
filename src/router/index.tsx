@@ -23,7 +23,7 @@ const router = createBrowserRouter([
       { path: 'nodes', element: <Nodes /> },
       { path: 'node-transaction', element: <NodeTransaction /> },
       { path: 'generalization', element: <Generalization /> },
-      { path: 'team-level', element: <TeamLevel /> },
+      // { path: 'team-level', element: <TeamLevel /> },
       { path: 'invite/:code', element: <InvitePage /> },
     ],
   },

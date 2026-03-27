@@ -22,7 +22,7 @@ export default function Header() {
     { key: '/generalization', label: t('nav.generalization') },
     { key: '/nodes', label: t('nav.nodes') },
     { key: '/node-transaction', label: t('nav.nodeTransaction') },
-    { key: '/team-level', label: t('nav.teamLevel') },
+    // { key: '/team-level', label: t('nav.teamLevel') },
   ]
 
   const currentLang = i18n.language === 'zh' ? '中文' : 'EN'

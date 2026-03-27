@@ -245,6 +245,7 @@ export interface TeamLevelInfo {
   label: string
   commissionRate: number
   commissionPerNft: number
+  teamCommissionEligible?: boolean
   lockDays: number
   teamNftCount: number
   ownNftCount: number

@@ -7,6 +7,7 @@ import Withdrawal from '@/pages/Withdrawal'
 import Nodes from '@/pages/Nodes'
 import Generalization from '@/pages/Generalization'
 import NodeTransaction from '@/pages/NodeTransaction'
+import TeamLevel from '@/pages/TeamLevel'
 import InvitePage from '@/pages/Invite'
 
 const router = createBrowserRouter([
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
       { path: 'nodes', element: <Nodes /> },
       { path: 'node-transaction', element: <NodeTransaction /> },
       { path: 'generalization', element: <Generalization /> },
+      { path: 'team-level', element: <TeamLevel /> },
       { path: 'invite/:code', element: <InvitePage /> },
     ],
   },

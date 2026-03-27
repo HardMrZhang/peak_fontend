@@ -1,0 +1,378 @@
+.team-level-page {
+  background: var(--bg-primary);
+  min-height: 100vh;
+}
+
+.team-level-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px 64px;
+}
+
+.team-level-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: -8px 0 28px;
+}
+
+/* ===== Section Title ===== */
+.section-title-tl {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-icon {
+  color: var(--accent-orange);
+  font-size: 20px;
+}
+
+/* ===== My Level Section ===== */
+.my-level-section {
+  margin-bottom: 32px;
+}
+
+.level-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.level-card {
+  background: var(--bg-card);
+  background-image: var(--gradient-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.level-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 24px rgba(245, 166, 35, 0.05);
+}
+
+.level-card-main {
+  grid-column: span 3;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background:
+    radial-gradient(ellipse at 15% 80%, rgba(245, 166, 35, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 20%, rgba(245, 166, 35, 0.06) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(40, 28, 12, 0.95) 0%, var(--bg-card) 100%);
+  border-color: rgba(245, 166, 35, 0.2);
+  padding: 28px 36px;
+}
+
+.level-badge-wrap {
+  flex-shrink: 0;
+}
+
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 28px;
+  border-radius: 40px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.level-badge-icon {
+  font-size: 22px;
+}
+
+.level-badge-text {
+  letter-spacing: 1px;
+}
+
+.level-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.level-meta-label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.level-meta-value {
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f5a623, #ffd568);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.level-card-icon {
+  font-size: 22px;
+  color: var(--accent-orange);
+  margin-bottom: 4px;
+}
+
+.level-card-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.level-card-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.level-card-value.orange {
+  color: var(--accent-orange);
+  text-shadow: 0 0 16px var(--accent-orange-glow);
+}
+
+/* ===== Rules Table ===== */
+.rules-section {
+  margin-bottom: 32px;
+}
+
+.rules-table-wrap {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(245, 166, 35, 0.06) 0%, transparent 60%),
+    linear-gradient(135deg, rgba(40, 28, 12, 0.5) 0%, var(--bg-card) 100%);
+  border: 1px solid rgba(245, 166, 35, 0.18);
+  border-radius: 16px;
+  padding: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rules-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.rules-table thead th {
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  background: rgba(245, 166, 35, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  white-space: nowrap;
+}
+
+.rules-table thead th:first-child {
+  border-radius: 12px 0 0 0;
+}
+
+.rules-table thead th:last-child {
+  border-radius: 0 12px 0 0;
+}
+
+.rules-table tbody td {
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.2s;
+}
+
+.rules-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.rules-table tbody tr:hover td {
+  background: rgba(245, 166, 35, 0.04);
+}
+
+.rules-table tbody tr.active-row td {
+  background: rgba(245, 166, 35, 0.08);
+}
+
+.rules-table tbody tr.active-row {
+  position: relative;
+}
+
+.rules-table tbody tr.active-row td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  background: var(--accent-orange);
+  border-radius: 0 2px 2px 0;
+}
+
+.col-commission,
+.col-commission-val {
+  color: #ff4d4f !important;
+  font-weight: 700 !important;
+}
+
+.level-tag {
+  display: inline-block;
+  padding: 3px 14px;
+  border-radius: 20px;
+  border: 1.5px solid;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* ===== Rules Description ===== */
+.rules-desc-section {
+  background:
+    linear-gradient(135deg, rgba(40, 28, 12, 0.5) 0%, var(--bg-card) 100%);
+  border: 1px solid rgba(245, 166, 35, 0.12);
+  border-radius: 16px;
+  padding: 24px 28px;
+}
+
+.rules-desc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rules-desc-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.rules-desc-num {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(245, 166, 35, 0.15);
+  color: var(--accent-orange);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rules-desc-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .team-level-inner {
+    padding: 0 24px 48px;
+  }
+
+  .level-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .level-card-main {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .team-level-inner {
+    padding: 0 16px 40px;
+  }
+
+  .level-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .level-card-main {
+    grid-column: span 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .level-meta {
+    align-items: flex-start;
+  }
+
+  .level-meta-value {
+    font-size: 22px;
+  }
+
+  .level-badge {
+    padding: 10px 22px;
+    font-size: 16px;
+  }
+
+  .level-card {
+    padding: 16px 18px;
+  }
+
+  .level-card-value {
+    font-size: 20px;
+  }
+
+  .rules-section {
+    margin-bottom: 24px;
+  }
+
+  .rules-desc-section {
+    padding: 18px 16px;
+  }
+
+  .section-title-tl {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .team-level-inner {
+    padding: 0 12px 32px;
+  }
+
+  .level-badge {
+    padding: 8px 18px;
+    font-size: 14px;
+  }
+
+  .level-badge-icon {
+    font-size: 18px;
+  }
+
+  .level-meta-value {
+    font-size: 18px;
+  }
+
+  .level-card-value {
+    font-size: 18px;
+  }
+
+  .rules-desc-item {
+    gap: 10px;
+  }
+
+  .rules-desc-num {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+
+  .rules-desc-text {
+    font-size: 12px;
+  }
+}

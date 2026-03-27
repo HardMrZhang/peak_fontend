@@ -142,6 +142,10 @@ export interface ReferralReward {
   id: string
   rewardNo: string
   rewardLevel: number
+  rewardType?: 'DIRECT' | 'TEAM'
+  relationDepth?: number
+  teamLevelAtIssue?: number | null
+  commissionRateAtIssue?: string | null
   fromUserWallet: string
   orderNo: string
   orderQty: number
@@ -227,5 +231,24 @@ export interface Banner {
   sortOrder: number
 }
 
+export interface TeamLevelConfig {
+  level: number
+  label: string
+  minNft: number
+  maxNft: number | null
+  commissionRate: number
+  lockDays: number
+}
 
+export interface TeamLevelInfo {
+  level: number
+  label: string
+  commissionRate: number
+  commissionPerNft: number
+  lockDays: number
+  teamNftCount: number
+  ownNftCount: number
+  pointsMultiplier: number
+  levels: TeamLevelConfig[]
+}
 

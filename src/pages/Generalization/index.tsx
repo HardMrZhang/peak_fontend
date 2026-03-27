@@ -18,6 +18,12 @@ function formatDate(iso?: string) {
   return new Date(iso).toLocaleString()
 }
 
+function formatRewardType(type?: 'DIRECT' | 'TEAM', t?: (k: string) => string) {
+  if (type === 'DIRECT') return t ? t('generalization.rewardType.direct') : 'Direct'
+  if (type === 'TEAM') return t ? t('generalization.rewardType.team') : 'Team'
+  return '--'
+}
+
 export default function Generalization() {
   const { t } = useTranslation()
   const token = useAuthStore((s) => s.token)
@@ -129,7 +135,13 @@ export default function Generalization() {
 
   const rewardColumns: ColumnsType<ReferralReward> = [
     { title: t('generalization.colRewardNo'), dataIndex: 'rewardNo', width: 130, ellipsis: true },
-    { title: t('generalization.colRewardLevel'), dataIndex: 'rewardLevel', width: 80, align: 'right' },
+    {
+      title: t('generalization.colRewardType'),
+      dataIndex: 'rewardType',
+      width: 110,
+      render: (v: 'DIRECT' | 'TEAM') => formatRewardType(v, t),
+    },
+    { title: t('generalization.colRewardLevel'), dataIndex: 'relationDepth', width: 90, align: 'right' },
     { title: t('generalization.colFromUser'), dataIndex: 'fromUserWallet', width: 140, ellipsis: true },
     { title: t('generalization.colOrderNo'), dataIndex: 'orderNo', width: 130, ellipsis: true },
     { title: t('generalization.colOrderQty'), dataIndex: 'orderQty', width: 80, align: 'right' },

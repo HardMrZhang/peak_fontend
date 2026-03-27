@@ -4,7 +4,8 @@
     "account": "Account",
     "generalization": "Generalization",
     "nodes": "Nodes",
-    "nodeTransaction": "Node transaction"
+    "nodeTransaction": "Node transaction",
+    "teamLevel": "Team Level"
   },
   "header": {
     "connectWallet": "Connect Wallet",
@@ -248,14 +249,19 @@
     "colUserAddr": "User address",
     "colTotalPeak": "Total rewards earned",
     "colRewardNo": "Reward No",
-    "colRewardLevel": "Reward level",
+    "colRewardType": "Reward type",
+    "colRewardLevel": "Relation depth",
     "colFromUser": "From user",
     "colOrderNo": "Order No",
     "colOrderQty": "Node qty",
     "colRewardTime": "Reward time",
     "colJoinTime": "Joined at",
     "colTeamLevel": "Team level",
-    "copySuccess": "Invitation link copied!"
+    "copySuccess": "Invitation link copied!",
+    "rewardType": {
+      "direct": "Direct Reward",
+      "team": "Team Commission"
+    }
   },
   "contact": {
     "title": "Contact Us",
@@ -281,6 +287,39 @@
   },
   "referral": {
     "bindSuccess": "Referral relationship bound successfully"
+  },
+  "teamLevel": {
+    "title": "Team Level",
+    "subtitle": "Team Node NFT Level Rules",
+    "rulesTitle": "Level Rules",
+    "colLevel": "Level",
+    "colSalesNodes": "Sales Nodes",
+    "colDownlineWallets": "Downline Wallets",
+    "colDirectPush": "Direct",
+    "colCommission": "Commission",
+    "colLockPeriod": "Lock Period",
+    "colPoints": "Points",
+    "level5": "Level 5",
+    "level4": "Level 4",
+    "level3": "Level 3",
+    "level2": "Level 2",
+    "level1": "Level 1",
+    "myTeamLevel": "My Team Level",
+    "currentLevel": "Current Level",
+    "teamNftCount": "Team Node NFT Total",
+    "ownNftCount": "My Node NFTs",
+    "commissionRate": "Team Commission Rate",
+    "lockDays": "Earnings Lock Period",
+    "pointsMultiplier": "Points Multiplier",
+    "days": " days",
+    "times": "x",
+    "normalUser": "Normal User",
+    "noTeamNft": "No team node NFTs yet",
+    "ruleDesc1": "When your team's total NFTs (excluding yourself) reach the threshold, you automatically upgrade",
+    "ruleDesc2": "After upgrading, new team node NFTs will provide commission rewards at the corresponding rate",
+    "ruleDesc3": "Your earnings lock period will be adjusted to the corresponding level's lock days",
+    "ruleDesc4": "Points multiplier = Own NFT count + User level + 1",
+    "ruleDesc5": "Original direct push commission (10%) remains unchanged; team commission is an additional reward"
   },
   "common": {
     "noData": "No data",

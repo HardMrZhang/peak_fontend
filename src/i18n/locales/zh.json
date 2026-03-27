@@ -4,7 +4,8 @@
     "account": "账户",
     "generalization": "推广",
     "nodes": "节点",
-    "nodeTransaction": "节点交易"
+    "nodeTransaction": "节点交易",
+    "teamLevel": "团队等级"
   },
   "header": {
     "connectWallet": "连接钱包",
@@ -248,14 +249,19 @@
     "colUserAddr": "用户地址",
     "colTotalPeak": "获得的奖励总额",
     "colRewardNo": "奖励编号",
-    "colRewardLevel": "奖励层级",
+    "colRewardType": "奖励类型",
+    "colRewardLevel": "关系层级",
     "colFromUser": "来源用户",
     "colOrderNo": "订单号",
     "colOrderQty": "节点数量",
     "colRewardTime": "奖励时间",
     "colJoinTime": "加入时间",
     "colTeamLevel": "团队层级",
-    "copySuccess": "邀请链接已复制！"
+    "copySuccess": "邀请链接已复制！",
+    "rewardType": {
+      "direct": "直推奖励",
+      "team": "团队提成"
+    }
   },
   "contact": {
     "title": "联系我们",
@@ -281,6 +287,39 @@
   },
   "referral": {
     "bindSuccess": "邀请关系绑定成功"
+  },
+  "teamLevel": {
+    "title": "团队等级",
+    "subtitle": "团队节点NFT等级规则",
+    "rulesTitle": "等级规则表",
+    "colLevel": "级别",
+    "colSalesNodes": "销售节点",
+    "colDownlineWallets": "下线钱包",
+    "colDirectPush": "直推",
+    "colCommission": "提成",
+    "colLockPeriod": "锁仓",
+    "colPoints": "积分",
+    "level5": "五级",
+    "level4": "四级",
+    "level3": "三级",
+    "level2": "二级",
+    "level1": "一级",
+    "myTeamLevel": "我的团队等级",
+    "currentLevel": "当前等级",
+    "teamNftCount": "团队节点NFT总量",
+    "ownNftCount": "我的节点NFT数",
+    "commissionRate": "团队提成比例",
+    "lockDays": "收益锁仓期",
+    "pointsMultiplier": "积分倍率",
+    "days": "天",
+    "times": "倍",
+    "normalUser": "普通用户",
+    "noTeamNft": "暂无团队节点NFT",
+    "ruleDesc1": "用户团队节点NFT总量（不含自身）达到对应级别门槛后，自动升级",
+    "ruleDesc2": "升级后，当天新增下级团队节点NFT将按对应比例提供奖励",
+    "ruleDesc3": "用户自身的全部收益锁仓期将变更为对应等级的锁仓天数",
+    "ruleDesc4": "积分倍率 = 自身NFT数量 + 用户级别 + 1",
+    "ruleDesc5": "原直推提成（10%）不变，团队提成为额外奖励"
   },
   "common": {
     "noData": "暂无数据",

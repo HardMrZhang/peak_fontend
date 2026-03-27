@@ -22,6 +22,7 @@ import type {
   DailyRelease,
   Banner,
   PageResult,
+  TeamLevelInfo,
 } from '@/types'
 
 // ==================== Auth ====================
@@ -132,6 +133,10 @@ export function getTeamNodes(params?: { page?: number; pageSize?: number }) {
 
 export function getRanking(params?: { page?: number; pageSize?: number }) {
   return get<PageResult<RankRecord>>('/referral/ranking', { params })
+}
+
+export function getTeamLevelInfo() {
+  return get<TeamLevelInfo>('/referral/team-level')
 }
 
 // ==================== Withdraw ====================

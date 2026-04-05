@@ -112,14 +112,17 @@ export default function GenesisNodes() {
         /* API not ready, use chain data */
       }
 
-      try {
-        const vipRes = await getGenesisVipLevel()
-        if (vipRes.data) {
-          setVipLevel(vipRes.data.vipLevel)
-          setVipLabel(vipRes.data.vipLabel)
+      const token = localStorage.getItem('peak_token')
+      if (token) {
+        try {
+          const vipRes = await getGenesisVipLevel()
+          if (vipRes.data) {
+            setVipLevel(vipRes.data.vipLevel)
+            setVipLabel(vipRes.data.vipLabel)
+          }
+        } catch {
+          /* VIP not available yet */
         }
-      } catch {
-        /* VIP not available yet */
       }
     } finally {
       setLoading(false)
@@ -128,7 +131,7 @@ export default function GenesisNodes() {
 
   useEffect(() => {
     refreshData()
-  }, [refreshData])
+  }, [refreshData, connected])
 
   const startCooldown = useCallback((seconds = 10) => {
     setCooldownSec(seconds)

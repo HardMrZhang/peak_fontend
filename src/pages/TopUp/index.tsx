@@ -243,10 +243,8 @@ export default function TopUp() {
     setSyncAttempt(0)
     for (let i = 0; i < maxSyncAttempts; i += 1) {
       setSyncAttempt(i + 1)
-      // eslint-disable-next-line no-await-in-loop
       await new Promise((resolve) => setTimeout(resolve, 1000))
       try {
-        // eslint-disable-next-line no-await-in-loop
         const latest = await refreshUsdtBalance()
         if (latest > before) {
           window.dispatchEvent(new Event('balance:refresh'))
@@ -255,7 +253,7 @@ export default function TopUp() {
           setTimeout(() => navigate('/nodes'), 1000)
           break
         }
-      } catch (_) {
+      } catch {
         // ignore polling errors
       }
     }

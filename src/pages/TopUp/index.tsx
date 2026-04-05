@@ -195,19 +195,6 @@ export default function TopUp() {
   const detectedWallet = useMemo(() => getDetectedWalletName(), [])
   const [strategy, setStrategy] = useState<DepositStrategy>(autoStrategy)
 
-  // 合约地址的 USDT ATA（直接转账目标，后端 ATA 扫描已监听此地址）
-  const directTransferAddress = useMemo(() => {
-    if (!deposit?.programId || !deposit?.mintAddress || !deposit?.tokenProgramId) return ''
-    try {
-      return getATA(
-        new PublicKey(deposit.programId),
-        new PublicKey(deposit.mintAddress),
-        new PublicKey(deposit.tokenProgramId),
-      ).toBase58()
-    } catch {
-      return ''
-    }
-  }, [deposit?.programId, deposit?.mintAddress, deposit?.tokenProgramId])
 
   const refreshUsdtBalance = useCallback(async () => {
     const r = await getBalances()
@@ -248,24 +235,6 @@ export default function TopUp() {
     }
   }
 
-  const handleCopyCollectionAta = () => {
-    const text = directTransferAddress
-    if (!text) return
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text)
-      message.success(t('topup.copySuccess'))
-    } else {
-      const textarea = document.createElement('textarea')
-      textarea.value = text
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textarea)
-      message.success(t('topup.copySuccess'))
-    }
-  }
 
   const pollForDeposit = useCallback(async () => {
     const before = Number(balance)

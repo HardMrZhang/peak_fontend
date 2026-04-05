@@ -23,6 +23,8 @@ import type {
   Banner,
   PageResult,
   TeamLevelInfo,
+  GenesisSaleInfo,
+  GenesisBuyParams,
 } from '@/types'
 
 // ==================== Auth ====================
@@ -154,6 +156,28 @@ export function getWithdrawHistory(params?: { status?: string; page?: number; pa
 
 export function getWithdrawDetail(requestId: string) {
   return get<WithdrawRequest>(`/withdraw/${requestId}`)
+}
+
+// ==================== Genesis NFT ====================
+export function getGenesisSaleInfo() {
+  return get<GenesisSaleInfo>('/genesis/sale-info')
+}
+
+export function getGenesisBuyParams(quantity: number) {
+  return get<GenesisBuyParams>('/genesis/buy-params', { params: { quantity } })
+}
+
+export function cancelGenesisBuyIntent(intentId: string) {
+  return post('/genesis/cancel-buy-intent', { intentId })
+}
+
+export function confirmGenesisBuy(txHash: string, intentId: string) {
+  return post('/genesis/confirm-buy', { txHash, intentId })
+}
+
+// ==================== Genesis VIP ====================
+export function getGenesisVipLevel() {
+  return get<{ vipLevel: number; vipLabel: string }>('/genesis-vip/my-level')
 }
 
 // ==================== NFT ====================

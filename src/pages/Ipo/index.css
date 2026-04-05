@@ -1,0 +1,199 @@
+.ipo-page {
+  min-height: calc(100vh - 64px);
+  background: var(--bg-primary);
+  padding-bottom: 60px;
+}
+
+.ipo-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px 32px;
+}
+
+.ipo-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(245, 166, 35, 0.25);
+  margin-bottom: 20px;
+}
+
+.ipo-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+  letter-spacing: 1px;
+}
+
+.ipo-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Project cards */
+.ipo-projects {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.ipo-project-card {
+  background: rgba(20, 20, 35, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ipo-project-card:hover {
+  border-color: rgba(245, 166, 35, 0.2);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Poster */
+.ipo-project-poster {
+  flex-shrink: 0;
+  width: 240px;
+  min-height: 340px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: #0a0a14;
+}
+
+.ipo-poster-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ipo-poster-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  text-align: center;
+}
+
+.ipo-poster-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Info */
+.ipo-project-info {
+  flex: 1;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ipo-field {
+  display: flex;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  line-height: 1.5;
+}
+
+.ipo-field:last-child {
+  border-bottom: none;
+}
+
+.ipo-field-label {
+  flex-shrink: 0;
+  width: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.ipo-field-value {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.ipo-field-plot .ipo-field-value {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ipo-project-card {
+    flex-direction: column;
+  }
+
+  .ipo-project-poster {
+    width: 100%;
+    min-height: 200px;
+    max-height: 240px;
+  }
+
+  .ipo-project-info {
+    padding: 16px 20px;
+  }
+
+  .ipo-field-label {
+    width: 80px;
+    font-size: 12px;
+  }
+
+  .ipo-field-value {
+    font-size: 12px;
+  }
+
+  .ipo-title {
+    font-size: 22px;
+  }
+
+  .ipo-projects {
+    padding: 0 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ipo-header {
+    padding: 32px 16px 24px;
+  }
+
+  .ipo-project-poster {
+    min-height: 160px;
+  }
+
+  .ipo-project-info {
+    padding: 12px 14px;
+  }
+
+  .ipo-field {
+    padding: 5px 0;
+  }
+
+  .ipo-field-label {
+    width: 72px;
+    font-size: 11px;
+  }
+
+  .ipo-field-value {
+    font-size: 11px;
+  }
+}

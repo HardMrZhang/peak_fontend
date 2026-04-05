@@ -243,23 +243,32 @@
   background: rgba(245, 166, 35, 0.08);
 }
 
-@media (max-width: 1024px) {
-  .header-inner {
-    padding: 0 24px;
-  }
+@media (max-width: 1400px) {
   .nav-item {
     padding: 8px 10px;
     font-size: 13px;
   }
+  .header-nav {
+    gap: 2px;
+  }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
   .header-nav {
     display: none;
   }
   .mobile-menu-btn {
     display: block;
   }
+  .header-inner {
+    padding: 0 24px;
+  }
+  .header-left {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
   .header-inner {
     padding: 0 16px;
   }

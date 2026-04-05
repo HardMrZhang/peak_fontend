@@ -231,6 +231,35 @@ export interface Banner {
   sortOrder: number
 }
 
+export interface GenesisSaleInfo {
+  premintedTotal: number
+  soldTotal: number
+  maxSupply: number
+  nftPriceUsdt: string
+  peakAirdropAmount: string
+  saleStartTime: string | null
+  saleEndTime: string | null
+  paused: boolean
+}
+
+export interface GenesisBuyParams {
+  intentId: string
+  configPda: string
+  salePda: string
+  collection: string
+  inventoryPda: string
+  buyerUsdtAta: string
+  mixerUsdtAta: string
+  multisigUsdtAta: string
+  buyerPeakAta: string
+  peakSourceAta: string
+  programAuthority: string
+  usdtMint: string
+  peakMint: string
+  referrerUsdtAta: string | null
+  nfts: Array<{ asset: string; nftInfoPda: string }>
+}
+
 export interface TeamLevelConfig {
   level: number
   label: string

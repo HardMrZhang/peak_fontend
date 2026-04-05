@@ -5,9 +5,12 @@ import Account from '@/pages/Account'
 import TopUp from '@/pages/TopUp'
 import Withdrawal from '@/pages/Withdrawal'
 import Nodes from '@/pages/Nodes'
+import GenesisNodes from '@/pages/GenesisNodes'
 import Generalization from '@/pages/Generalization'
 import NodeTransaction from '@/pages/NodeTransaction'
 import TeamLevel from '@/pages/TeamLevel'
+import Points from '@/pages/Points'
+import Ipo from '@/pages/Ipo'
 import InvitePage from '@/pages/Invite'
 
 const router = createBrowserRouter([
@@ -21,9 +24,12 @@ const router = createBrowserRouter([
       { path: 'account/topup', element: <TopUp /> },
       { path: 'account/withdrawal', element: <Withdrawal /> },
       { path: 'nodes', element: <Nodes /> },
+      { path: 'genesis-nodes', element: <GenesisNodes /> },
       { path: 'node-transaction', element: <NodeTransaction /> },
       { path: 'generalization', element: <Generalization /> },
       { path: 'team-level', element: <TeamLevel /> },
+      { path: 'points', element: <Points /> },
+      { path: 'ipo', element: <Ipo /> },
       { path: 'invite/:code', element: <InvitePage /> },
     ],
   },

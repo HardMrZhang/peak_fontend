@@ -44,7 +44,14 @@ const MOBILE_WALLETS: WalletOption[] = [
   {
     name: 'Phantom',
     icon: 'https://raw.githubusercontent.com/solana-labs/wallet-adapter/master/packages/wallets/phantom/icon.svg',
-    deepLink: (url) => `https://phantom.app/ul/browse/${encodeURIComponent(url)}`,
+    deepLink: (url) => {
+      const encoded = encodeURIComponent(url)
+      const ref = encodeURIComponent(new URL(url).origin)
+      if (getOSType() === 'android') {
+        return `https://phantom.app/ul/browse/${encoded}?ref=${ref}`
+      }
+      return `https://phantom.app/ul/browse/${encoded}?ref=${ref}`
+    },
   },
   {
     name: 'Solflare',
@@ -124,10 +131,15 @@ export default function WalletButton() {
       return
     }
 
-    if (wallet.name !== 'OKX Wallet') {
-      e.preventDefault()
-      window.location.href = deepLink
+    // For wallets using https:// universal links (Phantom, Solflare, etc.),
+    // let the native <a> click trigger the OS universal link handler.
+    // Only intercept custom-scheme links (e.g. bnc://) that need programmatic navigation.
+    if (deepLink.startsWith('https://')) {
+      return
     }
+
+    e.preventDefault()
+    window.location.href = deepLink
   }, [])
 
   const { setVisible: setWalletModalVisible } = useWalletModal()

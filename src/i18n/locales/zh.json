@@ -328,7 +328,7 @@
   "genesis": {
     "title": "创世节点",
     "saleTitle": "创世节点 NFT",
-    "saleSubtitle": "限量3000个，每个500 USDT，购买即赠200 PEAK",
+    "saleSubtitle": "限量3000个，每个500 USDT，购买即赠200 PEAK，NFT终生权益卡1张",
     "purchase": "购买创世节点",
     "price": "单价",
     "totalSupply": "总量",
@@ -359,7 +359,7 @@
     "infoDesc1": "创世节点是 PEAK 平台的核心权益凭证，限量发行 3,000 个。",
     "infoDesc2": "持有创世节点 NFT 可享受打新权益、空投权益等多项专属福利。",
     "infoBenefitTitle": "核心权益",
-    "infoBenefitDesc": "购买即赠 200 PEAK + 影视节点权益 NFT，上市后享受三倍空投。",
+    "infoBenefitDesc": "购买即赠 200 PEAK + 创世节点 NFT，上市后享受三倍PEAK观影空投。",
     "vipTitle": "我的 VIP 等级",
     "vipDesc": "VIP 等级由您的直推下级及其团队购买创世节点的有效数量决定，等级越高权益越丰富。",
     "vipShareholder": "股东"

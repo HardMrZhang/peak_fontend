@@ -407,35 +407,16 @@ export default function GenesisNodes() {
           </div>
         </div>
 
-        {/* Fund Distribution */}
+        {/* Fund Usage */}
         <div className="genesis-distribution">
           <h2 className="genesis-section-title">
             <span className="accent-dot" />
             {t('genesis.distributionTitle')}
           </h2>
           <div className="genesis-dist-card">
-            <div className="genesis-dist-items">
-              <div className="genesis-dist-item">
-                <span className="genesis-dist-pct">5%</span>
-                <div className="genesis-dist-info">
-                  <span className="genesis-dist-name">{t('genesis.distReferrer')}</span>
-                  <span className="genesis-dist-detail">{t('genesis.distReferrerDesc')}</span>
-                </div>
-              </div>
-              <div className="genesis-dist-item">
-                <span className="genesis-dist-pct">25%</span>
-                <div className="genesis-dist-info">
-                  <span className="genesis-dist-name">{t('genesis.distMixer')}</span>
-                  <span className="genesis-dist-detail">{t('genesis.distMixerDesc')}</span>
-                </div>
-              </div>
-              <div className="genesis-dist-item">
-                <span className="genesis-dist-pct">70%</span>
-                <div className="genesis-dist-info">
-                  <span className="genesis-dist-name">{t('genesis.distMultisig')}</span>
-                  <span className="genesis-dist-detail">{t('genesis.distMultisigDesc')}</span>
-                </div>
-              </div>
+            <div className="genesis-fund-usage">
+              <span className="genesis-fund-usage-icon">ⓘ</span>
+              <span className="genesis-fund-usage-text">{t('genesis.fundUsageDesc')}</span>
             </div>
           </div>
         </div>

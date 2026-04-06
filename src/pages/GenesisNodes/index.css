@@ -364,6 +364,27 @@
   margin-top: 2px;
 }
 
+/* Fund Usage */
+.genesis-fund-usage {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.genesis-fund-usage-icon {
+  font-size: 22px;
+  color: var(--accent-orange);
+  flex-shrink: 0;
+}
+
+.genesis-fund-usage-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
 /* Section Titles */
 .genesis-section-title {
   font-size: 18px;

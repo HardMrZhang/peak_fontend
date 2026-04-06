@@ -23,7 +23,6 @@ export default function Header() {
     { key: '/nodes', label: t('nav.filmNodes') },
     { key: '/genesis-nodes', label: t('nav.genesisNodes') },
     { key: '/node-transaction', label: t('nav.nodeTransaction') },
-    { key: '/team-level', label: t('nav.teamLevel') },
     { key: '/points', label: t('nav.points') },
     { key: '/ipo', label: t('nav.ipo') },
   ]

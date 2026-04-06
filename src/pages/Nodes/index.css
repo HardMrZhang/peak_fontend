@@ -1107,3 +1107,15 @@
     font-size: 11px;
   }
 }
+
+/* Team Level Embedded Section */
+.team-level-embedded {
+  margin-top: 48px;
+  padding-bottom: 64px;
+}
+
+.team-level-embedded .team-level-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: -8px 0 28px;
+}

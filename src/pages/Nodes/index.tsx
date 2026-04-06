@@ -2,7 +2,15 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Button, Modal, Table, Pagination, message, Spin } from 'antd'
-import { InboxOutlined } from '@ant-design/icons'
+import {
+  InboxOutlined,
+  CrownOutlined,
+  TeamOutlined,
+  SafetyCertificateOutlined,
+  ThunderboltOutlined,
+  LockOutlined,
+  StarOutlined,
+} from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey, TransactionInstruction, Transaction } from '@solana/web3.js'
@@ -17,6 +25,7 @@ import {
   getBalances,
   getMyNfts,
   getSaleSummary,
+  getTeamLevelInfo,
 } from '@/api'
 import type {
   NodeSaleConfig,
@@ -26,16 +35,34 @@ import type {
   AssetBalance,
   NftRecord,
   PageResult,
+  TeamLevelInfo,
 } from '@/types'
 import { useAuthStore } from '@/store/useAuthStore'
 import { PEAK_TOTAL_SUPPLY, PEAK_YEAR1_ALLOC } from '@/constants'
 import nftPreviewVideo from '@/assets/nft-preview.mp4'
 import './index.css'
+import '../TeamLevel/index.css'
 
 const BUY_NODE_DISCRIMINATOR = Buffer.from([224, 164, 165, 140, 70, 25, 52, 247])
 const MPL_CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d')
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr')
 const NODE_DESTROY_DATE = new Date('2026-06-06T00:00:00')
+
+const TEAM_RULES_TABLE = [
+  { key: 'level5', salesNodes: 500, wallets: 800, direct: '10%', commission: '20%', lock: 60, points: 6 },
+  { key: 'level4', salesNodes: 150, wallets: 200, direct: '10%', commission: '15%', lock: 120, points: 5 },
+  { key: 'level3', salesNodes: 50, wallets: 100, direct: '10%', commission: '12%', lock: 180, points: 4 },
+  { key: 'level2', salesNodes: 15, wallets: 30, direct: '10%', commission: '8%', lock: 240, points: 3 },
+  { key: 'level1', salesNodes: 5, wallets: 10, direct: '10%', commission: '5%', lock: 300, points: 2 },
+]
+
+const TEAM_LEVEL_COLORS: Record<number, string> = {
+  5: '#f5a623',
+  4: '#52c41a',
+  3: '#1890ff',
+  2: '#722ed1',
+  1: '#13c2c2',
+}
 
 function useCountdown(target: Date) {
   const calc = useCallback(() => {
@@ -96,6 +123,7 @@ export default function Nodes() {
   const [nftData, setNftData] = useState<PageResult<NftRecord> | null>(null)
   const [infoLoading, setInfoLoading] = useState(true)
   const [tableLoading, setTableLoading] = useState(false)
+  const [teamLevelInfo, setTeamLevelInfo] = useState<TeamLevelInfo | null>(null)
 
   const refreshSaleConfig = useCallback(() => {
     return getSaleSummary()
@@ -113,6 +141,7 @@ export default function Nodes() {
       getRewardSummary().then((r) => setReward(r.data)).catch(() => { }),
       getBalances().then((r) => setBalances(r.data)).catch(() => { }),
       getMyNfts({ page: 1, pageSize: 20 }).then((r) => setNftData(r.data)).catch(() => { }),
+      getTeamLevelInfo().then((r) => setTeamLevelInfo(r.data)).catch(() => { }),
     ])
   }, [token])
 
@@ -284,6 +313,14 @@ export default function Nodes() {
   ]
 
   const currentData = activeTab === 'revenue' ? revenueData : releaseData
+
+  const teamCurrentLevelLabel = teamLevelInfo
+    ? teamLevelInfo.level < 0
+      ? t('teamLevel.normalUser')
+      : teamLevelInfo.label
+    : '--'
+  const teamCurrentLevelNum = teamLevelInfo?.level ?? -1
+
   const nftColumns: ColumnsType<NftRecord> = [
     { title: t('nodes.nftMintNo'), dataIndex: 'mintNo', width: 150 },
     { title: t('nodes.nftTokenId'), dataIndex: 'tokenId', width: 220, render: (v: string | null) => v || '--' },
@@ -471,6 +508,138 @@ export default function Nodes() {
           </div>
         </div>
       </Spin>
+
+      {/* Team Level Section */}
+      <div className="nodes-inner">
+        <div className="team-level-embedded">
+          <h2 className="section-title">{t('teamLevel.title')}</h2>
+          <p className="team-level-subtitle">{t('teamLevel.subtitle')}</p>
+
+          <Spin spinning={infoLoading}>
+            <div className="my-level-section">
+              <h2 className="section-title-tl">
+                <CrownOutlined className="section-icon" />
+                {t('teamLevel.myTeamLevel')}
+              </h2>
+              <div className="level-cards">
+                <div className="level-card level-card-main">
+                  <div className="level-badge-wrap">
+                    <div
+                      className="level-badge"
+                      style={{
+                        background: teamCurrentLevelNum >= 1
+                          ? `linear-gradient(135deg, ${TEAM_LEVEL_COLORS[teamCurrentLevelNum] || '#f5a623'}, ${TEAM_LEVEL_COLORS[teamCurrentLevelNum] || '#f5a623'}88)`
+                          : 'linear-gradient(135deg, #555, #333)',
+                      }}
+                    >
+                      <CrownOutlined className="level-badge-icon" />
+                      <span className="level-badge-text">{teamCurrentLevelLabel}</span>
+                    </div>
+                  </div>
+                  <div className="level-meta">
+                    <span className="level-meta-label">{t('teamLevel.currentLevel')}</span>
+                    <span className="level-meta-value">{teamCurrentLevelLabel}</span>
+                  </div>
+                </div>
+
+                <div className="level-card">
+                  <TeamOutlined className="level-card-icon" />
+                  <span className="level-card-label">{t('teamLevel.teamNftCount')}</span>
+                  <span className="level-card-value orange">{teamLevelInfo?.teamNftCount ?? '--'}</span>
+                </div>
+
+                <div className="level-card">
+                  <SafetyCertificateOutlined className="level-card-icon" />
+                  <span className="level-card-label">{t('teamLevel.ownNftCount')}</span>
+                  <span className="level-card-value">{teamLevelInfo?.ownNftCount ?? '--'}</span>
+                </div>
+
+                <div className="level-card">
+                  <ThunderboltOutlined className="level-card-icon" />
+                  <span className="level-card-label">{t('teamLevel.commissionRate')}</span>
+                  <span className="level-card-value orange">
+                    {teamLevelInfo ? `${(teamLevelInfo.commissionRate * 100).toFixed(0)}%` : '--'}
+                  </span>
+                </div>
+
+                <div className="level-card">
+                  <LockOutlined className="level-card-icon" />
+                  <span className="level-card-label">{t('teamLevel.lockDays')}</span>
+                  <span className="level-card-value">
+                    {teamLevelInfo ? `${teamLevelInfo.lockDays}${t('teamLevel.days')}` : '--'}
+                  </span>
+                </div>
+
+                <div className="level-card">
+                  <StarOutlined className="level-card-icon" />
+                  <span className="level-card-label">{t('teamLevel.pointsMultiplier')}</span>
+                  <span className="level-card-value orange">
+                    {teamLevelInfo ? `${teamLevelInfo.pointsMultiplier}${t('teamLevel.times')}` : '--'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Spin>
+
+          <div className="rules-section">
+            <h2 className="section-title-tl">
+              <StarOutlined className="section-icon" />
+              {t('teamLevel.rulesTitle')}
+            </h2>
+
+            <div className="rules-table-wrap">
+              <table className="rules-table">
+                <thead>
+                  <tr>
+                    <th>{t('teamLevel.colLevel')}</th>
+                    <th>{t('teamLevel.colSalesNodes')}</th>
+                    <th>{t('teamLevel.colDownlineWallets')}</th>
+                    <th>{t('teamLevel.colDirectPush')}</th>
+                    <th className="col-commission">{t('teamLevel.colCommission')}</th>
+                    <th>{t('teamLevel.colLockPeriod')}</th>
+                    <th>{t('teamLevel.colPoints')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {TEAM_RULES_TABLE.map((row, idx) => {
+                    const levelNum = 5 - idx
+                    const isActive = teamCurrentLevelNum === levelNum
+                    return (
+                      <tr key={row.key} className={isActive ? 'active-row' : ''}>
+                        <td>
+                          <span
+                            className="level-tag"
+                            style={{ borderColor: TEAM_LEVEL_COLORS[levelNum], color: TEAM_LEVEL_COLORS[levelNum] }}
+                          >
+                            {t(`teamLevel.${row.key}`)}
+                          </span>
+                        </td>
+                        <td>{row.salesNodes}</td>
+                        <td>{row.wallets}</td>
+                        <td>{row.direct}</td>
+                        <td className="col-commission-val">{row.commission}</td>
+                        <td>{row.lock}{t('teamLevel.days')}</td>
+                        <td>{row.points}{t('teamLevel.times')}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="rules-desc-section">
+            <div className="rules-desc-list">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <div key={n} className="rules-desc-item">
+                  <span className="rules-desc-num">{n}</span>
+                  <span className="rules-desc-text">{t(`teamLevel.ruleDesc${n}`)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
       <Modal
         open={purchaseOpen}

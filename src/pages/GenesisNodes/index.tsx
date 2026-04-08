@@ -8,6 +8,7 @@ import {
   TransactionMessage,
   VersionedTransaction,
   AddressLookupTableAccount,
+  ComputeBudgetProgram,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
 } from '@solana/web3.js'
@@ -284,7 +285,12 @@ export default function GenesisNodes() {
         try {
           const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('processed')
 
-          const allInstructions = [...ataCreateIxs, memoIx, ix]
+          const budgetIxs: TransactionInstruction[] = []
+          if (quantity > 3) {
+            budgetIxs.push(ComputeBudgetProgram.requestHeapFrame({ bytes: 256 * 1024 }))
+            budgetIxs.push(ComputeBudgetProgram.setComputeUnitLimit({ units: 800_000 }))
+          }
+          const allInstructions = [...budgetIxs, ...ataCreateIxs, memoIx, ix]
           const messageV0 = new TransactionMessage({
             payerKey: publicKey,
             recentBlockhash: blockhash,

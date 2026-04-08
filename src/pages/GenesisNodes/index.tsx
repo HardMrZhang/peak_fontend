@@ -2,7 +2,15 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Modal, message, Spin } from 'antd'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { PublicKey, TransactionInstruction, Transaction, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
+import {
+  PublicKey,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction,
+  AddressLookupTableAccount,
+  SystemProgram,
+  SYSVAR_RENT_PUBKEY,
+} from '@solana/web3.js'
 import {
   getGenesisSaleInfo,
   getGenesisBuyParams,
@@ -17,6 +25,7 @@ const MPL_CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4
 const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
 const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr')
+const GENESIS_ALT_ADDRESS = new PublicKey('DkZqjfLhQCjvc1ZDu8FCF6rVUnNx4StM35aQdLXN7tUR')
 
 const BUY_GENESIS_DISCRIMINATOR = Buffer.from([
   0x59, 0xb4, 0x33, 0x97, 0x8d, 0x10, 0xd4, 0xb8,
@@ -264,16 +273,26 @@ export default function GenesisNodes() {
         data: Buffer.from(`PEAK Genesis NFT x${quantity}`, 'utf-8'),
       })
 
+      // Fetch the Address Lookup Table to compress the transaction
+      const altAccountInfo = await connection.getAddressLookupTable(GENESIS_ALT_ADDRESS)
+      const lookupTable = altAccountInfo.value
+      const lookupTables: AddressLookupTableAccount[] = lookupTable ? [lookupTable] : []
+
       let confirmedSig: string | null = null
       for (let attempt = 1; attempt <= MAX_TX_SEND_ATTEMPTS; attempt += 1) {
         let currentSig: string | null = null
         try {
-          const tx = new Transaction().add(...ataCreateIxs, memoIx, ix)
-          tx.feePayer = publicKey
           const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('processed')
-          tx.recentBlockhash = blockhash
 
-          const signed = await signTransaction(tx)
+          const allInstructions = [...ataCreateIxs, memoIx, ix]
+          const messageV0 = new TransactionMessage({
+            payerKey: publicKey,
+            recentBlockhash: blockhash,
+            instructions: allInstructions,
+          }).compileToV0Message(lookupTables)
+
+          const vtx = new VersionedTransaction(messageV0)
+          const signed = await signTransaction(vtx)
           const rawTx = signed.serialize()
           const sig = await connection.sendRawTransaction(rawTx, {
             skipPreflight: false,
@@ -292,7 +311,6 @@ export default function GenesisNodes() {
         } catch (sendErr: unknown) {
           const sendMsg = sendErr instanceof Error ? sendErr.message : String(sendErr)
 
-          // confirmTransaction may throw expiry even when tx actually lands later.
           if (currentSig) {
             try {
               const landed = await hasTransactionLanded(currentSig, connection)

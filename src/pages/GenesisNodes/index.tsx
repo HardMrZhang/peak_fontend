@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Modal, message, Spin } from 'antd'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { PublicKey, TransactionInstruction, Transaction } from '@solana/web3.js'
+import { PublicKey, TransactionInstruction, Transaction, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import {
   getGenesisSaleInfo,
   getGenesisBuyParams,
@@ -15,6 +15,7 @@ import './index.css'
 const GENESIS_PROGRAM_ID = new PublicKey('Fm8qxJKKZPGQyMezF7NkAQT5wHkDyDTp1KVDeRDKmzVg')
 const MPL_CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d')
 const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
+const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr')
 
 const BUY_GENESIS_DISCRIMINATOR = Buffer.from([
@@ -33,6 +34,28 @@ function isBlockhashExpiredError(message: string): boolean {
   return msg.includes('block height exceeded')
     || msg.includes('transactionexpiredblockheightexceedederror')
     || msg.includes('blockhash not found')
+}
+
+function buildCreateAtaInstruction(
+  payer: PublicKey,
+  associatedTokenAccount: PublicKey,
+  owner: PublicKey,
+  mint: PublicKey,
+  tokenProgramId: PublicKey,
+): TransactionInstruction {
+  return new TransactionInstruction({
+    programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+    keys: [
+      { pubkey: payer, isSigner: true, isWritable: true },
+      { pubkey: associatedTokenAccount, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: false, isWritable: false },
+      { pubkey: mint, isSigner: false, isWritable: false },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+      { pubkey: tokenProgramId, isSigner: false, isWritable: false },
+      { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+    ],
+    data: Buffer.alloc(0),
+  })
 }
 
 async function hasTransactionLanded(signature: string, connection: ReturnType<typeof useConnection>['connection']) {
@@ -167,6 +190,28 @@ export default function GenesisNodes() {
       const paramsRes = await getGenesisBuyParams(quantity)
       const p = paramsRes.data
       intentId = p.intentId
+      const buyerUsdtAtaPk = new PublicKey(p.buyerUsdtAta)
+      const buyerPeakAtaPk = new PublicKey(p.buyerPeakAta)
+      const usdtMintPk = new PublicKey(p.usdtMint)
+      const peakMintPk = new PublicKey(p.peakMint)
+
+      // New wallets may not have ATA yet; create missing ATAs in the same tx.
+      const ataTargets = [
+        { ata: buyerUsdtAtaPk, mint: usdtMintPk },
+        { ata: buyerPeakAtaPk, mint: peakMintPk },
+      ]
+      const ataInfos = await connection.getMultipleAccountsInfo(
+        ataTargets.map((i) => i.ata),
+        'processed',
+      )
+      const ataCreateIxs: TransactionInstruction[] = []
+      ataTargets.forEach((item, idx) => {
+        if (!ataInfos[idx]) {
+          ataCreateIxs.push(
+            buildCreateAtaInstruction(publicKey, item.ata, publicKey, item.mint, TOKEN_PROGRAM_ID),
+          )
+        }
+      })
 
       const keys = [
         { pubkey: publicKey, isSigner: true, isWritable: true },
@@ -174,10 +219,10 @@ export default function GenesisNodes() {
         { pubkey: new PublicKey(p.salePda), isSigner: false, isWritable: true },
         { pubkey: new PublicKey(p.collection), isSigner: false, isWritable: true },
         { pubkey: new PublicKey(p.inventoryPda), isSigner: false, isWritable: true },
-        { pubkey: new PublicKey(p.buyerUsdtAta), isSigner: false, isWritable: true },
+        { pubkey: buyerUsdtAtaPk, isSigner: false, isWritable: true },
         { pubkey: new PublicKey(p.mixerUsdtAta), isSigner: false, isWritable: true },
         { pubkey: new PublicKey(p.multisigUsdtAta), isSigner: false, isWritable: true },
-        { pubkey: new PublicKey(p.buyerPeakAta), isSigner: false, isWritable: true },
+        { pubkey: buyerPeakAtaPk, isSigner: false, isWritable: true },
         { pubkey: new PublicKey(p.peakSourceAta), isSigner: false, isWritable: true },
         { pubkey: new PublicKey(p.programAuthority), isSigner: false, isWritable: false },
         { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
@@ -223,7 +268,7 @@ export default function GenesisNodes() {
       for (let attempt = 1; attempt <= MAX_TX_SEND_ATTEMPTS; attempt += 1) {
         let currentSig: string | null = null
         try {
-          const tx = new Transaction().add(memoIx, ix)
+          const tx = new Transaction().add(...ataCreateIxs, memoIx, ix)
           tx.feePayer = publicKey
           const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('processed')
           tx.recentBlockhash = blockhash

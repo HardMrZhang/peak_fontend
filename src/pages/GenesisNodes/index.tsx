@@ -285,11 +285,10 @@ export default function GenesisNodes() {
         try {
           const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('processed')
 
-          const budgetIxs: TransactionInstruction[] = []
-          if (quantity > 3) {
-            budgetIxs.push(ComputeBudgetProgram.requestHeapFrame({ bytes: 256 * 1024 }))
-            budgetIxs.push(ComputeBudgetProgram.setComputeUnitLimit({ units: 800_000 }))
-          }
+          const budgetIxs: TransactionInstruction[] = [
+            ComputeBudgetProgram.requestHeapFrame({ bytes: 256 * 1024 }),
+            ComputeBudgetProgram.setComputeUnitLimit({ units: 600_000 }),
+          ]
           const allInstructions = [...budgetIxs, ...ataCreateIxs, memoIx, ix]
           const messageV0 = new TransactionMessage({
             payerKey: publicKey,
@@ -556,8 +555,8 @@ export default function GenesisNodes() {
               <span className="genesis-qty-display">{quantity}</span>
               <button
                 className="genesis-qty-btn"
-                onClick={() => setQuantity((q) => Math.min(10, q + 1))}
-                disabled={quantity >= 10}
+                onClick={() => setQuantity((q) => Math.min(5, q + 1))}
+                disabled={quantity >= 5}
               >
                 +
               </button>

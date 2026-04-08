@@ -2,16 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Modal, message, Spin } from 'antd'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import {
-  PublicKey,
-  TransactionInstruction,
-  TransactionMessage,
-  VersionedTransaction,
-  AddressLookupTableAccount,
-  ComputeBudgetProgram,
-  SystemProgram,
-  SYSVAR_RENT_PUBKEY,
-} from '@solana/web3.js'
+import { PublicKey, TransactionInstruction, Transaction, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import {
   getGenesisSaleInfo,
   getGenesisBuyParams,
@@ -26,7 +17,6 @@ const MPL_CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4
 const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
 const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr')
-const GENESIS_ALT_ADDRESS = new PublicKey('DkZqjfLhQCjvc1ZDu8FCF6rVUnNx4StM35aQdLXN7tUR')
 
 const BUY_GENESIS_DISCRIMINATOR = Buffer.from([
   0x59, 0xb4, 0x33, 0x97, 0x8d, 0x10, 0xd4, 0xb8,
@@ -114,7 +104,7 @@ export default function GenesisNodes() {
   const [saleData, setSaleData] = useState<GenesisSaleData | null>(null)
   const [loading, setLoading] = useState(true)
   const [vipLevel, setVipLevel] = useState(0)
-  const [vipLabel, setVipLabel] = useState('V0')
+  const [vipLabel, setVipLabel] = useState('T0')
 
   const readChainSaleState = useCallback(async () => {
     try {
@@ -274,30 +264,16 @@ export default function GenesisNodes() {
         data: Buffer.from(`PEAK Genesis NFT x${quantity}`, 'utf-8'),
       })
 
-      // Fetch the Address Lookup Table to compress the transaction
-      const altAccountInfo = await connection.getAddressLookupTable(GENESIS_ALT_ADDRESS)
-      const lookupTable = altAccountInfo.value
-      const lookupTables: AddressLookupTableAccount[] = lookupTable ? [lookupTable] : []
-
       let confirmedSig: string | null = null
       for (let attempt = 1; attempt <= MAX_TX_SEND_ATTEMPTS; attempt += 1) {
         let currentSig: string | null = null
         try {
+          const tx = new Transaction().add(...ataCreateIxs, memoIx, ix)
+          tx.feePayer = publicKey
           const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('processed')
+          tx.recentBlockhash = blockhash
 
-          const budgetIxs: TransactionInstruction[] = [
-            ComputeBudgetProgram.requestHeapFrame({ bytes: 256 * 1024 }),
-            ComputeBudgetProgram.setComputeUnitLimit({ units: 600_000 }),
-          ]
-          const allInstructions = [...budgetIxs, ...ataCreateIxs, memoIx, ix]
-          const messageV0 = new TransactionMessage({
-            payerKey: publicKey,
-            recentBlockhash: blockhash,
-            instructions: allInstructions,
-          }).compileToV0Message(lookupTables)
-
-          const vtx = new VersionedTransaction(messageV0)
-          const signed = await signTransaction(vtx)
+          const signed = await signTransaction(tx)
           const rawTx = signed.serialize()
           const sig = await connection.sendRawTransaction(rawTx, {
             skipPreflight: false,
@@ -316,6 +292,7 @@ export default function GenesisNodes() {
         } catch (sendErr: unknown) {
           const sendMsg = sendErr instanceof Error ? sendErr.message : String(sendErr)
 
+          // confirmTransaction may throw expiry even when tx actually lands later.
           if (currentSig) {
             try {
               const landed = await hasTransactionLanded(currentSig, connection)
@@ -507,14 +484,14 @@ export default function GenesisNodes() {
             </div>
             <div className="genesis-vip-tiers">
               {[
-                { label: 'V0', lvl: 0 },
-                { label: 'V1', lvl: 1 },
-                { label: 'V2', lvl: 2 },
-                { label: 'V3', lvl: 3 },
-                { label: 'V4', lvl: 4 },
-                { label: 'V5', lvl: 5 },
-                { label: 'V6', lvl: 6 },
-                { label: t('genesis.vipShareholder'), lvl: 7 },
+                { label: 'T0', lvl: 0 },
+                { label: 'T1', lvl: 1 },
+                { label: 'T2', lvl: 2 },
+                { label: 'T3', lvl: 3 },
+                { label: 'T4', lvl: 4 },
+                { label: 'T5', lvl: 5 },
+                { label: 'T6', lvl: 6 },
+                { label: 'T7', lvl: 7 },
               ].map((tier) => (
                 <span
                   key={tier.lvl}
@@ -555,8 +532,8 @@ export default function GenesisNodes() {
               <span className="genesis-qty-display">{quantity}</span>
               <button
                 className="genesis-qty-btn"
-                onClick={() => setQuantity((q) => Math.min(5, q + 1))}
-                disabled={quantity >= 5}
+                onClick={() => setQuantity((q) => Math.min(10, q + 1))}
+                disabled={quantity >= 10}
               >
                 +
               </button>

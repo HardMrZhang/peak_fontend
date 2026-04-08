@@ -7,7 +7,6 @@ import {
   CrownOutlined,
   TeamOutlined,
   SafetyCertificateOutlined,
-  ThunderboltOutlined,
   LockOutlined,
   StarOutlined,
 } from '@ant-design/icons'
@@ -38,7 +37,7 @@ import type {
   TeamLevelInfo,
 } from '@/types'
 import { useAuthStore } from '@/store/useAuthStore'
-import { PEAK_TOTAL_SUPPLY, PEAK_YEAR1_ALLOC } from '@/constants'
+import { PEAK_YEAR1_ALLOC } from '@/constants'
 import nftPreviewVideo from '@/assets/nft-preview.mp4'
 import './index.css'
 import '../TeamLevel/index.css'
@@ -46,41 +45,12 @@ import '../TeamLevel/index.css'
 const BUY_NODE_DISCRIMINATOR = Buffer.from([224, 164, 165, 140, 70, 25, 52, 247])
 const MPL_CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d')
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr')
-const NODE_DESTROY_DATE = new Date('2026-06-06T00:00:00')
-
-const TEAM_RULES_TABLE = [
-  { key: 'level5', salesNodes: 500, wallets: 800, direct: '10%', commission: '20%', lock: 60, points: 6 },
-  { key: 'level4', salesNodes: 150, wallets: 200, direct: '10%', commission: '15%', lock: 120, points: 5 },
-  { key: 'level3', salesNodes: 50, wallets: 100, direct: '10%', commission: '12%', lock: 180, points: 4 },
-  { key: 'level2', salesNodes: 15, wallets: 30, direct: '10%', commission: '8%', lock: 240, points: 3 },
-  { key: 'level1', salesNodes: 5, wallets: 10, direct: '10%', commission: '5%', lock: 300, points: 2 },
-]
-
 const TEAM_LEVEL_COLORS: Record<number, string> = {
   5: '#f5a623',
   4: '#52c41a',
   3: '#1890ff',
   2: '#722ed1',
   1: '#13c2c2',
-}
-
-function useCountdown(target: Date) {
-  const calc = useCallback(() => {
-    const diff = target.getTime() - Date.now()
-    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 }
-    return {
-      days: Math.floor(diff / 86400000),
-      hours: Math.floor((diff / 3600000) % 24),
-      minutes: Math.floor((diff / 60000) % 60),
-      seconds: Math.floor((diff / 1000) % 60),
-    }
-  }, [target])
-  const [timeLeft, setTimeLeft] = useState(calc)
-  useEffect(() => {
-    const timer = setInterval(() => setTimeLeft(calc()), 1000)
-    return () => clearInterval(timer)
-  }, [calc])
-  return timeLeft
 }
 
 async function waitForSignatureConfirmed(connection: ReturnType<typeof useConnection>['connection'], signature: string, timeoutMs = 60000) {
@@ -102,7 +72,6 @@ export default function Nodes() {
   const navigate = useNavigate()
   const { connection } = useConnection()
   const { publicKey, sendTransaction, connected } = useWallet()
-  const destroyCountdown = useCountdown(NODE_DESTROY_DATE)
   const token = useAuthStore((s) => s.token)
   const [activeTab, setActiveTab] = useState<'revenue' | 'release'>('revenue')
   const [purchaseOpen, setPurchaseOpen] = useState(false)
@@ -364,21 +333,7 @@ export default function Nodes() {
                 {t('nodes.purchaseNodes')}
               </Button>
             </div>
-            <div className="sale-destroy">
-              <span className="sale-destroy-text">
-                {t('nodes.destroyNotice', { date: 'June 6, 2026' })}
-              </span>
-              <span className="sale-destroy-countdown">
-                <span className="cd-block">{String(destroyCountdown.days).padStart(2, '0')}</span>
-                <span className="cd-label">{t('nodes.cdDays')}</span>
-                <span className="cd-block">{String(destroyCountdown.hours).padStart(2, '0')}</span>
-                <span className="cd-label">{t('nodes.cdHours')}</span>
-                <span className="cd-block">{String(destroyCountdown.minutes).padStart(2, '0')}</span>
-                <span className="cd-label">{t('nodes.cdMinutes')}</span>
-                <span className="cd-block">{String(destroyCountdown.seconds).padStart(2, '0')}</span>
-                <span className="cd-label">{t('nodes.cdSeconds')}</span>
-              </span>
-            </div>
+            {/* 销毁倒计时文字已隐藏，对应销毁程序不执行 */}
             <div className="sale-benefit">
               ✦ {t('nodes.benefitText')}
             </div>
@@ -402,11 +357,6 @@ export default function Nodes() {
               {t('nodes.nodeInfo')}
             </h2>
             <div className="info-cards">
-              <div className="info-card">
-                <span className="info-label">{t('nodes.perNodePeakLabel')}</span>
-                <span className="info-value orange">{infoLoading ? '--' : soldNodes > 0 ? (PEAK_TOTAL_SUPPLY / soldNodes).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '0'} PEAK</span>
-                <span className="info-formula">{PEAK_TOTAL_SUPPLY.toLocaleString()} PEAK ÷ {soldNodes.toLocaleString()} {t('nodes.formulaSoldNodes')}</span>
-              </div>
               <div className="info-card">
                 <span className="info-label">{t('nodes.peakAllocLabel')}</span>
                 <span className="info-value">{PEAK_YEAR1_ALLOC.toLocaleString()}</span>
@@ -555,14 +505,6 @@ export default function Nodes() {
                 </div>
 
                 <div className="level-card">
-                  <ThunderboltOutlined className="level-card-icon" />
-                  <span className="level-card-label">{t('teamLevel.commissionRate')}</span>
-                  <span className="level-card-value orange">
-                    {teamLevelInfo ? `${(teamLevelInfo.commissionRate * 100).toFixed(0)}%` : '--'}
-                  </span>
-                </div>
-
-                <div className="level-card">
                   <LockOutlined className="level-card-icon" />
                   <span className="level-card-label">{t('teamLevel.lockDays')}</span>
                   <span className="level-card-value">
@@ -581,52 +523,7 @@ export default function Nodes() {
             </div>
           </Spin>
 
-          <div className="rules-section">
-            <h2 className="section-title-tl">
-              <StarOutlined className="section-icon" />
-              {t('teamLevel.rulesTitle')}
-            </h2>
-
-            <div className="rules-table-wrap">
-              <table className="rules-table">
-                <thead>
-                  <tr>
-                    <th>{t('teamLevel.colLevel')}</th>
-                    <th>{t('teamLevel.colSalesNodes')}</th>
-                    <th>{t('teamLevel.colDownlineWallets')}</th>
-                    <th>{t('teamLevel.colDirectPush')}</th>
-                    <th className="col-commission">{t('teamLevel.colCommission')}</th>
-                    <th>{t('teamLevel.colLockPeriod')}</th>
-                    <th>{t('teamLevel.colPoints')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {TEAM_RULES_TABLE.map((row, idx) => {
-                    const levelNum = 5 - idx
-                    const isActive = teamCurrentLevelNum === levelNum
-                    return (
-                      <tr key={row.key} className={isActive ? 'active-row' : ''}>
-                        <td>
-                          <span
-                            className="level-tag"
-                            style={{ borderColor: TEAM_LEVEL_COLORS[levelNum], color: TEAM_LEVEL_COLORS[levelNum] }}
-                          >
-                            {t(`teamLevel.${row.key}`)}
-                          </span>
-                        </td>
-                        <td>{row.salesNodes}</td>
-                        <td>{row.wallets}</td>
-                        <td>{row.direct}</td>
-                        <td className="col-commission-val">{row.commission}</td>
-                        <td>{row.lock}{t('teamLevel.days')}</td>
-                        <td>{row.points}{t('teamLevel.times')}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          {/* 等级规则表已隐藏，功能保留 */}
 
           <div className="rules-desc-section">
             <div className="rules-desc-list">

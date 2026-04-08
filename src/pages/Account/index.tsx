@@ -5,8 +5,8 @@ import { Button, Table, Pagination, Modal } from 'antd'
 import { ExclamationCircleOutlined, InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo } from '@/api'
-import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, PageResult } from '@/types'
+import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo, getMyGenesisNfts } from '@/api'
+import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, NftRecord, PageResult } from '@/types'
 import { useAuthStore } from '@/store/useAuthStore'
 import './index.css'
 
@@ -31,6 +31,7 @@ export default function Account() {
   const [nodeData, setNodeData] = useState<PageResult<NodeOrder> | null>(null)
   const [rewardData, setRewardData] = useState<PageResult<ReferralReward> | null>(null)
   const [userNodes, setUserNodes] = useState(0)
+  const [genesisNftCount, setGenesisNftCount] = useState(0)
   const [balanceLoading, setBalanceLoading] = useState(true)
   const [tableLoading, setTableLoading] = useState(false)
 
@@ -40,6 +41,7 @@ export default function Account() {
       getBalances().then((r) => setBalances(r.data)).catch(() => { }),
       getRewardSummary().then((r) => setRewardSummary(r.data)).catch(() => { }),
       getNodeInfo().then((r) => setUserNodes(r.data.userNodes)).catch(() => { }),
+      getMyGenesisNfts({ page: 1, pageSize: 1 }).then((r) => setGenesisNftCount(r.data.total)).catch(() => { }),
     ])
   }, [token])
 
@@ -207,6 +209,14 @@ export default function Account() {
               <span className="balance-icon peak">◉</span>
               <span className="peak-stat-label">{t('account.earnedPeak')}</span>
               <span className="peak-stat-value">{balanceLoading ? '--' : totalLocked} PEAK</span>
+            </div>
+          </div>
+          <div className="account-card nodes-card">
+            <span className="card-label">{t('account.myGenesisNodes')}</span>
+            <div className="card-row">
+              <span className="node-icon">◆</span>
+              <span className="node-count">{genesisNftCount}</span>
+              <Button className="purchase-btn-sm" onClick={() => navigate('/genesis-nodes')}>{t('account.purchase')}</Button>
             </div>
           </div>
         </div>

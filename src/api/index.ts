@@ -180,6 +180,10 @@ export function getGenesisVipLevel() {
   return get<{ vipLevel: number; vipLabel: string }>('/genesis-vip/my-level')
 }
 
+export function getMyGenesisNfts(params?: { page?: number; pageSize?: number }) {
+  return get<PageResult<NftRecord>>('/genesis/my-nfts', { params })
+}
+
 // ==================== NFT ====================
 export function getMyNfts(params?: { status?: string; page?: number; pageSize?: number }) {
   return get<PageResult<NftRecord>>('/nft/list', { params })

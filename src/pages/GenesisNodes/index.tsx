@@ -149,7 +149,8 @@ export default function GenesisNodes() {
           const vipRes = await getGenesisVipLevel()
           if (vipRes.data) {
             setVipLevel(vipRes.data.vipLevel)
-            setVipLabel(vipRes.data.vipLabel)
+            const label = vipRes.data.vipLabel || 'T0'
+            setVipLabel(label.replace(/^V/i, 'T'))
           }
         } catch {
           /* VIP not available yet */

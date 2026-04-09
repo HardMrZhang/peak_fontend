@@ -242,6 +242,18 @@ export interface GenesisSaleInfo {
   paused: boolean
 }
 
+export interface GenesisOrder {
+  id: string
+  orderNo: string
+  qty: number
+  unitPriceUsdt: string
+  totalAmountUsdt: string
+  peakAirdropTotal: string
+  status: string
+  paidAt: string | null
+  createdAt: string
+}
+
 export interface GenesisBuyParams {
   intentId: string
   configPda: string

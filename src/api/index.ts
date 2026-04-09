@@ -25,6 +25,7 @@ import type {
   TeamLevelInfo,
   GenesisSaleInfo,
   GenesisBuyParams,
+  GenesisOrder,
 } from '@/types'
 
 // ==================== Auth ====================
@@ -182,6 +183,10 @@ export function getGenesisVipLevel() {
 
 export function getMyGenesisNfts(params?: { page?: number; pageSize?: number }) {
   return get<PageResult<NftRecord>>('/genesis/my-nfts', { params })
+}
+
+export function getGenesisOrders(params?: { page?: number; pageSize?: number }) {
+  return get<PageResult<GenesisOrder>>('/genesis/my-orders', { params })
 }
 
 // ==================== NFT ====================

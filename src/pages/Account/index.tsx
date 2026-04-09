@@ -6,7 +6,7 @@ import { ExclamationCircleOutlined, InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo, getMyGenesisNfts } from '@/api'
-import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, NftRecord, PageResult } from '@/types'
+import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, PageResult } from '@/types'
 import { useAuthStore } from '@/store/useAuthStore'
 import './index.css'
 

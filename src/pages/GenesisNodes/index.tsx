@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Modal, message, Spin } from 'antd'
+import { Button, Modal, Table, Pagination, message, Spin } from 'antd'
+import { InboxOutlined } from '@ant-design/icons'
+import type { ColumnsType } from 'antd/es/table'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey, TransactionInstruction, Transaction, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import {
@@ -9,7 +11,9 @@ import {
   cancelGenesisBuyIntent,
   confirmGenesisBuy,
   getGenesisVipLevel,
+  getGenesisOrders,
 } from '@/api'
+import type { GenesisOrder, PageResult } from '@/types'
 import './index.css'
 
 const GENESIS_PROGRAM_ID = new PublicKey('Fm8qxJKKZPGQyMezF7NkAQT5wHkDyDTp1KVDeRDKmzVg')
@@ -105,6 +109,10 @@ export default function GenesisNodes() {
   const [loading, setLoading] = useState(true)
   const [vipLevel, setVipLevel] = useState(0)
   const [vipLabel, setVipLabel] = useState('T0')
+  const [orderData, setOrderData] = useState<PageResult<GenesisOrder> | null>(null)
+  const [orderPage, setOrderPage] = useState(1)
+  const [orderLoading, setOrderLoading] = useState(false)
+  const orderPageSize = 10
 
   const readChainSaleState = useCallback(async () => {
     try {
@@ -152,9 +160,23 @@ export default function GenesisNodes() {
     }
   }, [readChainSaleState])
 
+  const fetchOrders = useCallback(() => {
+    const token = localStorage.getItem('peak_token')
+    if (!token) return
+    setOrderLoading(true)
+    getGenesisOrders({ page: orderPage, pageSize: orderPageSize })
+      .then((r) => setOrderData(r.data))
+      .catch(() => {})
+      .finally(() => setOrderLoading(false))
+  }, [orderPage, orderPageSize])
+
   useEffect(() => {
     refreshData()
   }, [refreshData, connected])
+
+  useEffect(() => {
+    fetchOrders()
+  }, [fetchOrders])
 
   const startCooldown = useCallback((seconds = 10) => {
     setCooldownSec(seconds)
@@ -329,6 +351,7 @@ export default function GenesisNodes() {
       setQuantity(1)
       startCooldown(10)
       refreshData()
+      fetchOrders()
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err)
       // If signature already exists but local confirmation timed out, try backend reconciliation first.
@@ -340,6 +363,7 @@ export default function GenesisNodes() {
           setQuantity(1)
           startCooldown(10)
           refreshData()
+          fetchOrders()
           return
         } catch {
           // fallback to regular error path below
@@ -358,6 +382,7 @@ export default function GenesisNodes() {
       }
       startCooldown(10)
       refreshData()
+      fetchOrders()
     } finally {
       purchasingLock.current = false
       setPurchasing(false)
@@ -368,6 +393,34 @@ export default function GenesisNodes() {
   const remaining = MAX_SUPPLY - soldTotal
   const progress = MAX_SUPPLY > 0 ? (soldTotal / MAX_SUPPLY) * 100 : 0
   const totalCost = NODE_PRICE * quantity
+
+  const statusLabelMap: Record<string, string> = {
+    PENDING: t('account.status.PENDING'),
+    PAID: t('account.status.PAID'),
+    FAILED: t('account.status.FAILED'),
+    CANCELLED: t('account.status.CANCELLED'),
+    CONFIRMED: t('account.status.CONFIRMED'),
+    SUCCESS: t('account.status.SUCCESS'),
+    COMPLETED: t('account.status.COMPLETED'),
+  }
+
+  const orderColumns: ColumnsType<GenesisOrder> = [
+    { title: t('genesis.orderColNo'), dataIndex: 'orderNo', width: 140 },
+    { title: t('genesis.orderColProduct'), width: 130, render: () => t('genesis.orderColProductName') },
+    { title: t('genesis.orderColQty'), dataIndex: 'qty', width: 70, render: (v: number) => <span style={{ color: '#f5a623' }}>{v}</span> },
+    { title: t('genesis.orderColUnitPrice'), dataIndex: 'unitPriceUsdt', width: 110, render: (v: string) => <span style={{ color: '#f5a623' }}>{v} USDT</span> },
+    { title: t('genesis.orderColTotal'), dataIndex: 'totalAmountUsdt', width: 120, render: (v: string) => <span style={{ color: '#f5a623' }}>{v} USDT</span> },
+    { title: t('genesis.orderColPeakAirdrop'), dataIndex: 'peakAirdropTotal', width: 120, render: (v: string) => <span style={{ color: '#52c41a' }}>+{v} PEAK</span> },
+    { title: t('genesis.orderColStatus'), dataIndex: 'status', width: 100, render: (v: string) => statusLabelMap[v] || v },
+    { title: t('genesis.orderColTime'), dataIndex: 'createdAt', width: 170, render: (v: string) => v?.slice(0, 19).replace('T', ' ') },
+  ]
+
+  const emptyText = (
+    <div className="table-empty">
+      <InboxOutlined className="table-empty-icon" />
+      <span className="table-empty-text">{t('common.noData')}</span>
+    </div>
+  )
 
   return (
     <div className="genesis-page">
@@ -479,7 +532,6 @@ export default function GenesisNodes() {
               </div>
             </div>
             <div className="genesis-vip-info">
-              <div className="genesis-vip-level-name">{vipLabel}</div>
               <div className="genesis-vip-desc">{t('genesis.vipDesc')}</div>
             </div>
             <div className="genesis-vip-tiers">
@@ -503,6 +555,36 @@ export default function GenesisNodes() {
             </div>
           </div>
         </div>
+
+        {/* Purchase Records */}
+        <div className="genesis-records-section">
+          <h2 className="genesis-section-title">
+            <span className="accent-dot" />
+            {t('genesis.orderRecordTitle')}
+          </h2>
+          <Table
+            columns={orderColumns}
+            dataSource={orderData?.list ?? []}
+            rowKey="id"
+            pagination={false}
+            size="small"
+            loading={orderLoading}
+            locale={{ emptyText }}
+          />
+          {(orderData?.total ?? 0) > 0 && (
+            <div className="genesis-records-pagination">
+              <Pagination
+                current={orderPage}
+                total={orderData?.total ?? 0}
+                pageSize={orderPageSize}
+                onChange={setOrderPage}
+                showSizeChanger={false}
+                showQuickJumper
+                size="small"
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Purchase Modal */}
@@ -515,59 +597,68 @@ export default function GenesisNodes() {
         footer={null}
         centered
         className="genesis-modal"
-        width={520}
+        width={680}
       >
         <h2 className="genesis-modal-title">{t('genesis.purchaseTitle')}</h2>
-        <div className="genesis-modal-body">
-          <div className="genesis-qty-row">
-            <span className="genesis-modal-label">{t('genesis.qty')}</span>
-            <div className="genesis-qty-controls">
-              <button
-                className="genesis-qty-btn"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                disabled={quantity <= 1}
-              >
-                -
-              </button>
-              <span className="genesis-qty-display">{quantity}</span>
-              <button
-                className="genesis-qty-btn"
-                onClick={() => setQuantity((q) => Math.min(10, q + 1))}
-                disabled={quantity >= 10}
-              >
-                +
-              </button>
+        <div className="genesis-modal-content">
+          <div className="genesis-nft-preview">
+            <div className="genesis-nft-card">
+              <div className="genesis-nft-card-icon">&#x2726;</div>
+              <div className="genesis-nft-card-label">{t('genesis.saleTitle')}</div>
             </div>
+            <span className="genesis-nft-qty">x{quantity}</span>
           </div>
+          <div className="genesis-modal-body">
+            <div className="genesis-qty-row">
+              <span className="genesis-modal-label">{t('genesis.qty')}</span>
+              <div className="genesis-qty-controls">
+                <button
+                  className="genesis-qty-btn"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  disabled={quantity <= 1}
+                >
+                  -
+                </button>
+                <span className="genesis-qty-display">{quantity}</span>
+                <button
+                  className="genesis-qty-btn"
+                  onClick={() => setQuantity((q) => Math.min(10, q + 1))}
+                  disabled={quantity >= 10}
+                >
+                  +
+                </button>
+              </div>
+            </div>
 
-          <div className="genesis-modal-row">
-            <span className="genesis-modal-label">{t('genesis.unitPrice')}</span>
-            <span className="genesis-modal-value orange">{NODE_PRICE} USDT</span>
+            <div className="genesis-modal-row">
+              <span className="genesis-modal-label">{t('genesis.unitPrice')}</span>
+              <span className="genesis-modal-value orange">{NODE_PRICE} USDT</span>
+            </div>
+
+            <div className="genesis-modal-row">
+              <span className="genesis-modal-label">{t('genesis.airdropPeak')}</span>
+              <span className="genesis-modal-value" style={{ color: 'var(--accent-green)' }}>
+                +{PEAK_AIRDROP * quantity} PEAK
+              </span>
+            </div>
+
+            <div className="genesis-modal-highlight">
+              <span className="genesis-modal-highlight-label">{t('genesis.totalCost')}</span>
+              <span className="genesis-modal-highlight-value">{totalCost.toLocaleString()} USDT</span>
+            </div>
+
+            <Button
+              className="genesis-confirm-btn"
+              block
+              onClick={handlePurchase}
+              loading={purchasing}
+              disabled={cooldownSec > 0}
+            >
+              {cooldownSec > 0
+                ? `${t('genesis.confirmPurchase')} (${cooldownSec}s)`
+                : t('genesis.confirmPurchase')}
+            </Button>
           </div>
-
-          <div className="genesis-modal-row">
-            <span className="genesis-modal-label">{t('genesis.airdropPeak')}</span>
-            <span className="genesis-modal-value" style={{ color: 'var(--accent-green)' }}>
-              +{PEAK_AIRDROP * quantity} PEAK
-            </span>
-          </div>
-
-          <div className="genesis-modal-highlight">
-            <span className="genesis-modal-highlight-label">{t('genesis.totalCost')}</span>
-            <span className="genesis-modal-highlight-value">{totalCost.toLocaleString()} USDT</span>
-          </div>
-
-          <Button
-            className="genesis-confirm-btn"
-            block
-            onClick={handlePurchase}
-            loading={purchasing}
-            disabled={cooldownSec > 0}
-          >
-            {cooldownSec > 0
-              ? `${t('genesis.confirmPurchase')} (${cooldownSec}s)`
-              : t('genesis.confirmPurchase')}
-          </Button>
         </div>
       </Modal>
 

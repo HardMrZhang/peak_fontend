@@ -363,7 +363,17 @@
     "infoBenefitDesc": "Each purchase includes 200 PEAK + Film Node NFT, with 3x PEAK viewing airdrop after listing.",
     "vipTitle": "My Level",
     "vipDesc": "Your level is determined by the effective Film Node purchases from your direct referrals and their teams. Higher levels unlock greater benefits.",
-    "vipShareholder": "Shareholder"
+    "vipShareholder": "Shareholder",
+    "orderRecordTitle": "Node Records",
+    "orderColNo": "Order No",
+    "orderColProduct": "Product",
+    "orderColProductName": "Film Node NFT",
+    "orderColQty": "Qty",
+    "orderColUnitPrice": "Unit Price",
+    "orderColTotal": "Total",
+    "orderColPeakAirdrop": "PEAK Airdrop",
+    "orderColStatus": "Status",
+    "orderColTime": "Time"
   },
   "common": {
     "noData": "No data",

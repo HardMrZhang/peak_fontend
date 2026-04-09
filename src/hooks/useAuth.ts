@@ -38,6 +38,25 @@ export function useAuth() {
 
       const loginRes = await walletLogin({ walletAddress: address, nonce, signature })
       setAuth(loginRes.data.token, loginRes.data.user)
+
+      // Bind pending invite referrer immediately after login (deterministic, no effect timing dependency)
+      if (!loginRes.data.user.referrerUserId) {
+        const pendingCode = localStorage.getItem(INVITE_CODE_STORAGE_KEY)
+        if (pendingCode) {
+          const code = normalizeInviteCode(pendingCode)
+          if (code) {
+            try {
+              await bindReferrer(code)
+              const meRes = await getMe()
+              setUser(meRes.data)
+              localStorage.removeItem(INVITE_CODE_STORAGE_KEY)
+              message.success(t('referral.bindSuccess'))
+            } catch {
+              // Leave code in localStorage; bind effect will retry as fallback
+            }
+          }
+        }
+      }
     } catch (err: unknown) {
       const backendMessage =
         typeof err === 'object' && err !== null &&
@@ -48,8 +67,6 @@ export function useAuth() {
       const isLikelyAxiosError =
         typeof err === 'object' && err !== null &&
         ('response' in err || 'request' in err || 'config' in err)
-      // API errors are already toasted by request interceptor.
-      // Keep this toast for wallet-level failures (e.g. user rejected signature).
       if (!isLikelyAxiosError) {
         const localMessage = err instanceof Error && err.message
           ? err.message
@@ -64,7 +81,7 @@ export function useAuth() {
       loginInProgress.current = false
       setLoginLoading(false)
     }
-  }, [publicKey, signMessage, setAuth, setLoginLoading, setLoginFailed, logout])
+  }, [publicKey, signMessage, setAuth, setLoginLoading, setLoginFailed, logout, setUser, t])
 
   useEffect(() => {
     if (connected && publicKey) {
@@ -87,6 +104,7 @@ export function useAuth() {
     }
   }, [token, user, setUser, logout])
 
+  // Fallback bind: handles page-refresh with existing token or if doLogin bind failed
   useEffect(() => {
     if (!token || !user || inviteBindInProgress.current) return
     if (user.referrerUserId) {
@@ -108,16 +126,19 @@ export function useAuth() {
         message.success(t('referral.bindSuccess'))
       })
       .catch((err) => {
-        localStorage.removeItem(INVITE_CODE_STORAGE_KEY)
         const errCode = err?.response?.data?.code
         const errMsg = err?.response?.data?.message || ''
         if (errCode === 'REFERRER_ALREADY_BOUND') {
+          localStorage.removeItem(INVITE_CODE_STORAGE_KEY)
           message.info(t('invite.alreadyBound'))
         } else if (errMsg.includes('self')) {
+          localStorage.removeItem(INVITE_CODE_STORAGE_KEY)
           message.warning(t('invite.cannotBindSelf'))
         } else if (errCode === 'INVALID_INVITE_CODE' || errMsg.includes('Invalid invite code')) {
+          localStorage.removeItem(INVITE_CODE_STORAGE_KEY)
           message.error(t('invite.invalidCode'))
         } else {
+          // Transient error: keep code in localStorage for next retry
           message.error(t('invite.bindFailed'))
         }
       })

@@ -24,8 +24,12 @@ export default function InvitePage() {
 
     const inviteCode = normalizeInviteCode(raw)
 
+    // Always persist to localStorage first (overwrites stale code, prevents useAuth racing with old code)
+    localStorage.setItem(INVITE_CODE_STORAGE_KEY, inviteCode)
+
     if (token && user) {
       if (user.referrerUserId) {
+        localStorage.removeItem(INVITE_CODE_STORAGE_KEY)
         message.info(t('invite.alreadyBound'))
         navigate('/films', { replace: true })
         return
@@ -45,10 +49,13 @@ export default function InvitePage() {
           const errCode = err?.response?.data?.code
           const errMsg = err?.response?.data?.message || ''
           if (errCode === 'REFERRER_ALREADY_BOUND') {
+            localStorage.removeItem(INVITE_CODE_STORAGE_KEY)
             message.info(t('invite.alreadyBound'))
           } else if (errMsg.includes('self')) {
+            localStorage.removeItem(INVITE_CODE_STORAGE_KEY)
             message.warning(t('invite.cannotBindSelf'))
           } else if (errCode === 'INVALID_INVITE_CODE' || errMsg.includes('Invalid invite code')) {
+            localStorage.removeItem(INVITE_CODE_STORAGE_KEY)
             message.error(t('invite.invalidCode'))
           } else {
             message.error(t('invite.bindFailed'))
@@ -59,7 +66,6 @@ export default function InvitePage() {
           navigate('/films', { replace: true })
         })
     } else {
-      localStorage.setItem(INVITE_CODE_STORAGE_KEY, inviteCode)
       message.success(t('invite.codeRecorded'))
       navigate('/films', { replace: true })
     }

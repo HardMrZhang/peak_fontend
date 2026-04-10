@@ -30,7 +30,7 @@ const BUY_GENESIS_DISCRIMINATOR = Buffer.from([
 
 const SALE_PDA = new PublicKey('Ahj2bbRwTMnKyyk3pNgpAe1WgvT3BUesYJTDdnJCu5mn')
 
-const NODE_PRICE = 500
+const NODE_PRICE = 0.1
 const MAX_SUPPLY = 3000
 const PEAK_AIRDROP = 200
 const MAX_TX_SEND_ATTEMPTS = 2
@@ -595,7 +595,7 @@ export default function GenesisNodes() {
         <div className="genesis-modal-content">
           <div className="genesis-nft-preview">
             <div className="genesis-nft-card">
-              <div className="genesis-nft-card-icon">&#x2726;</div>
+              <img src="https://gateway.irys.xyz/MLn_mnm3dZc56zIEMd296vzh16UoJacvBCy5xsKZbyg" alt="GenesisNodes NFT" className="genesis-nft-card-img" />
               <div className="genesis-nft-card-label">{t('genesis.saleTitle')}</div>
             </div>
             <span className="genesis-nft-qty">x{quantity}</span>

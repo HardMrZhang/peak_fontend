@@ -33,16 +33,6 @@ const SALE_PDA = new PublicKey('Ahj2bbRwTMnKyyk3pNgpAe1WgvT3BUesYJTDdnJCu5mn')
 const NODE_PRICE = 500
 const MAX_SUPPLY = 3000
 const PEAK_AIRDROP = 200
-const MAX_TX_SEND_ATTEMPTS = 2
-
-function isBlockhashExpiredError(message: string): boolean {
-  const msg = message.toLowerCase()
-  return msg.includes('block height exceeded')
-    || msg.includes('transactionexpiredblockheightexceedederror')
-    || msg.includes('blockhash not found')
-}
-
-
 async function hasTransactionLanded(signature: string, connection: ReturnType<typeof useConnection>['connection']) {
   for (let i = 0; i < 3; i += 1) {
     const tx = await connection.getTransaction(signature, {
@@ -76,7 +66,7 @@ function parseGenesisSaleState(data: Buffer): GenesisSaleData | null {
 export default function GenesisNodes() {
   const { t } = useTranslation()
   const { connection } = useConnection()
-  const { publicKey, signTransaction, connected } = useWallet()
+  const { publicKey, sendTransaction, connected } = useWallet()
 
   const [purchaseOpen, setPurchaseOpen] = useState(false)
   const [infoOpen, setInfoOpen] = useState(false)
@@ -161,7 +151,7 @@ export default function GenesisNodes() {
 
   const handlePurchase = async () => {
     if (purchasingLock.current) return
-    if (!publicKey || !signTransaction || !connected) {
+    if (!publicKey || !sendTransaction || !connected) {
       message.warning(t('account.walletRequired'))
       return
     }
@@ -253,77 +243,37 @@ export default function GenesisNodes() {
         data: Buffer.from(`PEAK Genesis NFT x${quantity}`, 'utf-8'),
       })
 
-      let confirmedSig: string | null = null
-      for (let attempt = 1; attempt <= MAX_TX_SEND_ATTEMPTS; attempt += 1) {
-        let currentSig: string | null = null
-        try {
-          const tx = new Transaction().add(
-            ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 }),
-            ...ataCreateIxs,
-            memoIx,
-            ix,
-          )
-          tx.feePayer = publicKey
-          const { blockhash } = await connection.getLatestBlockhash('confirmed')
-          tx.recentBlockhash = blockhash
+      const tx = new Transaction().add(
+        ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 }),
+        ...ataCreateIxs,
+        memoIx,
+        ix,
+      )
 
-          const signed = await signTransaction(tx)
-          const rawTx = signed.serialize()
-          const sig = await FAST_RPC.sendRawTransaction(rawTx, {
-            skipPreflight: true,
-            maxRetries: 5,
-          })
-          currentSig = sig
-          txSig = sig
+      const sig = await sendTransaction(tx, connection, {
+        skipPreflight: true,
+      })
+      txSig = sig
 
-          const startMs = Date.now()
-          const TIMEOUT_MS = 60_000
-          let confirmed = false
-          while (Date.now() - startMs < TIMEOUT_MS) {
-            const resp = await FAST_RPC.getSignatureStatuses([sig])
-            const status = resp?.value?.[0]
-            if (status?.err) throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`)
-            if (status?.confirmationStatus === 'confirmed' || status?.confirmationStatus === 'finalized') {
-              confirmed = true
-              break
-            }
-            await new Promise((r) => setTimeout(r, 2000))
-          }
-          if (!confirmed) {
-            const landed = await hasTransactionLanded(sig, FAST_RPC)
-            if (!landed) throw new Error('Transaction confirmation timeout')
-          }
-          confirmedSig = sig
+      const startMs = Date.now()
+      const TIMEOUT_MS = 60_000
+      let confirmed = false
+      while (Date.now() - startMs < TIMEOUT_MS) {
+        const resp = await FAST_RPC.getSignatureStatuses([sig])
+        const status = resp?.value?.[0]
+        if (status?.err) throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`)
+        if (status?.confirmationStatus === 'confirmed' || status?.confirmationStatus === 'finalized') {
+          confirmed = true
           break
-        } catch (sendErr: unknown) {
-          const sendMsg = sendErr instanceof Error ? sendErr.message : String(sendErr)
-
-          if (currentSig) {
-            try {
-              const landed = await hasTransactionLanded(currentSig, connection)
-              if (landed) {
-                txSig = currentSig
-                confirmedSig = currentSig
-                break
-              }
-            } catch {
-              // Keep original error path below.
-            }
-          }
-
-          const retryable = isBlockhashExpiredError(sendMsg)
-          if (retryable && attempt < MAX_TX_SEND_ATTEMPTS) {
-            txSig = null
-            message.warning(t('genesis.txRetrying'))
-            continue
-          }
-          throw sendErr
         }
+        await new Promise((r) => setTimeout(r, 2000))
+      }
+      if (!confirmed) {
+        const landed = await hasTransactionLanded(sig, FAST_RPC)
+        if (!landed) throw new Error('Transaction confirmation timeout')
       }
 
-      if (!confirmedSig) {
-        throw new Error('Transaction was not confirmed')
-      }
+      const confirmedSig = sig
 
       try {
         await confirmGenesisBuy(confirmedSig, p.intentId)
@@ -336,7 +286,7 @@ export default function GenesisNodes() {
       fetchOrders()
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err)
-      if (intentId && txSig && isBlockhashExpiredError(errMsg)) {
+      if (intentId && txSig) {
         try {
           await confirmGenesisBuy(txSig, intentId)
           message.success(t('genesis.purchaseSuccess'))

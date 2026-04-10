@@ -4,7 +4,7 @@ import { Button, Modal, Table, Pagination, message, Spin } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { PublicKey, TransactionInstruction, Transaction, SystemProgram } from '@solana/web3.js'
+import { PublicKey, TransactionInstruction, Transaction, SystemProgram, Connection } from '@solana/web3.js'
 import {
   getGenesisSaleInfo,
   getGenesisBuyParams,
@@ -21,6 +21,8 @@ const MPL_CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4
 const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
 const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr')
+
+const FAST_RPC = new Connection('https://mainnet.helius-rpc.com/?api-key=fc56707a-a30e-4676-9895-b5c37cbba6a2', 'confirmed')
 
 const BUY_GENESIS_DISCRIMINATOR = Buffer.from([
   0x59, 0xb4, 0x33, 0x97, 0x8d, 0x10, 0xd4, 0xb8,
@@ -271,24 +273,23 @@ export default function GenesisNodes() {
         try {
           const tx = new Transaction().add(...ataCreateIxs, memoIx, ix)
           tx.feePayer = publicKey
-          const { blockhash } = await connection.getLatestBlockhash('processed')
+          const { blockhash } = await FAST_RPC.getLatestBlockhash('confirmed')
           tx.recentBlockhash = blockhash
 
           const signed = await signTransaction(tx)
           const rawTx = signed.serialize()
-          const sig = await connection.sendRawTransaction(rawTx, {
+          const sig = await FAST_RPC.sendRawTransaction(rawTx, {
             skipPreflight: true,
             maxRetries: 5,
           })
           currentSig = sig
           txSig = sig
 
-          // Poll for confirmation instead of long-hanging confirmTransaction
           const startMs = Date.now()
           const TIMEOUT_MS = 60_000
           let confirmed = false
           while (Date.now() - startMs < TIMEOUT_MS) {
-            const resp = await connection.getSignatureStatuses([sig])
+            const resp = await FAST_RPC.getSignatureStatuses([sig])
             const status = resp?.value?.[0]
             if (status?.err) throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`)
             if (status?.confirmationStatus === 'confirmed' || status?.confirmationStatus === 'finalized') {
@@ -298,7 +299,7 @@ export default function GenesisNodes() {
             await new Promise((r) => setTimeout(r, 2000))
           }
           if (!confirmed) {
-            const landed = await hasTransactionLanded(sig, connection)
+            const landed = await hasTransactionLanded(sig, FAST_RPC)
             if (!landed) throw new Error('Transaction confirmation timeout')
           }
           confirmedSig = sig

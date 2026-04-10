@@ -271,7 +271,7 @@ export default function GenesisNodes() {
         try {
           const tx = new Transaction().add(...ataCreateIxs, memoIx, ix)
           tx.feePayer = publicKey
-          const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('processed')
+          const { blockhash } = await connection.getLatestBlockhash('processed')
           tx.recentBlockhash = blockhash
 
           const signed = await signTransaction(tx)
@@ -283,16 +283,29 @@ export default function GenesisNodes() {
           currentSig = sig
           txSig = sig
 
-          await connection.confirmTransaction(
-            { signature: sig, blockhash, lastValidBlockHeight },
-            'confirmed',
-          )
+          // Poll for confirmation instead of long-hanging confirmTransaction
+          const startMs = Date.now()
+          const TIMEOUT_MS = 60_000
+          let confirmed = false
+          while (Date.now() - startMs < TIMEOUT_MS) {
+            const resp = await connection.getSignatureStatuses([sig])
+            const status = resp?.value?.[0]
+            if (status?.err) throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`)
+            if (status?.confirmationStatus === 'confirmed' || status?.confirmationStatus === 'finalized') {
+              confirmed = true
+              break
+            }
+            await new Promise((r) => setTimeout(r, 2000))
+          }
+          if (!confirmed) {
+            const landed = await hasTransactionLanded(sig, connection)
+            if (!landed) throw new Error('Transaction confirmation timeout')
+          }
           confirmedSig = sig
           break
         } catch (sendErr: unknown) {
           const sendMsg = sendErr instanceof Error ? sendErr.message : String(sendErr)
 
-          // confirmTransaction may throw expiry even when tx actually lands later.
           if (currentSig) {
             try {
               const landed = await hasTransactionLanded(currentSig, connection)

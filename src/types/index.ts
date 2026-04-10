@@ -269,6 +269,7 @@ export interface GenesisBuyParams {
   usdtMint: string
   peakMint: string
   referrerUsdtAta: string | null
+  referrerWallet: string | null
   nfts: Array<{ asset: string; nftInfoPda: string }>
 }
 

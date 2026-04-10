@@ -358,7 +358,9 @@ export default function GenesisNodes() {
         }
       }
       if (!errMsg.includes('User rejected')) {
-        message.error(t('genesis.purchaseFailed'))
+        console.error('[Genesis Purchase Error]', err)
+        const displayMsg = errMsg.length > 120 ? errMsg.slice(0, 120) + '...' : errMsg
+        message.error(`${t('genesis.purchaseFailed')}: ${displayMsg}`)
       }
       refreshData()
       fetchOrders()

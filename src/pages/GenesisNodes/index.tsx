@@ -83,8 +83,6 @@ export default function GenesisNodes() {
   const [quantity, setQuantity] = useState(1)
   const [purchasing, setPurchasing] = useState(false)
   const purchasingLock = useRef(false)
-  const [cooldownSec, setCooldownSec] = useState(0)
-  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const [saleData, setSaleData] = useState<GenesisSaleData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -160,25 +158,6 @@ export default function GenesisNodes() {
     fetchOrders()
   }, [fetchOrders])
 
-  const startCooldown = useCallback((seconds = 10) => {
-    setCooldownSec(seconds)
-    if (cooldownRef.current) clearInterval(cooldownRef.current)
-    cooldownRef.current = setInterval(() => {
-      setCooldownSec((prev) => {
-        if (prev <= 1) {
-          if (cooldownRef.current) clearInterval(cooldownRef.current)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-  }, [])
-
-  useEffect(() => {
-    return () => {
-      if (cooldownRef.current) clearInterval(cooldownRef.current)
-    }
-  }, [])
 
   const handlePurchase = async () => {
     if (purchasingLock.current) return
@@ -199,16 +178,23 @@ export default function GenesisNodes() {
       const usdtMintPk = new PublicKey(p.usdtMint)
       const peakMintPk = new PublicKey(p.peakMint)
 
-      // Always add idempotent ATA creation — safe even if ATA already exists
-      const ataCreateIxs = [
-        { ata: buyerUsdtAtaPk, mint: usdtMintPk },
-        { ata: buyerPeakAtaPk, mint: peakMintPk },
-      ].map((item) => new TransactionInstruction({
+      const ataEntries: { ata: PublicKey; owner: PublicKey; mint: PublicKey }[] = [
+        { ata: buyerUsdtAtaPk, owner: publicKey, mint: usdtMintPk },
+        { ata: buyerPeakAtaPk, owner: publicKey, mint: peakMintPk },
+      ]
+      if (p.referrerUsdtAta && p.referrerWallet) {
+        ataEntries.push({
+          ata: new PublicKey(p.referrerUsdtAta),
+          owner: new PublicKey(p.referrerWallet),
+          mint: usdtMintPk,
+        })
+      }
+      const ataCreateIxs = ataEntries.map((item) => new TransactionInstruction({
         programId: ASSOCIATED_TOKEN_PROGRAM_ID,
         keys: [
           { pubkey: publicKey, isSigner: true, isWritable: true },
           { pubkey: item.ata, isSigner: false, isWritable: true },
-          { pubkey: publicKey, isSigner: false, isWritable: false },
+          { pubkey: item.owner, isSigner: false, isWritable: false },
           { pubkey: item.mint, isSigner: false, isWritable: false },
           { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
           { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
@@ -341,19 +327,16 @@ export default function GenesisNodes() {
       message.success(t('genesis.purchaseSuccess'))
       setPurchaseOpen(false)
       setQuantity(1)
-      startCooldown(10)
       refreshData()
       fetchOrders()
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err)
-      // If signature already exists but local confirmation timed out, try backend reconciliation first.
       if (intentId && txSig && isBlockhashExpiredError(errMsg)) {
         try {
           await confirmGenesisBuy(txSig, intentId)
           message.success(t('genesis.purchaseSuccess'))
           setPurchaseOpen(false)
           setQuantity(1)
-          startCooldown(10)
           refreshData()
           fetchOrders()
           return
@@ -362,17 +345,16 @@ export default function GenesisNodes() {
         }
       }
 
-      if (intentId && !txSig) {
+      if (intentId) {
         try {
           await cancelGenesisBuyIntent(intentId)
         } catch {
-          // best-effort rollback for local intent lock only
+          // best-effort rollback
         }
       }
       if (!errMsg.includes('User rejected')) {
-        message.error(errMsg)
+        message.error(t('genesis.purchaseFailed'))
       }
-      startCooldown(10)
       refreshData()
       fetchOrders()
     } finally {
@@ -644,11 +626,8 @@ export default function GenesisNodes() {
               block
               onClick={handlePurchase}
               loading={purchasing}
-              disabled={cooldownSec > 0}
             >
-              {cooldownSec > 0
-                ? `${t('genesis.confirmPurchase')} (${cooldownSec}s)`
-                : t('genesis.confirmPurchase')}
+              {t('genesis.confirmPurchase')}
             </Button>
           </div>
         </div>

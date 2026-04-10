@@ -33,8 +33,9 @@ export function useAuth() {
       const nonce = nonceRes.data.nonce
 
       const msg = new TextEncoder().encode(`PEAK Login Nonce: ${nonce}`)
-      const sig = await signMessage(msg)
-      const signature = bs58.encode(sig)
+      const rawSig = await signMessage(msg)
+      const sigBytes = new Uint8Array(rawSig.buffer, rawSig.byteOffset, rawSig.byteLength)
+      const signature = bs58.encode(sigBytes)
 
       const loginRes = await walletLogin({ walletAddress: address, nonce, signature })
       setAuth(loginRes.data.token, loginRes.data.user)

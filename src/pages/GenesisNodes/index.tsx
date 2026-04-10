@@ -4,7 +4,7 @@ import { Button, Modal, Table, Pagination, message, Spin } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { PublicKey, TransactionInstruction, Transaction, SystemProgram, Connection } from '@solana/web3.js'
+import { PublicKey, TransactionInstruction, Transaction, SystemProgram, Connection, ComputeBudgetProgram } from '@solana/web3.js'
 import {
   getGenesisSaleInfo,
   getGenesisBuyParams,
@@ -257,7 +257,12 @@ export default function GenesisNodes() {
       for (let attempt = 1; attempt <= MAX_TX_SEND_ATTEMPTS; attempt += 1) {
         let currentSig: string | null = null
         try {
-          const tx = new Transaction().add(...ataCreateIxs, memoIx, ix)
+          const tx = new Transaction().add(
+            ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 }),
+            ...ataCreateIxs,
+            memoIx,
+            ix,
+          )
           tx.feePayer = publicKey
           const { blockhash } = await FAST_RPC.getLatestBlockhash('confirmed')
           tx.recentBlockhash = blockhash

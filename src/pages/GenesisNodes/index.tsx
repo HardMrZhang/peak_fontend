@@ -14,6 +14,7 @@ import {
   getGenesisOrders,
 } from '@/api'
 import type { GenesisOrder, PageResult } from '@/types'
+import nftCardImg from './nft-card.png'
 import './index.css'
 
 const GENESIS_PROGRAM_ID = new PublicKey('Fm8qxJKKZPGQyMezF7NkAQT5wHkDyDTp1KVDeRDKmzVg')
@@ -595,8 +596,7 @@ export default function GenesisNodes() {
         <div className="genesis-modal-content">
           <div className="genesis-nft-preview">
             <div className="genesis-nft-card">
-              <div className="genesis-nft-card-icon">&#x2726;</div>
-              <div className="genesis-nft-card-label">{t('genesis.saleTitle')}</div>
+              <img src={nftCardImg} alt="Genesis Node NFT" className="genesis-nft-card-img" />
             </div>
             <span className="genesis-nft-qty">x{quantity}</span>
           </div>

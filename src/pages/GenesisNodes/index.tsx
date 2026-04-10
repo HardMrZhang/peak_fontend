@@ -4,7 +4,7 @@ import { Button, Modal, Table, Pagination, message, Spin } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { PublicKey, TransactionInstruction, Transaction, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
+import { PublicKey, TransactionInstruction, Transaction, SystemProgram } from '@solana/web3.js'
 import {
   getGenesisSaleInfo,
   getGenesisBuyParams,
@@ -40,27 +40,6 @@ function isBlockhashExpiredError(message: string): boolean {
     || msg.includes('blockhash not found')
 }
 
-function buildCreateAtaInstruction(
-  payer: PublicKey,
-  associatedTokenAccount: PublicKey,
-  owner: PublicKey,
-  mint: PublicKey,
-  tokenProgramId: PublicKey,
-): TransactionInstruction {
-  return new TransactionInstruction({
-    programId: ASSOCIATED_TOKEN_PROGRAM_ID,
-    keys: [
-      { pubkey: payer, isSigner: true, isWritable: true },
-      { pubkey: associatedTokenAccount, isSigner: false, isWritable: true },
-      { pubkey: owner, isSigner: false, isWritable: false },
-      { pubkey: mint, isSigner: false, isWritable: false },
-      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-      { pubkey: tokenProgramId, isSigner: false, isWritable: false },
-      { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
-    ],
-    data: Buffer.alloc(0),
-  })
-}
 
 async function hasTransactionLanded(signature: string, connection: ReturnType<typeof useConnection>['connection']) {
   for (let i = 0; i < 3; i += 1) {

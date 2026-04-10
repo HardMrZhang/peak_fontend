@@ -484,13 +484,6 @@
   z-index: 1;
 }
 
-.genesis-nft-card-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 10px;
-}
-
 .genesis-nft-card-icon {
   font-size: 48px;
   color: var(--accent-orange);

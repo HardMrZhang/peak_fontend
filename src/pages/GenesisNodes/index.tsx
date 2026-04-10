@@ -264,7 +264,7 @@ export default function GenesisNodes() {
             ix,
           )
           tx.feePayer = publicKey
-          const { blockhash } = await FAST_RPC.getLatestBlockhash('confirmed')
+          const { blockhash } = await connection.getLatestBlockhash('confirmed')
           tx.recentBlockhash = blockhash
 
           const signed = await signTransaction(tx)

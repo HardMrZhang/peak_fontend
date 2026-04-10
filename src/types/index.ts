@@ -112,10 +112,12 @@ export interface ReferralInfo {
   inviteCode: string
   directCount: number
   teamNodes: number
+  teamShareholderNodes: number
+  teamGenesisNodes: number
   directPushNodes: number
   directPushRewards: string
-  currentRanking: number
   referralLink: string
+  referrerWallet: string | null
 }
 
 export interface RankRecord {
@@ -136,6 +138,7 @@ export interface TeamNodeRecord {
   level: number
   joinedAt: string
   nodeQty: number
+  genesisNodeQty: number
 }
 
 export interface ReferralReward {

@@ -2,16 +2,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Table, Pagination, Tabs, message, Spin } from 'antd'
-import { CopyOutlined, TeamOutlined, BarChartOutlined, InboxOutlined } from '@ant-design/icons'
+import { CopyOutlined, TeamOutlined, InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { getReferralInfo, getRanking, getDirectReferrals, getReferralRewards, getTeamNodes } from '@/api'
-import type { ReferralInfo, RankRecord, PageResult, ReferralReward, DirectReferralRecord, TeamNodeRecord } from '@/types'
+import { getReferralInfo, getDirectReferrals, getReferralRewards, getTeamNodes } from '@/api'
+import type { ReferralInfo, PageResult, ReferralReward, DirectReferralRecord, TeamNodeRecord } from '@/types'
 import { useAuthStore } from '@/store/useAuthStore'
 import logoImg from '@/assets/logo.png'
 import './index.css'
 
-const rankMedals = ['🥇', '🥈', '🥉']
-type TabKey = 'rewards' | 'directs' | 'team' | 'ranking'
+type TabKey = 'rewards' | 'directs' | 'team'
 
 function formatDate(iso?: string) {
   if (!iso) return '--'
@@ -32,11 +31,9 @@ export default function Generalization() {
   const [rewardPage, setRewardPage] = useState(1)
   const [directPage, setDirectPage] = useState(1)
   const [teamPage, setTeamPage] = useState(1)
-  const [rankPage, setRankPage] = useState(1)
 
   const pageSize = 15
   const [info, setInfo] = useState<ReferralInfo | null>(null)
-  const [rankData, setRankData] = useState<PageResult<RankRecord> | null>(null)
   const [rewardData, setRewardData] = useState<PageResult<ReferralReward> | null>(null)
   const [directData, setDirectData] = useState<PageResult<DirectReferralRecord> | null>(null)
   const [teamData, setTeamData] = useState<PageResult<TeamNodeRecord> | null>(null)
@@ -49,12 +46,6 @@ export default function Generalization() {
     setInfoLoading(true)
     getReferralInfo().then((r) => setInfo(r.data)).catch(() => { }).finally(() => setInfoLoading(false))
   }, [token])
-
-  const fetchRanking = useCallback(() => {
-    if (!token) return
-    setTableLoading(true)
-    getRanking({ page: rankPage, pageSize }).then((r) => setRankData(r.data)).catch(() => { }).finally(() => setTableLoading(false))
-  }, [token, rankPage, pageSize])
 
   const fetchRewards = useCallback(() => {
     if (!token) return
@@ -83,37 +74,12 @@ export default function Generalization() {
     fetchTeamNodes()
   }, [fetchTeamNodes])
 
-  useEffect(() => {
-    fetchRanking()
-  }, [fetchRanking])
-
   const emptyText = (
     <div className="table-empty">
       <InboxOutlined className="table-empty-icon" />
       <span className="table-empty-text">{t('common.noData')}</span>
     </div>
   )
-
-  const rankingColumns: ColumnsType<RankRecord> = [
-    {
-      title: t('generalization.colRank'),
-      dataIndex: 'rank',
-      width: 60,
-      render: (v: number) => (
-        <span className="rank-cell">
-          {v <= 3 ? <span className="rank-medal">{rankMedals[v - 1]}</span> : v}
-        </span>
-      ),
-    },
-    { title: t('generalization.colUserAddr'), dataIndex: 'address', ellipsis: true, width: 160 },
-    {
-      title: t('generalization.colTotalPeak'),
-      dataIndex: 'totalPeak',
-      width: 140,
-      align: 'right',
-      render: (v: string) => `${v} USDT`,
-    },
-  ]
 
   const directColumns: ColumnsType<DirectReferralRecord> = [
     { title: t('generalization.colUserAddr'), dataIndex: 'walletAddress', ellipsis: true, width: 140 },
@@ -163,7 +129,8 @@ export default function Generalization() {
   const teamColumns: ColumnsType<TeamNodeRecord> = [
     { title: t('generalization.colUserAddr'), dataIndex: 'walletAddress', ellipsis: true, width: 140 },
     { title: t('generalization.colTeamLevel'), dataIndex: 'level', width: 80, align: 'right' },
-    { title: t('generalization.teamNode'), dataIndex: 'nodeQty', width: 80, align: 'right' },
+    { title: t('generalization.shareholderNode'), dataIndex: 'nodeQty', width: 100, align: 'right' },
+    { title: t('generalization.genesisNode'), dataIndex: 'genesisNodeQty', width: 100, align: 'right' },
     {
       title: t('generalization.colJoinTime'),
       dataIndex: 'joinedAt',
@@ -176,20 +143,27 @@ export default function Generalization() {
   const addr = info?.walletAddress ?? ''
   const shortAddr = addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '—'
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (!inviteUrl) return
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(inviteUrl)
-      message.success(t('generalization.copySuccess'))
-    } else {
-      const textarea = document.createElement('textarea')
-      textarea.value = inviteUrl
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textarea)
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(inviteUrl)
+        message.success(t('generalization.copySuccess'))
+        return
+      }
+    } catch {
+      // clipboard API failed, fall through to legacy
+    }
+    const textarea = document.createElement('textarea')
+    textarea.value = inviteUrl
+    textarea.setAttribute('readonly', '')
+    textarea.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;'
+    document.body.appendChild(textarea)
+    textarea.focus()
+    textarea.setSelectionRange(0, inviteUrl.length)
+    const ok = document.execCommand('copy')
+    document.body.removeChild(textarea)
+    if (ok) {
       message.success(t('generalization.copySuccess'))
     }
   }
@@ -209,8 +183,8 @@ export default function Generalization() {
               </div>
             </div>
             <div className="profile-badges">
-              <Button className="badge-btn team" icon={<TeamOutlined />}>{t('generalization.teamNode')} {info?.teamNodes ?? 0}</Button>
-              <Button className="badge-btn rank" icon={<BarChartOutlined />}>{t('generalization.currentRanking')} {info?.currentRanking ?? '—'}</Button>
+              <Button className="badge-btn team" icon={<TeamOutlined />}>{t('generalization.shareholderNode')} {info?.teamShareholderNodes ?? 0}</Button>
+              <Button className="badge-btn team" icon={<TeamOutlined />}>{t('generalization.genesisNode')} {info?.teamGenesisNodes ?? 0}</Button>
             </div>
           </div>
 
@@ -220,6 +194,13 @@ export default function Generalization() {
               <span className="invite-url">{inviteUrl || '...'}</span>
               <Button className="copy-btn" icon={<CopyOutlined />} onClick={handleCopy}>{t('generalization.copy')}</Button>
             </div>
+
+            {info?.referrerWallet && (
+              <div className="invite-row" style={{ marginBottom: 16 }}>
+                <span className="invite-label" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>{t('generalization.myReferrer')}</span>
+                <span className="invite-url">{info.referrerWallet}</span>
+              </div>
+            )}
 
             <div className="push-stats">
               <div className="push-stat">
@@ -335,36 +316,6 @@ export default function Generalization() {
           )}
         </div>
 
-        {/* 排行榜 */}
-        <div className="leaderboard-section">
-          <h2 className="leaderboard-title">
-            <span className="leaderboard-icon">🏆</span>
-            {t('generalization.rankingList')}
-          </h2>
-          <Table
-            columns={rankingColumns}
-            dataSource={rankData?.list ?? []}
-            rowKey={(r) => `${r.rank}-${r.address}`}
-            pagination={false}
-            size="small"
-            scroll={{ x: 'max-content' }}
-            loading={tableLoading}
-            locale={{ emptyText }}
-          />
-          {(rankData?.total ?? 0) > 0 && (
-            <div className="ranking-pagination">
-              <Pagination
-                current={rankPage}
-                total={rankData?.total ?? 0}
-                pageSize={pageSize}
-                onChange={setRankPage}
-                showSizeChanger={false}
-                showQuickJumper
-                size="small"
-              />
-            </div>
-          )}
-        </div>
       </div>
     </div>
   )

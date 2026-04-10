@@ -40,12 +40,12 @@ export function useAuth() {
       const loginRes = await walletLogin({ walletAddress: address, nonce, signature })
       setAuth(loginRes.data.token, loginRes.data.user)
 
-      // Bind pending invite referrer immediately after login (deterministic, no effect timing dependency)
       if (!loginRes.data.user.referrerUserId) {
         const pendingCode = localStorage.getItem(INVITE_CODE_STORAGE_KEY)
         if (pendingCode) {
           const code = normalizeInviteCode(pendingCode)
           if (code) {
+            inviteBindInProgress.current = true
             try {
               await bindReferrer(code)
               const meRes = await getMe()
@@ -54,6 +54,8 @@ export function useAuth() {
               message.success(t('referral.bindSuccess'))
             } catch {
               // Leave code in localStorage; bind effect will retry as fallback
+            } finally {
+              inviteBindInProgress.current = false
             }
           }
         }

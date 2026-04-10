@@ -218,23 +218,22 @@ export default function GenesisNodes() {
       const usdtMintPk = new PublicKey(p.usdtMint)
       const peakMintPk = new PublicKey(p.peakMint)
 
-      // New wallets may not have ATA yet; create missing ATAs in the same tx.
-      const ataTargets = [
+      // Always add idempotent ATA creation — safe even if ATA already exists
+      const ataCreateIxs = [
         { ata: buyerUsdtAtaPk, mint: usdtMintPk },
         { ata: buyerPeakAtaPk, mint: peakMintPk },
-      ]
-      const ataInfos = await connection.getMultipleAccountsInfo(
-        ataTargets.map((i) => i.ata),
-        'processed',
-      )
-      const ataCreateIxs: TransactionInstruction[] = []
-      ataTargets.forEach((item, idx) => {
-        if (!ataInfos[idx]) {
-          ataCreateIxs.push(
-            buildCreateAtaInstruction(publicKey, item.ata, publicKey, item.mint, TOKEN_PROGRAM_ID),
-          )
-        }
-      })
+      ].map((item) => new TransactionInstruction({
+        programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+        keys: [
+          { pubkey: publicKey, isSigner: true, isWritable: true },
+          { pubkey: item.ata, isSigner: false, isWritable: true },
+          { pubkey: publicKey, isSigner: false, isWritable: false },
+          { pubkey: item.mint, isSigner: false, isWritable: false },
+          { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        ],
+        data: Buffer.from([1]),
+      }))
 
       const keys = [
         { pubkey: publicKey, isSigner: true, isWritable: true },
@@ -299,8 +298,7 @@ export default function GenesisNodes() {
           const signed = await signTransaction(tx)
           const rawTx = signed.serialize()
           const sig = await connection.sendRawTransaction(rawTx, {
-            skipPreflight: false,
-            preflightCommitment: 'processed',
+            skipPreflight: true,
             maxRetries: 5,
           })
           currentSig = sig

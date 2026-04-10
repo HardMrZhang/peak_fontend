@@ -221,6 +221,13 @@ export default function Generalization() {
               <Button className="copy-btn" icon={<CopyOutlined />} onClick={handleCopy}>{t('generalization.copy')}</Button>
             </div>
 
+            {info?.referrerWallet && (
+              <div className="invite-row" style={{ marginTop: 12 }}>
+                <span className="invite-label" style={{ marginRight: 8 }}>{t('generalization.myInviter')}</span>
+                <span className="invite-url">{info.referrerWallet}</span>
+              </div>
+            )}
+
             <div className="push-stats">
               <div className="push-stat">
                 <span className="push-icon">✦</span>

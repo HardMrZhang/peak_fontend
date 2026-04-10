@@ -110,6 +110,7 @@ export interface RewardLot {
 export interface ReferralInfo {
   walletAddress: string
   inviteCode: string
+  referrerWallet: string | null
   directCount: number
   teamNodes: number
   directPushNodes: number

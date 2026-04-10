@@ -30,7 +30,7 @@ const BUY_GENESIS_DISCRIMINATOR = Buffer.from([
 
 const SALE_PDA = new PublicKey('Ahj2bbRwTMnKyyk3pNgpAe1WgvT3BUesYJTDdnJCu5mn')
 
-const NODE_PRICE = 0.1
+const NODE_PRICE = 500
 const MAX_SUPPLY = 3000
 const PEAK_AIRDROP = 200
 const MAX_TX_SEND_ATTEMPTS = 2

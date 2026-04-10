@@ -42,7 +42,7 @@ import nftPreviewVideo from '@/assets/nft-preview.mp4'
 import './index.css'
 import '../TeamLevel/index.css'
 
-const BUY_NODE_DISCRIMINATOR = Buffer.from([224, 164, 165, 140, 70, 25, 52, 247])
+const BUY_NODE_DISCRIMINATOR = new Uint8Array([224, 164, 165, 140, 70, 25, 52, 247])
 const MPL_CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d')
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr')
 const TEAM_LEVEL_COLORS: Record<number, string> = {
@@ -220,7 +220,7 @@ export default function Nodes() {
       const ix = new TransactionInstruction({
         programId: new PublicKey(p.peakProgramId),
         keys,
-        data: BUY_NODE_DISCRIMINATOR,
+        data: Buffer.from(BUY_NODE_DISCRIMINATOR),
       })
       const memoIx = new TransactionInstruction({
         programId: MEMO_PROGRAM_ID,

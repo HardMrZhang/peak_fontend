@@ -24,7 +24,7 @@ const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfc
 
 const FAST_RPC = new Connection('https://mainnet.helius-rpc.com/?api-key=fc56707a-a30e-4676-9895-b5c37cbba6a2', 'confirmed')
 
-const BUY_GENESIS_DISCRIMINATOR = Buffer.from([
+const BUY_GENESIS_DISCRIMINATOR = new Uint8Array([
   0x59, 0xb4, 0x33, 0x97, 0x8d, 0x10, 0xd4, 0xb8,
 ])
 
@@ -236,15 +236,15 @@ export default function GenesisNodes() {
         keys.push({ pubkey: new PublicKey(p.referrerUsdtAta), isSigner: false, isWritable: true })
       }
 
-      const dataBuffer = Buffer.alloc(10)
-      BUY_GENESIS_DISCRIMINATOR.copy(dataBuffer, 0)
-      dataBuffer.writeUInt8(quantity, 8)
-      dataBuffer.writeUInt8(p.referrerUsdtAta ? 1 : 0, 9)
+      const dataBuffer = new Uint8Array(10)
+      dataBuffer.set(BUY_GENESIS_DISCRIMINATOR, 0)
+      dataBuffer[8] = quantity
+      dataBuffer[9] = p.referrerUsdtAta ? 1 : 0
 
       const ix = new TransactionInstruction({
         programId: GENESIS_PROGRAM_ID,
         keys,
-        data: dataBuffer,
+        data: Buffer.from(dataBuffer),
       })
 
       const memoIx = new TransactionInstruction({

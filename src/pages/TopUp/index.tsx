@@ -85,10 +85,9 @@ function buildDepositInstruction(
   tokenProgramId: PublicKey,
   amount: bigint,
 ): TransactionInstruction {
-  const disc = Buffer.from([242, 35, 198, 137, 82, 225, 242, 182])
-  const amountBuf = Buffer.alloc(8)
-  amountBuf.writeBigUInt64LE(amount)
-  const data = Buffer.concat([disc, amountBuf])
+  const data = new Uint8Array(16)
+  data.set([242, 35, 198, 137, 82, 225, 242, 182], 0)
+  new DataView(data.buffer).setBigUint64(8, amount, true)
 
   return new TransactionInstruction({
     programId,
@@ -117,10 +116,11 @@ function buildDirectTransferInstruction(
   amount: bigint,
   decimals: number,
 ): TransactionInstruction {
-  const data = Buffer.alloc(10)
-  data.writeUInt8(12, 0) // transferChecked instruction discriminator
-  data.writeBigUInt64LE(amount, 1)
-  data.writeUInt8(decimals, 9)
+  const data = new Uint8Array(10)
+  const view = new DataView(data.buffer)
+  data[0] = 12
+  view.setBigUint64(1, amount, true)
+  data[9] = decimals
 
   return new TransactionInstruction({
     programId: tokenProgramId,
@@ -152,7 +152,7 @@ function buildCreateAtaInstruction(
       { pubkey: tokenProgramId, isSigner: false, isWritable: false },
       { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
     ],
-    data: Buffer.alloc(0),
+    data: new Uint8Array(0),
   })
 }
 
@@ -277,7 +277,7 @@ export default function TopUp() {
     const collectionOwner = new PublicKey(depositConfig.collectionOwner)
 
     const [vaultState] = PublicKey.findProgramAddressSync(
-      [Buffer.from('vault'), vaultAuthority.toBuffer()],
+      [new TextEncoder().encode('vault'), vaultAuthority.toBuffer()],
       programId,
     )
 

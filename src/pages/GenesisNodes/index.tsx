@@ -32,7 +32,6 @@ const SALE_PDA = new PublicKey('Ahj2bbRwTMnKyyk3pNgpAe1WgvT3BUesYJTDdnJCu5mn')
 
 const NODE_PRICE = 500
 const MAX_SUPPLY = 3000
-const PEAK_AIRDROP = 200
 async function hasTransactionLanded(signature: string, connection: ReturnType<typeof useConnection>['connection']) {
   for (let i = 0; i < 3; i += 1) {
     const tx = await connection.getTransaction(signature, {
@@ -53,9 +52,10 @@ async function hasTransactionLanded(signature: string, connection: ReturnType<ty
 interface GenesisSaleData {
   premintedTotal: number
   soldTotal: number
+  peakAirdropAmount: number
 }
 
-function parseGenesisSaleState(data: Buffer): GenesisSaleData | null {
+function parseGenesisSaleState(data: Buffer): Omit<GenesisSaleData, 'peakAirdropAmount'> | null {
   if (data.length < 17) return null
   return {
     premintedTotal: data.readUInt32LE(8),
@@ -88,7 +88,7 @@ export default function GenesisNodes() {
       const accountInfo = await connection.getAccountInfo(SALE_PDA)
       if (accountInfo?.data) {
         const parsed = parseGenesisSaleState(accountInfo.data as Buffer)
-        if (parsed) setSaleData(parsed)
+        if (parsed) setSaleData((prev) => ({ peakAirdropAmount: prev?.peakAirdropAmount ?? 0, ...parsed }))
       }
     } catch {
       /* chain read failed, try API fallback */
@@ -106,6 +106,7 @@ export default function GenesisNodes() {
           setSaleData({
             premintedTotal: res.data.premintedTotal,
             soldTotal: res.data.soldTotal,
+            peakAirdropAmount: Number(res.data.peakAirdropAmount) || 0,
           })
         }
       } catch {
@@ -569,7 +570,7 @@ export default function GenesisNodes() {
             <div className="genesis-modal-row">
               <span className="genesis-modal-label">{t('genesis.airdropPeak')}</span>
               <span className="genesis-modal-value" style={{ color: 'var(--accent-green)' }}>
-                +{PEAK_AIRDROP * quantity} PEAK
+                +{(saleData?.peakAirdropAmount ?? 0) * quantity} PEAK
               </span>
             </div>
 

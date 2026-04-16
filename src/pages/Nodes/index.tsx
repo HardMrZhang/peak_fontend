@@ -323,9 +323,6 @@ export default function Nodes() {
               <span className="what-is-nft" onClick={() => setInfoOpen(true)}>{t('nodes.whatIsNft')}</span>
             </div>
             <div className="sale-info">
-              <span className="sale-text">
-                {t('nodes.salePeriod')}: {saleConfig?.saleStartAt?.slice(0, 10) ?? '—'} — {saleConfig?.saleEndAt?.slice(0, 10) ?? '—'}
-              </span>
               <Button
                 className="purchase-btn"
                 onClick={() => setPurchaseOpen(true)}

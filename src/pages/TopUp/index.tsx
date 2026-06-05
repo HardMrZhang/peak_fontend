@@ -5,6 +5,7 @@ import { Button, Input, Select, message, Spin, Tag } from 'antd'
 import { CopyOutlined, ExclamationCircleOutlined, LoadingOutlined, SwapOutlined } from '@ant-design/icons'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey, TransactionInstruction, Transaction, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
+import { Buffer } from 'buffer'
 import { QRCodeSVG } from 'qrcode.react'
 import { getDepositAddress, getBalances } from '@/api'
 import type { DepositAddress, AssetBalance } from '@/types'
@@ -99,7 +100,7 @@ function buildDepositInstruction(
       { pubkey: user, isSigner: true, isWritable: true },
       { pubkey: tokenProgramId, isSigner: false, isWritable: false },
     ],
-    data,
+    data: Buffer.from(data),
   })
 }
 
@@ -130,7 +131,7 @@ function buildDirectTransferInstruction(
       { pubkey: destination, isSigner: false, isWritable: true },
       { pubkey: authority, isSigner: true, isWritable: false },
     ],
-    data,
+    data: Buffer.from(data),
   })
 }
 
@@ -152,7 +153,7 @@ function buildCreateAtaInstruction(
       { pubkey: tokenProgramId, isSigner: false, isWritable: false },
       { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
     ],
-    data: new Uint8Array(0),
+    data: Buffer.alloc(0),
   })
 }
 

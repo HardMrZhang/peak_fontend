@@ -9,7 +9,8 @@
     "nodeTransaction": "节点交易",
     "teamLevel": "团队等级",
     "points": "积分",
-    "ipo": "打新"
+    "ipo": "打新",
+    "download": "下载"
   },
   "header": {
     "connectWallet": "连接钱包",
@@ -30,6 +31,21 @@
     "tvSeriesDesc": "专注电视剧深度解说，梳理剧情脉络、解析人物与伏笔，带你看懂每一部好剧，轻松追剧不迷路。",
     "aiAnime": "AI动漫+微综艺",
     "aiAnimeDesc": "汇聚 AI 生成动漫与精品微综艺，以创新视觉与轻松内容，带来趣味、治愈、潮流的沉浸式观看体验。"
+  },
+  "download": {
+    "title": "Peak TV",
+    "subtitle": "香港皮克数字旗下免费高清短剧播放平台，海量内容随心看",
+    "introTitle": "软件介绍",
+    "feature1": "TVB官方合作：获得TVB艺人鼎力支持，海量TVB艺人参与短剧制作",
+    "feature2": "海量内容：整合电影、电视剧、真人漫剧、AI漫剧及微综艺",
+    "feature3": "全品类覆盖：都市、玄幻、悬疑、爱情等各类短剧应有尽有",
+    "feature4": "高清画质：极致清晰画面，流畅播放体验",
+    "feature5": "智能推荐：AI算法精准推荐，个性化发现好剧",
+    "feature6": "完全免费：无门槛观影，所有内容免费观看",
+    "iosBtn": "iOS 下载",
+    "androidBtn": "安卓 下载",
+    "comingSoon": "iOS 版即将开放，敬请期待",
+    "androidHint": "安卓点击即可下载 APK 安装包；iOS 版即将开放"
   },
   "nodes": {
     "title": "节点",
@@ -435,7 +451,25 @@
     "notice1": "积分兑换标准根据当天的积分总量分配兑换总量",
     "notice2": "积分兑换需要自主操作",
     "notice3": "NFT持有者享积分加倍权力",
-    "notice4": "积分兑换无法双向兑换"
+    "notice4": "积分兑换无法双向兑换",
+    "member": "Peak TV 会员",
+    "nftHolding": "NFT",
+    "rightsLabel": "权益",
+    "rightMultiplier": "积分×3倍",
+    "rightWhitelist": "打新白名单",
+    "appPoints": "APP积分",
+    "inflatedPoints": "NFT膨胀后可获得积分",
+    "inflate": "膨胀",
+    "inflating": "膨胀中...",
+    "inflateSuccess": "膨胀成功",
+    "available": "可用积分",
+    "exchange": "兑换",
+    "exchanging": "兑换中...",
+    "exchangeSuccess": "兑换成功",
+    "rateTitle": "积分兑换价底",
+    "recordTitle": "兑换记录",
+    "colPoints": "积分",
+    "colPeak": "PEAK"
   },
   "ipo": {
     "title": "短剧打新",

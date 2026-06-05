@@ -11,6 +11,7 @@ import NodeTransaction from '@/pages/NodeTransaction'
 import Points from '@/pages/Points'
 import Ipo from '@/pages/Ipo'
 import InvitePage from '@/pages/Invite'
+import Download from '@/pages/Download'
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
       { path: 'team-level', element: <Navigate to="/nodes" replace /> },
       { path: 'points', element: <Points /> },
       { path: 'ipo', element: <Ipo /> },
+      { path: 'download', element: <Download /> },
       { path: 'invite/:code', element: <InvitePage /> },
     ],
   },

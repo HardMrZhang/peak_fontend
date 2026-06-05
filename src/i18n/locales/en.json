@@ -9,7 +9,8 @@
     "nodeTransaction": "Node transaction",
     "teamLevel": "Team Level",
     "points": "Points",
-    "ipo": "New Offerings"
+    "ipo": "New Offerings",
+    "download": "Download"
   },
   "header": {
     "connectWallet": "Connect Wallet",
@@ -30,6 +31,21 @@
     "tvSeriesDesc": "Dedicated to in-depth commentary on TV series. We sort out plot lines, analyze characters and foreshadowing, helping you understand every great show and enjoy watching without confusion.",
     "aiAnime": "AI Anime & Micro Variety",
     "aiAnimeDesc": "A curated channel featuring AI-generated anime and premium micro-variety shows. Enjoy immersive, fun, and trendy viewing experiences with innovative visuals and lighthearted content."
+  },
+  "download": {
+    "title": "Peak TV",
+    "subtitle": "A free HD short-drama streaming platform by Hong Kong Peak Digital. Endless content, watch anytime.",
+    "introTitle": "App Highlights",
+    "feature1": "Official TVB partnership: Backed by TVB, with countless TVB artists involved in short-drama production.",
+    "feature2": "Massive library: Movies, TV series, live-action manga drama, AI manga drama and micro-variety shows.",
+    "feature3": "Full coverage: Urban, fantasy, suspense, romance and every other short-drama genre.",
+    "feature4": "HD quality: Ultra-clear visuals and smooth playback.",
+    "feature5": "Smart recommendations: AI-powered, personalized discovery of great shows.",
+    "feature6": "Completely free: No barriers, all content free to watch.",
+    "iosBtn": "Download for iOS",
+    "androidBtn": "Download for Android",
+    "comingSoon": "iOS version coming soon, stay tuned",
+    "androidHint": "Tap to download the Android APK; iOS version coming soon"
   },
   "nodes": {
     "title": "Nodes",
@@ -435,7 +451,25 @@
     "notice1": "Exchange quota is allocated based on total points of the day",
     "notice2": "Points exchange requires manual operation",
     "notice3": "NFT holders enjoy boosted points multiplier",
-    "notice4": "Points exchange is one-way only"
+    "notice4": "Points exchange is one-way only",
+    "member": "Peak TV Member",
+    "nftHolding": "NFT",
+    "rightsLabel": "Benefits",
+    "rightMultiplier": "Points x3",
+    "rightWhitelist": "IPO Whitelist",
+    "appPoints": "App Points",
+    "inflatedPoints": "Points after NFT boost",
+    "inflate": "Boost",
+    "inflating": "Boosting...",
+    "inflateSuccess": "Boost successful",
+    "available": "Available Points",
+    "exchange": "Exchange",
+    "exchanging": "Exchanging...",
+    "exchangeSuccess": "Exchange successful",
+    "rateTitle": "Exchange Rate",
+    "recordTitle": "Exchange Records",
+    "colPoints": "Points",
+    "colPeak": "PEAK"
   },
   "ipo": {
     "title": "Short Drama IPO",

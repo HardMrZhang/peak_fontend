@@ -1,141 +1,220 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { POINTS_EXCHANGE_DATE, POINTS_EXCHANGE_DATE_DISPLAY } from '@/constants'
+import { useSearchParams } from 'react-router-dom'
+import { Button, message } from 'antd'
+import { SwapOutlined, InboxOutlined } from '@ant-design/icons'
 import logoImg from '@/assets/logo.png'
 import './index.css'
 
-const TARGET_DATE = new Date(POINTS_EXCHANGE_DATE)
+/* exchange floor: 10000 points => 200 PEAK */
+const RATE_POINTS = 10000
+const RATE_PEAK = 200
 
-interface TimeLeft {
-  days: number
-  hours: number
-  minutes: number
-  seconds: number
+const DASH = '-'
+
+/* profile is injected by the app via URL query, e.g.
+   /points?username=Tom&avatar=https%3A%2F%2Fcdn.x.com%2Fa.jpg&is_vip=1&score=120&nft=3
+   We cache it in localStorage so navigating away and back (which drops the
+   query string) keeps the data, and it persists across tab/browser restarts. */
+const STORAGE_KEY = 'peak_points_profile'
+
+interface PointsProfile {
+  username: string | null
+  avatar: string | null
+  isVip: string | null
+  score: string | null
+  nft: string | null
 }
 
-function calcTimeLeft(): TimeLeft {
-  const diff = TARGET_DATE.getTime() - Date.now()
-  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 }
+function extractFromUrl(params: URLSearchParams): PointsProfile | null {
+  const username = params.get('username')
+  const score = params.get('score')
+  const nft = params.get('nft')
+  if (!username && score == null && nft == null) return null
   return {
-    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-    minutes: Math.floor((diff / (1000 * 60)) % 60),
-    seconds: Math.floor((diff / 1000) % 60),
+    username,
+    avatar: params.get('avatar'),
+    isVip: params.get('is_vip'),
+    score,
+    nft,
   }
 }
 
-const MOCK_HISTORY = [
-  { date: '2026/3/16', points: '12340 积分', peak: '123.40 PEAK', status: 'pending' },
-  { date: '2026/3/15', points: '234560 积分', peak: '2345.60 PEAK', status: 'pending' },
-  { date: '2026/3/14', points: '456 积分', peak: '4.56 PEAK', status: 'done' },
+function loadCachedProfile(): PointsProfile | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? (JSON.parse(raw) as PointsProfile) : null
+  } catch {
+    return null
+  }
+}
+
+interface ExchangeRecord {
+  time: string
+  points: number
+  peak: string
+}
+
+const MOCK_RECORDS: ExchangeRecord[] = [
+  { time: '2026/02/27 00:01:11', points: 234552, peak: '2.11' },
 ]
 
 export default function Points() {
   const { t } = useTranslation()
-  const [timeLeft, setTimeLeft] = useState(calcTimeLeft)
-  const [flip, setFlip] = useState(false)
+  const [params] = useSearchParams()
 
+  // first paint: prefer fresh URL data, fall back to the cached session profile
+  const [profile, setProfile] = useState<PointsProfile | null>(
+    () => extractFromUrl(params) ?? loadCachedProfile(),
+  )
+
+  // when the app opens the page with query params, persist & refresh them
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(calcTimeLeft())
-      setFlip(true)
-      setTimeout(() => setFlip(false), 600)
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
+    const fromUrl = extractFromUrl(params)
+    if (fromUrl) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(fromUrl))
+      setProfile(fromUrl)
+    }
+  }, [params])
 
-  const pad = (n: number) => String(n).padStart(2, '0')
+  const isGuest = !profile
+  const username = profile?.username || null
+  const avatarUrl = profile?.avatar || null
+  const isVip = profile?.isVip === '1'
+  const score = profile?.score != null ? Number(profile.score) || 0 : 0
+  const nftCount = profile?.nft != null ? Number(profile.nft) || 0 : 0
 
-  const units = [
-    { value: pad(timeLeft.days), label: t('points.days') },
-    { value: pad(timeLeft.hours), label: t('points.hours') },
-    { value: pad(timeLeft.minutes), label: t('points.minutes') },
-    { value: pad(timeLeft.seconds), label: t('points.seconds') },
-  ]
+  const [exchanging, setExchanging] = useState(false)
+
+  const available = score
+
+  const num = (v: number) => (isGuest ? DASH : v.toLocaleString())
+
+  const handleExchange = () => {
+    if (isGuest || exchanging || available <= 0) return
+    setExchanging(true)
+    setTimeout(() => {
+      setExchanging(false)
+      message.success(t('points.exchangeSuccess'))
+    }, 900)
+  }
+
+  const records = isGuest ? [] : MOCK_RECORDS
 
   return (
     <div className="pts-page">
-      {/* Preview card (static mockup) */}
-      <div className="pts-preview-wrap">
-        <div className="pts-preview-card">
-          <div className="pts-preview-top">
-            <div className="pts-preview-left">
-              <span className="pts-preview-label">{t('points.unredeemed')}</span>
-              <div className="pts-preview-amount">246,900 <span className="pts-preview-unit">{t('points.pointsUnit')}</span></div>
+      <div className="pts-inner">
+        <div className="pts-grid">
+        {/* ── Exchange card ── */}
+        <div className="pts-card glow-card">
+          <div className="pts-card-glow" />
+
+          {/* header: avatar + member + username */}
+          <div className="pts-head">
+            <div className="pts-avatar">
+              <img src={avatarUrl || logoImg} alt="avatar" />
             </div>
-            <div className="pts-preview-right">
-              <span className="pts-preview-label">{t('points.airdropOutput')}</span>
-              <div className="pts-preview-sub">{t('points.todayPeak')} 0.1 USDT</div>
-              <div className="pts-preview-peak">
-                <img src={logoImg} alt="" className="pts-mini-logo" />
-                <span className="pts-peak-val">2,469.00</span>
-                <span className="pts-refresh">&#x21BB;</span>
-              </div>
-              <div className="pts-preview-usd">&asymp; 246.9 USD</div>
+            <div className="pts-head-info">
+              {isGuest ? (
+                <div className="pts-member pts-member-guest">{DASH}</div>
+              ) : isVip ? (
+                <div className="pts-member">
+                  <img src={logoImg} alt="" className="pts-member-logo" />
+                  <span>{t('points.member')}</span>
+                </div>
+              ) : null}
+              <div className="pts-nft-name">{isGuest ? DASH : (username || DASH)}</div>
             </div>
           </div>
 
-          <div className="pts-preview-rules">
-            <div className="pts-rules-title">{t('points.exchangeRules')}</div>
-            <div className="pts-rules-list">
-              <p>{t('points.rule1')}</p>
-              <p>{t('points.rule2')}</p>
-              <p>{t('points.rule3')}</p>
-              <p>{t('points.rule4')}</p>
-            </div>
+          {/* nft count */}
+          <div className="pts-nft-count">
+            <span className="pts-label">{t('points.nftHolding')}</span>
+            <span className="pts-nft-count-val">{num(nftCount)}</span>
           </div>
 
-          <div className="pts-preview-table">
-            <div className="pts-table-header">
+          {/* rights tags */}
+          <div className="pts-rights">
+            <span className="pts-label">{t('points.rightsLabel')}</span>
+            {!isGuest && isVip ? (
+              <>
+                <span className="pts-tag">{t('points.rightMultiplier')}</span>
+                <span className="pts-tag">{t('points.rightWhitelist')}</span>
+              </>
+            ) : (
+              <span className="pts-nft-count-val">{DASH}</span>
+            )}
+          </div>
+
+          <div className="pts-divider" />
+
+          {/* points stats */}
+          <div className="pts-stat-row">
+            <span className="pts-stat-label">{t('points.appPoints')}</span>
+            <span className="pts-stat-val">{num(score)}</span>
+          </div>
+
+          <div className="pts-stat-row pts-available-row">
+            <span className="pts-stat-label">{t('points.available')}</span>
+            <span className="pts-stat-val orange big">{num(available)}</span>
+          </div>
+
+          <Button
+            className="pts-action-btn pts-exchange-btn"
+            onClick={handleExchange}
+            loading={exchanging}
+            disabled={isGuest}
+            block
+          >
+            {t('points.exchange')}
+          </Button>
+
+          {/* exchange rate */}
+          <div className="pts-rate-title">{t('points.rateTitle')}</div>
+          <div className="pts-rate-box">
+            <div className="pts-rate-side">
+              <span className="pts-rate-num">{RATE_POINTS.toLocaleString()}</span>
+              <span className="pts-rate-unit">{t('points.pointsUnit')}</span>
+            </div>
+            <div className="pts-rate-swap">
+              <SwapOutlined />
+            </div>
+            <div className="pts-rate-side right">
+              <span className="pts-rate-num">{RATE_PEAK}</span>
+              <span className="pts-rate-unit">PEAK</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Records ── */}
+        <div className="pts-records glow-card">
+          <div className="section-title pts-records-title">
+            <span className="pts-accent-dot" />
+            {t('points.recordTitle')}
+          </div>
+
+          <div className="pts-table">
+            <div className="pts-thead">
               <span>{t('points.colTime')}</span>
-              <span>{t('points.colDailyPoints')}</span>
-              <span>{t('points.colRedeemable')}</span>
-              <span></span>
+              <span>{t('points.colPoints')}</span>
+              <span>{t('points.colPeak')}</span>
             </div>
-            {MOCK_HISTORY.map((row, i) => (
-              <div className="pts-table-row" key={i}>
-                <span>{row.date}</span>
-                <span>{row.points}</span>
-                <span>{row.peak}</span>
-                <span className={`pts-status ${row.status}`}>
-                  {row.status === 'done' ? t('points.statusDone') : t('points.statusPending')}
-                </span>
+            {records.length > 0 ? (
+              records.map((row, i) => (
+                <div className="pts-trow" key={i}>
+                  <span className="pts-td-time">{row.time}</span>
+                  <span>{row.points.toLocaleString()}</span>
+                  <span className="orange">{row.peak}</span>
+                </div>
+              ))
+            ) : (
+              <div className="table-empty">
+                <InboxOutlined className="table-empty-icon" />
+                <span className="table-empty-text">{t('common.noData')}</span>
               </div>
-            ))}
+            )}
           </div>
         </div>
-      </div>
-
-      {/* Countdown section */}
-      <div className="pts-countdown-section">
-        <img src={logoImg} alt="Peak" className="pts-logo" />
-        <h1 className="pts-title">{t('points.title')}</h1>
-        <p className="pts-subtitle">{t('points.subtitle')}</p>
-
-        <div className="pts-countdown">
-          {units.map((unit, i) => (
-            <div key={i} className="pts-unit">
-              <div className={`pts-card ${flip && i === 3 ? 'pts-flip' : ''}`}>
-                <span className="pts-value">{unit.value}</span>
-              </div>
-              <span className="pts-label">{unit.label}</span>
-              {i < 3 && <span className="pts-separator">:</span>}
-            </div>
-          ))}
-        </div>
-
-        <div className="pts-date">
-          <span className="pts-date-icon">&#x1F4C5;</span>
-          <span>{POINTS_EXCHANGE_DATE_DISPLAY}</span>
-        </div>
-
-        <p className="pts-desc">{t('points.desc')}</p>
-
-        <div className="pts-notice-list">
-          <p>{t('points.notice1')}</p>
-          <p>{t('points.notice2')}</p>
-          <p>{t('points.notice3')}</p>
-          <p>{t('points.notice4')}</p>
         </div>
       </div>
     </div>

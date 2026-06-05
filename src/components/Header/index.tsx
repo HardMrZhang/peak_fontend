@@ -25,6 +25,7 @@ export default function Header() {
     { key: '/node-transaction', label: t('nav.nodeTransaction') },
     { key: '/points', label: t('nav.points') },
     { key: '/ipo', label: t('nav.ipo') },
+    { key: '/download', label: t('nav.download') },
   ]
 
   const currentLang = i18n.language === 'zh' ? '中文' : 'EN'

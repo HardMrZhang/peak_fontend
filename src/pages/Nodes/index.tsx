@@ -547,7 +547,23 @@ export default function Nodes() {
         <p className="purchase-nft-note">{t('nodes.nftNote')}</p>
         <div className="purchase-content">
           <div className="purchase-nft-preview">
-            <video src={nftPreviewVideo} autoPlay loop muted playsInline className="preview-video" />
+            <video
+              key={purchaseOpen ? 'open' : 'closed'}
+              src={nftPreviewVideo}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              disablePictureInPicture
+              controlsList="nodownload nofullscreen noremoteplayback"
+              aria-hidden="true"
+              className="preview-video"
+              onCanPlay={(e) => {
+                const v = e.currentTarget
+                if (v.paused) v.play().catch(() => { })
+              }}
+            />
             <span className="nft-qty">x1</span>
           </div>
           <div className="purchase-form">

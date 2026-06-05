@@ -456,6 +456,16 @@
   aspect-ratio: 4 / 3;
   object-fit: cover;
   display: block;
+  background: #000;
+  border-radius: 12px;
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
   border-radius: 16px;
   box-shadow:
     0 0 28px rgba(245, 166, 35, 0.18),

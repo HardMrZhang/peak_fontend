@@ -22,6 +22,8 @@ import type {
   DailyRelease,
   Banner,
   PageResult,
+  PointsExchangeRecord,
+  PointsExchangeResult,
   TeamLevelInfo,
   GenesisSaleInfo,
   GenesisBuyParams,
@@ -65,6 +67,15 @@ export function getLedger(params: { asset?: string; changeType?: string; page?: 
 
 export function getDepositAddress(asset?: string) {
   return get<DepositAddress>('/account/deposit-address', { params: { asset } })
+}
+
+// ==================== Points ====================
+export function getPointsExchangeHistory(params?: { page?: number; pageSize?: number }) {
+  return get<PageResult<PointsExchangeRecord>>('/points/exchange-history', { params })
+}
+
+export function submitPointsExchange(points: number) {
+  return post<PointsExchangeResult>('/points/exchange', { points })
 }
 
 // ==================== Node ====================

@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
-import { Button, message } from 'antd'
+import { Button, message, Spin } from 'antd'
 import { SwapOutlined, InboxOutlined } from '@ant-design/icons'
+import { getPointsExchangeHistory, submitPointsExchange } from '@/api'
+import type { PointsExchangeRecord } from '@/types'
 import logoImg from '@/assets/logo.png'
 import './index.css'
 
@@ -49,15 +51,16 @@ function loadCachedProfile(): PointsProfile | null {
   }
 }
 
-interface ExchangeRecord {
-  time: string
-  points: number
-  peak: string
+function hasAuthToken(): boolean {
+  return !!localStorage.getItem('peak_token')
 }
 
-const MOCK_RECORDS: ExchangeRecord[] = [
-  { time: '2026/02/27 00:01:11', points: 234552, peak: '2.11' },
-]
+function formatTime(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
 
 export default function Points() {
   const { t } = useTranslation()
@@ -85,21 +88,51 @@ export default function Points() {
   const nftCount = profile?.nft != null ? Number(profile.nft) || 0 : 0
 
   const [exchanging, setExchanging] = useState(false)
+  const [records, setRecords] = useState<PointsExchangeRecord[]>([])
+  const [recordsLoading, setRecordsLoading] = useState(false)
 
   const available = score
 
   const num = (v: number) => (isGuest ? DASH : v.toLocaleString())
 
-  const handleExchange = () => {
-    if (isGuest || exchanging || available <= 0) return
-    setExchanging(true)
-    setTimeout(() => {
-      setExchanging(false)
-      message.success(t('points.exchangeSuccess'))
-    }, 900)
-  }
+  const fetchRecords = useCallback(async () => {
+    // history requires an authenticated session; guests have nothing to show
+    if (isGuest || !hasAuthToken()) {
+      setRecords([])
+      return
+    }
+    setRecordsLoading(true)
+    try {
+      const res = await getPointsExchangeHistory({ page: 1, pageSize: 50 })
+      setRecords(res.data?.list ?? [])
+    } catch {
+      setRecords([])
+    } finally {
+      setRecordsLoading(false)
+    }
+  }, [isGuest])
 
-  const records = isGuest ? [] : MOCK_RECORDS
+  useEffect(() => {
+    fetchRecords()
+  }, [fetchRecords])
+
+  const handleExchange = async () => {
+    if (isGuest || exchanging || available <= 0) return
+    if (!hasAuthToken()) {
+      message.error(t('points.loginRequired'))
+      return
+    }
+    setExchanging(true)
+    try {
+      await submitPointsExchange(available)
+      message.success(t('points.exchangeSuccess'))
+      await fetchRecords()
+    } catch {
+      // request util already surfaces the server error message
+    } finally {
+      setExchanging(false)
+    }
+  }
 
   return (
     <div className="pts-page">
@@ -199,10 +232,14 @@ export default function Points() {
               <span>{t('points.colPoints')}</span>
               <span>{t('points.colPeak')}</span>
             </div>
-            {records.length > 0 ? (
-              records.map((row, i) => (
-                <div className="pts-trow" key={i}>
-                  <span className="pts-td-time">{row.time}</span>
+            {recordsLoading ? (
+              <div className="table-empty">
+                <Spin />
+              </div>
+            ) : records.length > 0 ? (
+              records.map((row) => (
+                <div className="pts-trow" key={row.id}>
+                  <span className="pts-td-time">{formatTime(row.createdAt)}</span>
                   <span>{row.points.toLocaleString()}</span>
                   <span className="orange">{row.peak}</span>
                 </div>

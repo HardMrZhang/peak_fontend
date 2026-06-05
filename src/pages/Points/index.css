@@ -244,8 +244,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 18px 24px;
+  gap: clamp(8px, 3vw, 14px);
+  padding: 18px clamp(12px, 4vw, 24px);
   border-radius: 14px;
   background: linear-gradient(135deg, rgba(245, 166, 35, 0.12) 0%, rgba(255, 107, 53, 0.06) 100%);
   border: 1px solid rgba(245, 166, 35, 0.2);
@@ -256,6 +256,7 @@
   align-items: baseline;
   gap: 6px;
   flex: 1;
+  min-width: 0;
 }
 
 .pts-rate-side.right {
@@ -263,16 +264,18 @@
 }
 
 .pts-rate-num {
-  font-size: 22px;
+  font-size: clamp(16px, 5vw, 22px);
   font-weight: 800;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .pts-rate-unit {
   font-size: 12px;
   color: var(--text-secondary);
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .pts-rate-swap {
@@ -372,8 +375,10 @@
     font-size: 18px;
   }
 
-  .pts-rate-num {
-    font-size: 18px;
+  .pts-rate-swap {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
   }
 
   .pts-stat-val.big {

@@ -16,4 +16,4 @@ export const IPO_DATE = '2026-09-01T00:00:00'
 export const IPO_DATE_DISPLAY = '2026.09.01'
 
 /** 安卓 APK 下载地址（替换为真实 APK 链接即可） */
-export const ANDROID_APK_URL = '/peak.apk'
+export const ANDROID_APK_URL = '/PEAK-TV.apk'

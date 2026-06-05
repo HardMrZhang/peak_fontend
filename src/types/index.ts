@@ -60,6 +60,19 @@ export interface LedgerEntry {
   createdAt: string
 }
 
+export interface PointsExchangeRecord {
+  id: string
+  points: number
+  peak: string
+  createdAt: string
+}
+
+export interface PointsExchangeResult {
+  points: number
+  peak: string
+  createdAt: string
+}
+
 export interface NodeSaleConfig {
   totalNodes: number
   soldNodes: number

@@ -466,6 +466,7 @@
     "exchange": "兑换",
     "exchanging": "兑换中...",
     "exchangeSuccess": "兑换成功",
+    "loginRequired": "请先登录后再兑换",
     "rateTitle": "积分兑换价底",
     "recordTitle": "兑换记录",
     "colPoints": "积分",

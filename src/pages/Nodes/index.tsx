@@ -269,6 +269,7 @@ export default function Nodes() {
   const availableUsdt = parseFloat(balances.find(b => b.asset === 'USDT')?.availableAmount ?? '0')
   const insufficientBalance = availableUsdt < estimatedCost
   const progress = totalNodes > 0 ? (soldNodes / totalNodes) * 100 : 0
+  const isSoldOut = saleConfig?.status === 'SOLD_OUT' || (totalNodes > 0 && soldNodes >= totalNodes)
 
   const revenueColumns: ColumnsType<DailyEarning> = [
     { title: t('nodes.colDate'), dataIndex: 'bizDate', width: 120 },
@@ -326,8 +327,9 @@ export default function Nodes() {
               <Button
                 className="purchase-btn"
                 onClick={() => setPurchaseOpen(true)}
+                disabled={isSoldOut}
               >
-                {t('nodes.purchaseNodes')}
+                {isSoldOut ? t('nodes.soldOut') : t('nodes.purchaseNodes')}
               </Button>
             </div>
             {/* 销毁倒计时文字已隐藏，对应销毁程序不执行 */}

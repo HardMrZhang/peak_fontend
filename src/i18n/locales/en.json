@@ -54,6 +54,7 @@
     "whatIsNft": "What is Node NFT?",
     "salePeriod": "Sale Period",
     "purchaseNodes": "Purchase Nodes",
+    "soldOut": "Purchase Ended",
     "benefitText": "Limited 10,000 Node NFTs, sharing 1 billion PEAK. Year 1: 360 million PEAK, first come first served. Each node can claim up to 100,000 PEAK. Daily snapshot at 02:00, rewards distributed at 03:00",
     "destroyNotice": "All unsold nodes will be destroyed before {{date}}.",
     "cdDays": "D",

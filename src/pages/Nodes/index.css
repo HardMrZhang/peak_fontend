@@ -116,6 +116,15 @@
   transform: translateY(-1px);
 }
 
+.purchase-btn:disabled,
+.purchase-btn:disabled:hover {
+  background: linear-gradient(135deg, #5a5a5a 0%, #3f3f3f 100%) !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .sale-destroy {
   display: flex;
   align-items: center;

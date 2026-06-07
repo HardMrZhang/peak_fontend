@@ -1,12 +1,19 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
-import { Button, message, Spin } from 'antd'
-import { SwapOutlined, InboxOutlined } from '@ant-design/icons'
-import { getPointsExchangeHistory, submitPointsExchange } from '@/api'
-import type { PointsExchangeRecord } from '@/types'
+import { Button, message, Spin, Modal, Input } from 'antd'
+import { SwapOutlined, InboxOutlined, MailOutlined } from '@ant-design/icons'
+import {
+  getPointsExchangeHistory,
+  submitPointsExchange,
+  getPointsOverview,
+  bindPointsEmail,
+} from '@/api'
+import type { PointsExchangeRecord, PointsOverview } from '@/types'
 import logoImg from '@/assets/logo.png'
 import './index.css'
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /* exchange floor: 10000 points => 200 PEAK */
 const RATE_POINTS = 10000
@@ -84,20 +91,46 @@ export default function Points() {
   const username = profile?.username || null
   const avatarUrl = profile?.avatar || null
   const isVip = profile?.isVip === '1'
-  const score = profile?.score != null ? Number(profile.score) || 0 : 0
-  const nftCount = profile?.nft != null ? Number(profile.nft) || 0 : 0
+  const urlScore = profile?.score != null ? Number(profile.score) || 0 : 0
+  const urlNft = profile?.nft != null ? Number(profile.nft) || 0 : 0
 
   const [exchanging, setExchanging] = useState(false)
   const [records, setRecords] = useState<PointsExchangeRecord[]>([])
   const [recordsLoading, setRecordsLoading] = useState(false)
 
+  // authoritative data from backend (points + email-bound status)
+  const [overview, setOverview] = useState<PointsOverview | null>(null)
+  const [bindOpen, setBindOpen] = useState(false)
+  const [emailInput, setEmailInput] = useState('')
+  const [binding, setBinding] = useState(false)
+
+  const authed = hasAuthToken()
+  const emailBound = Boolean(overview?.emailBound)
+  // prefer backend data when authenticated, fall back to URL-injected profile
+  const score = overview ? overview.score : urlScore
+  const nftCount = overview ? overview.nftCount : urlNft
   const available = score
 
-  const num = (v: number) => (isGuest ? DASH : v.toLocaleString())
+  // show real values for authenticated users (backend) or when URL profile exists
+  const displayReady = authed || !isGuest
+  const num = (v: number) => (displayReady ? v.toLocaleString() : DASH)
+
+  const fetchOverview = useCallback(async () => {
+    if (!hasAuthToken()) {
+      setOverview(null)
+      return
+    }
+    try {
+      const res = await getPointsOverview()
+      setOverview(res.data ?? null)
+    } catch {
+      setOverview(null)
+    }
+  }, [])
 
   const fetchRecords = useCallback(async () => {
     // history requires an authenticated session; guests have nothing to show
-    if (isGuest || !hasAuthToken()) {
+    if (!hasAuthToken()) {
       setRecords([])
       return
     }
@@ -110,23 +143,54 @@ export default function Points() {
     } finally {
       setRecordsLoading(false)
     }
-  }, [isGuest])
+  }, [])
 
   useEffect(() => {
+    fetchOverview()
     fetchRecords()
-  }, [fetchRecords])
+  }, [fetchOverview, fetchRecords])
+
+  const openBind = () => {
+    setEmailInput('')
+    setBindOpen(true)
+  }
+
+  const handleBindEmail = async () => {
+    const email = emailInput.trim().toLowerCase()
+    if (!EMAIL_RE.test(email)) {
+      message.error(t('points.emailInvalid'))
+      return
+    }
+    setBinding(true)
+    try {
+      const res = await bindPointsEmail(email)
+      message.success(res.data?.rebound ? t('points.rebindSuccess') : t('points.bindSuccess'))
+      setBindOpen(false)
+      await fetchOverview()
+    } catch {
+      // request util already surfaces the server error message
+    } finally {
+      setBinding(false)
+    }
+  }
 
   const handleExchange = async () => {
-    if (isGuest || exchanging || available <= 0) return
+    if (exchanging || available <= 0) return
     if (!hasAuthToken()) {
       message.error(t('points.loginRequired'))
+      return
+    }
+    // gate: must bind email before exchanging
+    if (!emailBound) {
+      message.warning(t('points.emailRequired'))
+      openBind()
       return
     }
     setExchanging(true)
     try {
       await submitPointsExchange(available)
       message.success(t('points.exchangeSuccess'))
-      await fetchRecords()
+      await Promise.all([fetchOverview(), fetchRecords()])
     } catch {
       // request util already surfaces the server error message
     } finally {
@@ -192,11 +256,28 @@ export default function Points() {
             <span className="pts-stat-val orange big">{num(available)}</span>
           </div>
 
+          {/* email binding */}
+          {authed && (
+            <div className="pts-stat-row pts-email-row">
+              <span className="pts-stat-label">
+                <MailOutlined className="pts-email-icon" />
+                {emailBound ? overview?.email : t('points.bindEmail')}
+              </span>
+              <Button
+                size="small"
+                className="pts-email-btn"
+                onClick={openBind}
+              >
+                {emailBound ? t('points.rebindEmail') : t('points.bindEmail')}
+              </Button>
+            </div>
+          )}
+
           <Button
             className="pts-action-btn pts-exchange-btn"
             onClick={handleExchange}
             loading={exchanging}
-            disabled={isGuest}
+            disabled={!displayReady}
             block
           >
             {t('points.exchange')}
@@ -254,6 +335,29 @@ export default function Points() {
         </div>
         </div>
       </div>
+
+      <Modal
+        title={emailBound ? t('points.rebindEmailTitle') : t('points.bindEmailTitle')}
+        open={bindOpen}
+        onOk={handleBindEmail}
+        onCancel={() => setBindOpen(false)}
+        confirmLoading={binding}
+        okText={t('points.confirm')}
+        cancelText={t('points.cancel')}
+        destroyOnClose
+      >
+        <Input
+          type="email"
+          size="large"
+          prefix={<MailOutlined />}
+          placeholder={t('points.emailPlaceholder')}
+          value={emailInput}
+          onChange={(e) => setEmailInput(e.target.value)}
+          onPressEnter={handleBindEmail}
+          maxLength={100}
+          allowClear
+        />
+      </Modal>
     </div>
   )
 }

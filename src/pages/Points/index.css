@@ -186,6 +186,30 @@
 }
 
 /* action buttons */
+.pts-email-row {
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.pts-email-icon {
+  margin-right: 6px;
+  color: var(--color-orange, #f5a623);
+}
+
+.pts-email-btn {
+  border-radius: 8px !important;
+  border: 1px solid rgba(245, 166, 35, 0.4) !important;
+  background: transparent !important;
+  color: #f5a623 !important;
+  font-size: 12px !important;
+}
+
+.pts-email-btn:hover {
+  border-color: #f5a623 !important;
+  color: #f5a623 !important;
+  opacity: 0.85;
+}
+
 .pts-action-btn {
   height: 44px !important;
   border-radius: 12px !important;

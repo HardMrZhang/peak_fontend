@@ -24,6 +24,7 @@ import type {
   PageResult,
   PointsExchangeRecord,
   PointsExchangeResult,
+  PointsOverview,
   TeamLevelInfo,
   GenesisSaleInfo,
   GenesisBuyParams,
@@ -70,6 +71,14 @@ export function getDepositAddress(asset?: string) {
 }
 
 // ==================== Points ====================
+export function getPointsOverview() {
+  return get<PointsOverview>('/points/overview')
+}
+
+export function bindPointsEmail(email: string) {
+  return post<{ emailBound: boolean; email: string | null; rebound: boolean }>('/points/bind-email', { email })
+}
+
 export function getPointsExchangeHistory(params?: { page?: number; pageSize?: number }) {
   return get<PageResult<PointsExchangeRecord>>('/points/exchange-history', { params })
 }

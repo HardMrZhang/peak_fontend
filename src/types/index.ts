@@ -73,6 +73,20 @@ export interface PointsExchangeResult {
   createdAt: string
 }
 
+export interface PointsOverview {
+  score: number
+  emailBound: boolean
+  email: string | null
+  nftCount: number
+  peakAvailable: string
+  redeemRate: {
+    pointsPerUnit: number
+    peakPerUnit: number
+    minPoints: number
+    estimatedPeak: string
+  }
+}
+
 export interface NodeSaleConfig {
   totalNodes: number
   soldNodes: number

@@ -458,6 +458,7 @@
     "rightsLabel": "Benefits",
     "rightMultiplier": "Points x3",
     "rightWhitelist": "IPO Whitelist",
+    "tierLevels": "{{count}} Levels",
     "appPoints": "App Points",
     "inflatedPoints": "Points after NFT boost",
     "inflate": "Boost",

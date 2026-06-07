@@ -162,7 +162,8 @@
       "PURCHASE_FREEZE": "购买冻结",
       "PURCHASE_UNFREEZE": "购买解冻",
       "REWARD_RELEASE_REVERSAL": "释放冲正回滚",
-      "TRIPLE_REWARD_FIX": "奖励修正"
+      "TRIPLE_REWARD_FIX": "奖励修正",
+      "SCORE_REDEEM": "积分兑换"
     },
     "bizType": {
       "NODE_PURCHASE": "节点购买",
@@ -175,7 +176,8 @@
       "NODE_DAILY": "节点每日收益",
       "NODE_REWARD": "节点奖励",
       "REFERRAL_REWARD": "推荐奖励",
-      "REWARD_FIX": "奖励修正"
+      "REWARD_FIX": "奖励修正",
+      "SCORE_REDEEM": "积分兑换"
     },
     "status": {
       "PENDING": "待处理",

@@ -162,7 +162,8 @@
       "PURCHASE_FREEZE": "Purchase Freeze",
       "PURCHASE_UNFREEZE": "Purchase Unfreeze",
       "REWARD_RELEASE_REVERSAL": "Reward Release Reversal",
-      "TRIPLE_REWARD_FIX": "Reward Correction"
+      "TRIPLE_REWARD_FIX": "Reward Correction",
+      "SCORE_REDEEM": "Points Exchange"
     },
     "bizType": {
       "NODE_PURCHASE": "Node Purchase",
@@ -175,7 +176,8 @@
       "NODE_DAILY": "Daily Node Reward",
       "NODE_REWARD": "Node Reward",
       "REFERRAL_REWARD": "Referral Reward",
-      "REWARD_FIX": "Reward Correction"
+      "REWARD_FIX": "Reward Correction",
+      "SCORE_REDEEM": "Points Exchange"
     },
     "status": {
       "PENDING": "Pending",

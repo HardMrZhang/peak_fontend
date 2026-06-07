@@ -17,9 +17,9 @@ import './index.css'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-/* exchange floor: 10000 points => 200 PEAK */
+/* exchange floor: 10000 points => 40 PEAK */
 const RATE_POINTS = 10000
-const RATE_PEAK = 200
+const RATE_PEAK = 40
 
 const DASH = '-'
 

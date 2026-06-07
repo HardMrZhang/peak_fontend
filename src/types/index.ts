@@ -79,6 +79,7 @@ export interface PointsOverview {
   email: string | null
   nftCount: number
   peakAvailable: string
+  hasPeakAccount?: boolean
   redeemRate: {
     pointsPerUnit: number
     peakPerUnit: number

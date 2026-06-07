@@ -58,8 +58,15 @@ function loadCachedProfile(): PointsProfile | null {
   }
 }
 
-function hasAuthToken(): boolean {
-  return !!localStorage.getItem('peak_token')
+// 积分页面以「邮箱」作为身份，绑定后把邮箱持久化，刷新/重进仍可按邮箱拉取数据
+const EMAIL_STORAGE_KEY = 'peak_points_email'
+
+function loadBoundEmail(): string {
+  try {
+    return localStorage.getItem(EMAIL_STORAGE_KEY) || ''
+  } catch {
+    return ''
+  }
 }
 
 function formatTime(iso: string): string {
@@ -98,45 +105,44 @@ export default function Points() {
   const [records, setRecords] = useState<PointsExchangeRecord[]>([])
   const [recordsLoading, setRecordsLoading] = useState(false)
 
-  // authoritative data from backend (points + email-bound status)
+  // authoritative data from backend (points + email-bound status), keyed by email
   const [overview, setOverview] = useState<PointsOverview | null>(null)
+  const [boundEmail, setBoundEmail] = useState<string>(() => loadBoundEmail())
   const [bindOpen, setBindOpen] = useState(false)
   const [emailInput, setEmailInput] = useState('')
   const [binding, setBinding] = useState(false)
 
-  const authed = hasAuthToken()
-  const emailBound = Boolean(overview?.emailBound)
-  // prefer backend data when authenticated, fall back to URL-injected profile
+  const emailBound = Boolean(boundEmail)
+  // prefer backend data (by email) when available, fall back to URL-injected profile
   const score = overview ? overview.score : urlScore
   const nftCount = overview ? overview.nftCount : urlNft
   const available = score
 
-  // show real values for authenticated users (backend) or when URL profile exists
-  const displayReady = authed || !isGuest
+  // show real values when backend overview loaded or when URL profile exists
+  const displayReady = Boolean(overview) || !isGuest
   const num = (v: number) => (displayReady ? v.toLocaleString() : DASH)
 
-  const fetchOverview = useCallback(async () => {
-    if (!hasAuthToken()) {
+  const fetchOverview = useCallback(async (email: string) => {
+    if (!email) {
       setOverview(null)
       return
     }
     try {
-      const res = await getPointsOverview()
+      const res = await getPointsOverview(email)
       setOverview(res.data ?? null)
     } catch {
       setOverview(null)
     }
   }, [])
 
-  const fetchRecords = useCallback(async () => {
-    // history requires an authenticated session; guests have nothing to show
-    if (!hasAuthToken()) {
+  const fetchRecords = useCallback(async (email: string) => {
+    if (!email) {
       setRecords([])
       return
     }
     setRecordsLoading(true)
     try {
-      const res = await getPointsExchangeHistory({ page: 1, pageSize: 50 })
+      const res = await getPointsExchangeHistory({ page: 1, pageSize: 50, email })
       setRecords(res.data?.list ?? [])
     } catch {
       setRecords([])
@@ -146,12 +152,12 @@ export default function Points() {
   }, [])
 
   useEffect(() => {
-    fetchOverview()
-    fetchRecords()
-  }, [fetchOverview, fetchRecords])
+    fetchOverview(boundEmail)
+    fetchRecords(boundEmail)
+  }, [boundEmail, fetchOverview, fetchRecords])
 
   const openBind = () => {
-    setEmailInput('')
+    setEmailInput(boundEmail)
     setBindOpen(true)
   }
 
@@ -165,8 +171,14 @@ export default function Points() {
     try {
       const res = await bindPointsEmail(email)
       message.success(res.data?.rebound ? t('points.rebindSuccess') : t('points.bindSuccess'))
+      try {
+        localStorage.setItem(EMAIL_STORAGE_KEY, email)
+      } catch {
+        // ignore storage errors (private mode etc.)
+      }
       setBindOpen(false)
-      await fetchOverview()
+      // updating boundEmail triggers overview + records refresh via effect
+      setBoundEmail(email)
     } catch {
       // request util already surfaces the server error message
     } finally {
@@ -176,10 +188,6 @@ export default function Points() {
 
   const handleExchange = async () => {
     if (exchanging || available <= 0) return
-    if (!hasAuthToken()) {
-      message.error(t('points.loginRequired'))
-      return
-    }
     // gate: must bind email before exchanging
     if (!emailBound) {
       message.warning(t('points.emailRequired'))
@@ -188,9 +196,9 @@ export default function Points() {
     }
     setExchanging(true)
     try {
-      await submitPointsExchange(available)
+      await submitPointsExchange(available, boundEmail)
       message.success(t('points.exchangeSuccess'))
-      await Promise.all([fetchOverview(), fetchRecords()])
+      await Promise.all([fetchOverview(boundEmail), fetchRecords(boundEmail)])
     } catch {
       // request util already surfaces the server error message
     } finally {
@@ -257,21 +265,19 @@ export default function Points() {
           </div>
 
           {/* email binding */}
-          {authed && (
-            <div className="pts-stat-row pts-email-row">
-              <span className="pts-stat-label">
-                <MailOutlined className="pts-email-icon" />
-                {emailBound ? overview?.email : t('points.bindEmail')}
-              </span>
-              <Button
-                size="small"
-                className="pts-email-btn"
-                onClick={openBind}
-              >
-                {emailBound ? t('points.rebindEmail') : t('points.bindEmail')}
-              </Button>
-            </div>
-          )}
+          <div className="pts-stat-row pts-email-row">
+            <span className="pts-stat-label">
+              <MailOutlined className="pts-email-icon" />
+              {emailBound ? overview?.email : t('points.bindEmail')}
+            </span>
+            <Button
+              size="small"
+              className="pts-email-btn"
+              onClick={openBind}
+            >
+              {emailBound ? t('points.rebindEmail') : t('points.bindEmail')}
+            </Button>
+          </div>
 
           <Button
             className="pts-action-btn pts-exchange-btn"

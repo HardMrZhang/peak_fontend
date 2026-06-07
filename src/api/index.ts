@@ -71,20 +71,24 @@ export function getDepositAddress(asset?: string) {
 }
 
 // ==================== Points ====================
-export function getPointsOverview() {
-  return get<PointsOverview>('/points/overview')
+// 积分页面以「邮箱」作为身份，无需登录态；email 由前端持久化后随请求带上。
+export function getPointsOverview(email?: string | null) {
+  return get<PointsOverview>('/points/overview', { params: { email: email || undefined } })
 }
 
 export function bindPointsEmail(email: string) {
-  return post<{ emailBound: boolean; email: string | null; rebound: boolean }>('/points/bind-email', { email })
+  return post<{ emailBound: boolean; email: string | null; rebound: boolean; hasPeakAccount: boolean; score: number }>(
+    '/points/bind-email',
+    { email },
+  )
 }
 
-export function getPointsExchangeHistory(params?: { page?: number; pageSize?: number }) {
+export function getPointsExchangeHistory(params?: { page?: number; pageSize?: number; email?: string | null }) {
   return get<PageResult<PointsExchangeRecord>>('/points/exchange-history', { params })
 }
 
-export function submitPointsExchange(points: number) {
-  return post<PointsExchangeResult>('/points/exchange', { points })
+export function submitPointsExchange(points: number, email: string) {
+  return post<PointsExchangeResult>('/points/exchange', { points, email })
 }
 
 // ==================== Node ====================

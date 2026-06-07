@@ -10,6 +10,7 @@ import {
   submitPointsExchange,
   getPointsOverview,
   bindPointsEmail,
+  inflatePoints,
 } from '@/api'
 import type { PointsExchangeRecord, PointsOverview } from '@/types'
 import logoImg from '@/assets/logo.png'
@@ -102,6 +103,7 @@ export default function Points() {
   const urlNft = profile?.nft != null ? Number(profile.nft) || 0 : 0
 
   const [exchanging, setExchanging] = useState(false)
+  const [inflating, setInflating] = useState(false)
   const [records, setRecords] = useState<PointsExchangeRecord[]>([])
   const [recordsLoading, setRecordsLoading] = useState(false)
 
@@ -121,6 +123,12 @@ export default function Points() {
   // prefer backend data (by email) when available, fall back to URL-injected profile
   const score = overview ? overview.score : urlScore
   const nftCount = overview ? overview.nftCount : urlNft
+  // 膨胀倍数：持有 N 张 NFT => N+1 倍
+  const nftMultiplier = overview ? overview.nftMultiplier : urlNft + 1
+  const scoreInflated = overview ? overview.scoreInflated : false
+  // APP 积分（膨胀前原始值）/ NFT 膨胀后可获得积分 / 可用积分（兑换用）
+  const appPoints = overview ? overview.appPoints : urlScore
+  const inflatedPoints = overview ? overview.inflatedPoints : urlScore * (urlNft + 1)
   const available = score
   // 头像/昵称：优先后端按邮箱取到的 ling 资料，回退到 APP 注入的 profile
   const username = overview?.username || profile?.username || null
@@ -191,6 +199,32 @@ export default function Points() {
       // request util already surfaces the server error message
     } finally {
       setBinding(false)
+    }
+  }
+
+  const handleInflate = async () => {
+    if (inflating) return
+    // gate 1: must bind email before inflating
+    if (!emailBound) {
+      message.warning(t('points.emailRequired'))
+      openBind()
+      return
+    }
+    // gate 2: must connect wallet (NFT count is read from the wallet account)
+    if (!walletAddress) {
+      message.warning(t('points.walletRequired'))
+      setWalletModalVisible(true)
+      return
+    }
+    setInflating(true)
+    try {
+      await inflatePoints(boundEmail, walletAddress)
+      message.success(t('points.inflateSuccess'))
+      await Promise.all([fetchOverview(boundEmail, walletAddress), fetchRecords(boundEmail, walletAddress)])
+    } catch {
+      // request util already surfaces the server error message
+    } finally {
+      setInflating(false)
     }
   }
 
@@ -274,8 +308,25 @@ export default function Points() {
           {/* points stats */}
           <div className="pts-stat-row">
             <span className="pts-stat-label">{t('points.appPoints')}</span>
-            <span className="pts-stat-val">{num(score)}</span>
+            <span className="pts-stat-val">{num(appPoints)}</span>
           </div>
+
+          {/* nft inflate (×N+1) */}
+          <div className="pts-stat-row">
+            <span className="pts-stat-label">{t('points.inflatedPoints')}</span>
+            <span className="pts-stat-val orange">
+              {displayReady ? `${inflatedPoints.toLocaleString()} (×${nftMultiplier})` : DASH}
+            </span>
+          </div>
+
+          <Button
+            className="pts-action-btn pts-inflate-btn"
+            onClick={handleInflate}
+            loading={inflating}
+            disabled={!displayReady || scoreInflated}
+          >
+            {scoreInflated ? t('points.inflated') : t('points.inflate')}
+          </Button>
 
           <div className="pts-stat-row pts-available-row">
             <span className="pts-stat-label">{t('points.available')}</span>

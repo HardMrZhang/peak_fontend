@@ -24,6 +24,7 @@ import type {
   PageResult,
   PointsExchangeRecord,
   PointsExchangeResult,
+  PointsInflateResult,
   PointsOverview,
   TeamLevelInfo,
   GenesisSaleInfo,
@@ -92,6 +93,11 @@ export function getPointsExchangeHistory(params?: {
   walletAddress?: string | null
 }) {
   return get<PageResult<PointsExchangeRecord>>('/points/exchange-history', { params })
+}
+
+// 积分膨胀：按 NFT 持有量加成（N 张 => N+1 倍），需绑定邮箱并连接钱包
+export function inflatePoints(email: string, walletAddress: string) {
+  return post<PointsInflateResult>('/points/inflate', { email, walletAddress })
 }
 
 // 兑换需要连接钱包：PEAK 发到该钱包账户的平台托管余额

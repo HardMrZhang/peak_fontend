@@ -75,6 +75,10 @@ export interface PointsExchangeResult {
 
 export interface PointsOverview {
   score: number
+  appPoints: number
+  inflatedPoints: number
+  nftMultiplier: number
+  scoreInflated: boolean
   emailBound: boolean
   email: string | null
   username?: string | null
@@ -88,6 +92,15 @@ export interface PointsOverview {
     minPoints: number
     estimatedPeak: string
   }
+}
+
+export interface PointsInflateResult {
+  appPoints: number
+  score: number
+  inflatedPoints: number
+  nftCount: number
+  nftMultiplier: number
+  scoreInflated: boolean
 }
 
 export interface NodeSaleConfig {

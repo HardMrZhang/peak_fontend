@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import { Button, message, Spin, Modal, Input } from 'antd'
 import { SwapOutlined, InboxOutlined, MailOutlined } from '@ant-design/icons'
 import {
@@ -95,8 +97,6 @@ export default function Points() {
   }, [params])
 
   const isGuest = !profile
-  const username = profile?.username || null
-  const avatarUrl = profile?.avatar || null
   const isVip = profile?.isVip === '1'
   const urlScore = profile?.score != null ? Number(profile.score) || 0 : 0
   const urlNft = profile?.nft != null ? Number(profile.nft) || 0 : 0
@@ -112,37 +112,45 @@ export default function Points() {
   const [emailInput, setEmailInput] = useState('')
   const [binding, setBinding] = useState(false)
 
+  // 钱包：兑换得到的 PEAK 会发到该钱包账户的平台托管余额
+  const { publicKey } = useWallet()
+  const { setVisible: setWalletModalVisible } = useWalletModal()
+  const walletAddress = publicKey ? publicKey.toBase58() : null
+
   const emailBound = Boolean(boundEmail)
   // prefer backend data (by email) when available, fall back to URL-injected profile
   const score = overview ? overview.score : urlScore
   const nftCount = overview ? overview.nftCount : urlNft
   const available = score
+  // 头像/昵称：优先后端按邮箱取到的 ling 资料，回退到 APP 注入的 profile
+  const username = overview?.username || profile?.username || null
+  const avatarUrl = overview?.avatar || profile?.avatar || null
 
   // show real values when backend overview loaded or when URL profile exists
   const displayReady = Boolean(overview) || !isGuest
   const num = (v: number) => (displayReady ? v.toLocaleString() : DASH)
 
-  const fetchOverview = useCallback(async (email: string) => {
+  const fetchOverview = useCallback(async (email: string, wallet: string | null) => {
     if (!email) {
       setOverview(null)
       return
     }
     try {
-      const res = await getPointsOverview(email)
+      const res = await getPointsOverview(email, wallet)
       setOverview(res.data ?? null)
     } catch {
       setOverview(null)
     }
   }, [])
 
-  const fetchRecords = useCallback(async (email: string) => {
+  const fetchRecords = useCallback(async (email: string, wallet: string | null) => {
     if (!email) {
       setRecords([])
       return
     }
     setRecordsLoading(true)
     try {
-      const res = await getPointsExchangeHistory({ page: 1, pageSize: 50, email })
+      const res = await getPointsExchangeHistory({ page: 1, pageSize: 50, email, walletAddress: wallet })
       setRecords(res.data?.list ?? [])
     } catch {
       setRecords([])
@@ -152,9 +160,9 @@ export default function Points() {
   }, [])
 
   useEffect(() => {
-    fetchOverview(boundEmail)
-    fetchRecords(boundEmail)
-  }, [boundEmail, fetchOverview, fetchRecords])
+    fetchOverview(boundEmail, walletAddress)
+    fetchRecords(boundEmail, walletAddress)
+  }, [boundEmail, walletAddress, fetchOverview, fetchRecords])
 
   const openBind = () => {
     setEmailInput(boundEmail)
@@ -187,18 +195,28 @@ export default function Points() {
   }
 
   const handleExchange = async () => {
-    if (exchanging || available <= 0) return
-    // gate: must bind email before exchanging
+    if (exchanging) return
+    if (available <= 0) {
+      message.info(t('points.noPoints'))
+      return
+    }
+    // gate 1: must bind email before exchanging
     if (!emailBound) {
       message.warning(t('points.emailRequired'))
       openBind()
       return
     }
+    // gate 2: must connect wallet (PEAK is credited to the wallet account)
+    if (!walletAddress) {
+      message.warning(t('points.walletRequired'))
+      setWalletModalVisible(true)
+      return
+    }
     setExchanging(true)
     try {
-      await submitPointsExchange(available, boundEmail)
+      await submitPointsExchange(available, boundEmail, walletAddress)
       message.success(t('points.exchangeSuccess'))
-      await Promise.all([fetchOverview(boundEmail), fetchRecords(boundEmail)])
+      await Promise.all([fetchOverview(boundEmail, walletAddress), fetchRecords(boundEmail, walletAddress)])
     } catch {
       // request util already surfaces the server error message
     } finally {
@@ -228,7 +246,7 @@ export default function Points() {
                   <span>{t('points.member')}</span>
                 </div>
               ) : null}
-              <div className="pts-nft-name">{isGuest ? DASH : (username || DASH)}</div>
+              <div className="pts-nft-name">{username || DASH}</div>
             </div>
           </div>
 

@@ -71,9 +71,11 @@ export function getDepositAddress(asset?: string) {
 }
 
 // ==================== Points ====================
-// 积分页面以「邮箱」作为身份，无需登录态；email 由前端持久化后随请求带上。
-export function getPointsOverview(email?: string | null) {
-  return get<PointsOverview>('/points/overview', { params: { email: email || undefined } })
+// 积分页面以「邮箱」作为身份，无需登录态；email/钱包地址由前端随请求带上。
+export function getPointsOverview(email?: string | null, walletAddress?: string | null) {
+  return get<PointsOverview>('/points/overview', {
+    params: { email: email || undefined, walletAddress: walletAddress || undefined },
+  })
 }
 
 export function bindPointsEmail(email: string) {
@@ -83,12 +85,18 @@ export function bindPointsEmail(email: string) {
   )
 }
 
-export function getPointsExchangeHistory(params?: { page?: number; pageSize?: number; email?: string | null }) {
+export function getPointsExchangeHistory(params?: {
+  page?: number
+  pageSize?: number
+  email?: string | null
+  walletAddress?: string | null
+}) {
   return get<PageResult<PointsExchangeRecord>>('/points/exchange-history', { params })
 }
 
-export function submitPointsExchange(points: number, email: string) {
-  return post<PointsExchangeResult>('/points/exchange', { points, email })
+// 兑换需要连接钱包：PEAK 发到该钱包账户的平台托管余额
+export function submitPointsExchange(points: number, email: string, walletAddress: string) {
+  return post<PointsExchangeResult>('/points/exchange', { points, email, walletAddress })
 }
 
 // ==================== Node ====================

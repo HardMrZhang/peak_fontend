@@ -77,6 +77,8 @@ export interface PointsOverview {
   score: number
   emailBound: boolean
   email: string | null
+  username?: string | null
+  avatar?: string | null
   nftCount: number
   peakAvailable: string
   hasPeakAccount?: boolean

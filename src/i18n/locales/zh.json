@@ -472,6 +472,8 @@
     "rebindEmail": "换绑邮箱",
     "emailBound": "已绑定",
     "emailRequired": "请先绑定邮箱后再兑换",
+    "walletRequired": "请先连接钱包后再兑换",
+    "noPoints": "暂无可兑换积分",
     "emailPlaceholder": "请输入邮箱地址",
     "emailInvalid": "邮箱格式不正确",
     "bindEmailTitle": "绑定邮箱",

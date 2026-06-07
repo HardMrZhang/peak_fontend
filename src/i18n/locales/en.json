@@ -472,6 +472,8 @@
     "rebindEmail": "Change Email",
     "emailBound": "Bound",
     "emailRequired": "Please bind your email before exchanging",
+    "walletRequired": "Please connect your wallet before exchanging",
+    "noPoints": "No points available to exchange",
     "emailPlaceholder": "Enter your email address",
     "emailInvalid": "Invalid email format",
     "bindEmailTitle": "Bind Email",

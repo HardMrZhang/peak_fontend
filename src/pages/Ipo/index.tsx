@@ -55,25 +55,32 @@ export default function Ipo() {
   const { connection } = useConnection()
   const { publicKey, sendTransaction, connected } = useWallet()
 
-  /* ---------------- 链上交易：发送后端构造好的指令 ---------------- */
+  /* ---------------- 链上交易：发送后端构造好的指令 / 部分签名交易 ---------------- */
   const sendDappIx = useCallback(
     async (p: DappIxParams): Promise<string> => {
       if (!publicKey || !sendTransaction || !connected) {
         throw new Error(t('account.walletRequired'))
       }
-      const ix = new TransactionInstruction({
-        programId: new PublicKey(p.programId),
-        keys: p.keys.map((k) => ({
-          pubkey: new PublicKey(k.pubkey),
-          isSigner: k.isSigner,
-          isWritable: k.isWritable,
-        })),
-        data: Buffer.from(p.data, 'base64'),
-      })
-      const tx = new Transaction().add(
-        ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }),
-        ix,
-      )
+      let tx: Transaction
+      if (p.transactionBase64) {
+        // operator 已部分签名的完整交易：直接反序列化补签发送，
+        // 不可改动内容（含加 ComputeBudget 指令），否则 operator 签名失效
+        tx = Transaction.from(Buffer.from(p.transactionBase64, 'base64'))
+      } else {
+        const ix = new TransactionInstruction({
+          programId: new PublicKey(p.programId!),
+          keys: (p.keys || []).map((k) => ({
+            pubkey: new PublicKey(k.pubkey),
+            isSigner: k.isSigner,
+            isWritable: k.isWritable,
+          })),
+          data: Buffer.from(p.data!, 'base64'),
+        })
+        tx = new Transaction().add(
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }),
+          ix,
+        )
+      }
       const sig = await sendTransaction(tx, connection, { skipPreflight: true })
 
       const startMs = Date.now()

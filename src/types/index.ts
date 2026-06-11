@@ -349,12 +349,22 @@ export interface DappIxKey {
   isWritable: boolean
 }
 
-// 后端已完成账户布局与编码，前端据此构造 TransactionInstruction 并用钱包签名
+// 后端已完成账户布局与编码，前端据此构造 TransactionInstruction 并用钱包签名。
+// 两种形态二选一：
+//   1) programId/keys/data —— 裸指令（仅用户单签的操作：质押、赎回）
+//   2) transactionBase64  —— operator 已部分签名的完整交易（空投、零撸卡、各类领取），
+//      前端 Transaction.from 反序列化后由用户钱包补签发送（用户付 GAS），
+//      不可改动交易内容（含加 ComputeBudget），否则 operator 签名失效；
+//      需在 blockhash 失效前（约 1~2 分钟）完成签名发送。
 export interface DappIxParams {
   intentId: string
-  programId: string
-  keys: DappIxKey[]
-  data: string // base64
+  programId?: string
+  keys?: DappIxKey[]
+  data?: string // base64
+  transactionBase64?: string
+  recentBlockhash?: string
+  lastValidBlockHeight?: number
+  feePayer?: string
   userPeakAta: string
 }
 

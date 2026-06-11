@@ -20,10 +20,7 @@ import {
   getAirdropParams,
   confirmAirdrop,
   getAirdropRecords,
-  getZeroCardInfo,
-  getZeroCardParams,
-  confirmZeroCard,
-  getZeroCardRecords,
+  getPeakPrice,
 } from '@/api'
 import type {
   DappIxParams,
@@ -31,8 +28,6 @@ import type {
   DappStakeRecord,
   DappAirdropConfig,
   DappAirdropRecord,
-  DappZeroCardInfo,
-  DappZeroCardRecord,
 } from '@/types'
 import './index.css'
 
@@ -230,7 +225,27 @@ export default function Ipo() {
     }
   }, [])
 
-  const price = airdropConfig?.priceUsdt ? parseFloat(airdropConfig.priceUsdt) : 0
+  /* ---------------- 实时价格轮询（公开接口，无需登录） ---------------- */
+  const [livePrice, setLivePrice] = useState<number | null>(null)
+
+  useEffect(() => {
+    let stopped = false
+    const fetchPrice = async () => {
+      try {
+        const res = await getPeakPrice()
+        const p = res.data?.priceUsdt ? parseFloat(res.data.priceUsdt) : 0
+        if (!stopped && p > 0) setLivePrice(p)
+      } catch { /* ignore */ }
+    }
+    fetchPrice()
+    const timer = setInterval(fetchPrice, 5000)
+    return () => {
+      stopped = true
+      clearInterval(timer)
+    }
+  }, [])
+
+  const price = livePrice ?? (airdropConfig?.priceUsdt ? parseFloat(airdropConfig.priceUsdt) : 0)
 
   const airdropCalc = useMemo(() => {
     let qty = parseFloat(quantity) || 0
@@ -280,59 +295,10 @@ export default function Ipo() {
     }
   }
 
-  /* ---------------- 100U 投资包 / 零撸卡 ---------------- */
-  const [zeroCardInfo, setZeroCardInfo] = useState<DappZeroCardInfo | null>(null)
-  const [accelRecords, setAccelRecords] = useState<DappZeroCardRecord[]>([])
-  const [buying, setBuying] = useState(false)
-  const [accelTip, setAccelTip] = useState('')
-  const accelTipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const refreshZeroCard = useCallback(async () => {
-    if (hasToken()) {
-      try {
-        const res = await getZeroCardInfo()
-        setZeroCardInfo(res.data)
-      } catch { /* ignore */ }
-      try {
-        const rec = await getZeroCardRecords({ page: 1, pageSize: 50 })
-        setAccelRecords(rec.data?.list ?? [])
-      } catch { /* ignore */ }
-    }
-  }, [])
-
-  const handleBuyPack = async () => {
-    if (buying) return
-    if (!hasToken() || !connected) {
-      message.warning(t('account.walletRequired'))
-      return
-    }
-    setBuying(true)
-    try {
-      const paramsRes = await getZeroCardParams()
-      const sig = await sendDappIx(paramsRes.data)
-      await confirmZeroCard({ txHash: sig, intentId: paramsRes.data.intentId })
-      setAccelTip(t('ipo.accelBuySuccess'))
-      if (accelTipTimer.current) clearTimeout(accelTipTimer.current)
-      accelTipTimer.current = setTimeout(() => setAccelTip(''), 2500)
-      refreshZeroCard()
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
-      if (!msg.includes('User rejected')) {
-        message.error(`${t('ipo.accelBuyFail')}: ${msg.slice(0, 80)}`)
-      }
-    } finally {
-      setBuying(false)
-    }
-  }
-
   useEffect(() => {
     refreshStake()
     refreshAirdrop()
-    refreshZeroCard()
-  }, [refreshStake, refreshAirdrop, refreshZeroCard, connected])
-
-  const zeroPeakAmount = zeroCardInfo?.peakAmount ?? '--'
-  const zeroPrice = zeroCardInfo?.priceUsdtFixed ?? 100
+  }, [refreshStake, refreshAirdrop, connected])
 
   return (
     <div className="staking-page">
@@ -559,83 +525,6 @@ export default function Ipo() {
           </div>
         </section>
       </div>
-
-      {/* ---------------- 100U 投资包 / 零撸卡 ---------------- */}
-      <div className="staking-divider" />
-
-      <section className="sp-accel-section">
-        <h2 className="sp-accel-title">{t('ipo.accelTitle')}</h2>
-        <p className="sp-accel-subtitle">{t('ipo.accelSubtitle')}</p>
-
-        {accelTip && <div className="sp-tip success">{accelTip}</div>}
-
-        <div className="sp-accel-layout">
-          {/* 投资包 NFT */}
-          <div className="sp-accel-card">
-            <div className="sp-accel-visual">
-              <span className="sp-accel-badge">{t('ipo.accelNftBadge')}</span>
-              <img src={logoImg} alt="PEAK" className="sp-accel-logo" />
-              <span className="sp-accel-visual-boost">100U</span>
-            </div>
-            <div className="sp-accel-body">
-              <h3 className="sp-accel-name">{t('ipo.accelPackName')}</h3>
-              <p className="sp-accel-desc">{t('ipo.accelPackDesc')}</p>
-              <div className="sp-accel-row">
-                <span className="sp-accel-row-label">{t('ipo.accelBoost')}</span>
-                <span className="sp-accel-row-value sp-highlight">
-                  {zeroCardInfo?.appPointsLayers ?? 10} {t('ipo.accelLayers')}
-                </span>
-              </div>
-              <div className="sp-accel-row">
-                <span className="sp-accel-row-label">{t('ipo.accelPeakAmount')}</span>
-                <span className="sp-accel-row-value">{zeroPeakAmount} PEAK</span>
-              </div>
-              <div className="sp-accel-row">
-                <span className="sp-accel-row-label">{t('ipo.accelSold')}</span>
-                <span className="sp-accel-row-value">{zeroCardInfo?.soldCount ?? 0}</span>
-              </div>
-              <div className="sp-accel-price-row">
-                <span className="sp-accel-price">{zeroPrice} USDT</span>
-                <button type="button" className="sp-accel-buy-btn" onClick={handleBuyPack} disabled={buying}>
-                  {t('ipo.accelBuy')}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* 购买记录 */}
-          <div className="sp-accel-records">
-            <h3 className="sp-record-title">{t('ipo.accelRecordTitle')}</h3>
-            <div className="sp-record-list">
-              {accelRecords.length === 0 ? (
-                <div className="sp-record-empty">{t('ipo.accelNoRecord')}</div>
-              ) : (
-                accelRecords.map((item) => (
-                  <div key={item.id} className="sp-record-card">
-                    <div className="sp-record-header">
-                      <span className="sp-record-id">
-                        {t('ipo.accelRecordId')}: {item.cardId}
-                      </span>
-                      <span className="sp-record-time">{item.createdAt.slice(0, 19).replace('T', ' ')}</span>
-                    </div>
-                    <div className="sp-record-grid">
-                      <div className="sp-record-item">
-                        {t('ipo.accelRecordQty')}: {item.peakAmount} PEAK
-                      </div>
-                      <div className="sp-record-item">
-                        {t('ipo.accelRecordPrice')}: {item.usdValue} USDT
-                      </div>
-                      <div className="sp-record-item">
-                        {t('ipo.accelRecordStatus')}: {t('ipo.accelStatusOwned')}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   )
 }

@@ -185,6 +185,18 @@
   margin-bottom: 16px;
 }
 
+/* 余额不足提示 */
+.pts-shortfall-tip {
+  margin: 4px 0 12px;
+  padding: 10px 14px;
+  background: rgba(255, 77, 79, 0.08);
+  border: 1px solid rgba(255, 77, 79, 0.25);
+  border-radius: 10px;
+  color: #ff7875;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 /* action buttons */
 .pts-email-row {
   align-items: center;
@@ -373,9 +385,73 @@
   font-weight: 700;
 }
 
+/* ─── 积分卡牌（100U 零撸投资包） ─── */
+.pts-section-divider {
+  height: 1px;
+  margin: 40px 0 26px;
+  background: linear-gradient(90deg, transparent, rgba(245, 166, 35, 0.4), transparent);
+}
+
+.pts-card-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 18px;
+}
+
+.pts-buycard-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 30px 0;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(245, 166, 35, 0.25);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(245, 166, 35, 0.16) 0%, transparent 60%),
+    rgba(255, 255, 255, 0.02);
+}
+
+.pts-buycard-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  box-shadow: 0 0 24px rgba(245, 166, 35, 0.35);
+}
+
+.pts-buycard-value {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--accent-orange);
+  letter-spacing: 1px;
+}
+
+.pts-buycard-name {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pts-buycard-desc {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  white-space: pre-line;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 860px) {
   .pts-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .pts-card-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }

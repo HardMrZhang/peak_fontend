@@ -9,6 +9,9 @@ export const DEFAULT_WITHDRAW_FEE_BY_ASSET = {
 export const PEAK_TOTAL_SUPPLY = 1_000_000_000
 export const PEAK_YEAR1_ALLOC = 360_000_000
 
+/** PEAK 代币 mint 地址（读取钱包 PEAK 余额用） */
+export const PEAK_MINT_ADDRESS = '24NSBvTN5oPhSDPorMNGrLFJcqor9hdPZm3AqKBVXDWy'
+
 export const POINTS_EXCHANGE_DATE = '2026-06-06T00:00:00'
 export const POINTS_EXCHANGE_DATE_DISPLAY = '2026.06.06'
 

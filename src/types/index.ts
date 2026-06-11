@@ -406,6 +406,13 @@ export interface DappStakeRecord {
   createdAt: string
 }
 
+export interface DappMarketPrice {
+  symbol: string
+  priceUsdt: string | null
+  source: string | null
+  ts: number
+}
+
 export interface DappAirdropConfig {
   priceUsdt: string | null
   multiplier: number
@@ -444,7 +451,6 @@ export interface DappZeroCardInfo {
   priceUsdtFixed: number
   peakAmount: string | null
   appPointsLayers: number
-  soldCount: number
   myCount: number
 }
 

@@ -34,6 +34,7 @@ import type {
   DappStakeParams,
   DappUnstakeParams,
   DappStakeRecord,
+  DappMarketPrice,
   DappAirdropConfig,
   DappAirdropParams,
   DappAirdropRecord,
@@ -270,6 +271,11 @@ export function confirmUnstake(data: { txHash: string; intentId: string }) {
 
 export function getStakeRecords(params?: { page?: number; pageSize?: number }) {
   return get<PageResult<DappStakeRecord>>('/dapp/stake/records', { params })
+}
+
+// ==================== DApp: 行情（公开，无需登录） ====================
+export function getPeakPrice() {
+  return get<DappMarketPrice>('/dapp/market/price')
 }
 
 // ==================== DApp: 三倍空投 ====================

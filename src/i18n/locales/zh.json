@@ -563,6 +563,12 @@
     "accelRecordQty": "数量",
     "accelRecordPrice": "金额",
     "accelRecordStatus": "状态",
-    "accelStatusOwned": "持有中"
+    "accelStatusOwned": "持有中",
+    "stakeFail": "质押失败",
+    "joinFail": "参与失败",
+    "accelBuyFail": "购买失败",
+    "accelLayers": "层积分",
+    "accelPeakAmount": "销毁 PEAK",
+    "accelSold": "已售出"
   }
 }

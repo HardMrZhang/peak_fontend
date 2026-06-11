@@ -1,94 +1,135 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { message } from 'antd'
+import { useConnection, useWallet } from '@solana/wallet-adapter-react'
+import {
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+  ComputeBudgetProgram,
+} from '@solana/web3.js'
 import logoImg from '@/assets/logo.png'
+import {
+  getStakeOverview,
+  getStakeParams,
+  confirmStake,
+  getUnstakeParams,
+  confirmUnstake,
+  getStakeRecords,
+  getAirdropConfig,
+  getAirdropParams,
+  confirmAirdrop,
+  getAirdropRecords,
+  getZeroCardInfo,
+  getZeroCardParams,
+  confirmZeroCard,
+  getZeroCardRecords,
+} from '@/api'
+import type {
+  DappIxParams,
+  DappStakePool,
+  DappStakeRecord,
+  DappAirdropConfig,
+  DappAirdropRecord,
+  DappZeroCardInfo,
+  DappZeroCardRecord,
+} from '@/types'
 import './index.css'
 
-const BLOCK_EXPLORER_URL = 'https://etherscan.io/tx/'
+const BLOCK_EXPLORER_URL = 'https://solscan.io/tx/'
 const DURATIONS = [15, 30, 90, 150] as const
 type Duration = (typeof DURATIONS)[number]
-
-const STAKE_PRICE = 0.05
 const AIRDROP_MULTIPLE = 3
 
-type StakeStatus = 'staking' | 'wait' | 'redeemed'
-
-interface StakeRecord {
-  id: string
-  amount: number
-  day: number
-  endTime: number
-  status: StakeStatus
-  stakeHash: string
-  redeemHash: string
-}
-
-interface AirdropRecord {
-  id: string
-  time: string
-  quantity: number
-  tripleQuantity: number
-  rate: string
-  remainDays: number
-}
-
-interface AccelRecord {
-  id: string
-  time: string
-  qty: number
-  price: number
-}
-
-const ACCEL_PACK = {
-  boost: '+25%',
-  validity: 30,
-  stock: 100,
-  price: 100,
-}
-
-function genHash(): string {
-  const chars = '0123456789abcdef'
-  let hash = ''
-  for (let i = 0; i < 64; i++) hash += chars[Math.floor(Math.random() * chars.length)]
-  return hash
-}
-
-function shortenHash(hash: string): string {
+function shortenHash(hash: string | null): string {
   if (!hash) return ''
   return `${hash.slice(0, 6)}...${hash.slice(-4)}`
 }
 
-function genId(prefix = 'PK'): string {
-  return prefix + Date.now().toString().slice(-8)
+function hasToken(): boolean {
+  return !!localStorage.getItem('peak_token')
 }
 
 export default function Ipo() {
   const { t } = useTranslation()
+  const { connection } = useConnection()
+  const { publicKey, sendTransaction, connected } = useWallet()
 
-  /* ---------------- Staking state ---------------- */
-  const [stakeTotals, setStakeTotals] = useState<Record<Duration, number>>({
-    15: 12800,
-    30: 25600,
-    90: 36900,
-    150: 48200,
-  })
+  /* ---------------- 链上交易：发送后端构造好的指令 ---------------- */
+  const sendDappIx = useCallback(
+    async (p: DappIxParams): Promise<string> => {
+      if (!publicKey || !sendTransaction || !connected) {
+        throw new Error(t('account.walletRequired'))
+      }
+      const ix = new TransactionInstruction({
+        programId: new PublicKey(p.programId),
+        keys: p.keys.map((k) => ({
+          pubkey: new PublicKey(k.pubkey),
+          isSigner: k.isSigner,
+          isWritable: k.isWritable,
+        })),
+        data: Buffer.from(p.data, 'base64'),
+      })
+      const tx = new Transaction().add(
+        ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }),
+        ix,
+      )
+      const sig = await sendTransaction(tx, connection, { skipPreflight: true })
+
+      const startMs = Date.now()
+      const TIMEOUT_MS = 60_000
+      let confirmed = false
+      while (Date.now() - startMs < TIMEOUT_MS) {
+        const resp = await connection.getSignatureStatuses([sig])
+        const status = resp?.value?.[0]
+        if (status?.err) throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`)
+        if (status?.confirmationStatus === 'confirmed' || status?.confirmationStatus === 'finalized') {
+          confirmed = true
+          break
+        }
+        await new Promise((r) => setTimeout(r, 2000))
+      }
+      if (!confirmed) throw new Error('Transaction confirmation timeout')
+      return sig
+    },
+    [publicKey, sendTransaction, connected, connection, t],
+  )
+
+  /* ---------------- 质押状态 ---------------- */
+  const [pools, setPools] = useState<DappStakePool[]>([])
+  const [minStake, setMinStake] = useState(1000)
   const [selectedDay, setSelectedDay] = useState<Duration | null>(null)
   const [stakeAmount, setStakeAmount] = useState('')
   const [stakeTip, setStakeTip] = useState<{ text: string; type: 'success' | 'fail' | '' }>({ text: '', type: '' })
   const [staking, setStaking] = useState(false)
   const [now, setNow] = useState(Date.now())
-  const [stakeRecords, setStakeRecords] = useState<StakeRecord[]>(() => {
-    const base = Date.now()
-    return [
-      { id: 'PK001', amount: 5000, day: 15, endTime: base + 12 * 24 * 3600 * 1000, status: 'staking', stakeHash: genHash(), redeemHash: '' },
-      { id: 'PK002', amount: 8000, day: 30, endTime: base + 10 * 60 * 1000, status: 'staking', stakeHash: genHash(), redeemHash: '' },
-      { id: 'PK003', amount: 10000, day: 90, endTime: base - 3600 * 1000, status: 'wait', stakeHash: genHash(), redeemHash: '' },
-      { id: 'PK004', amount: 6500, day: 150, endTime: base - 24 * 3600 * 1000, status: 'redeemed', stakeHash: genHash(), redeemHash: genHash() },
-    ]
-  })
+  const [stakeRecords, setStakeRecords] = useState<DappStakeRecord[]>([])
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(timer)
+  }, [])
+
+  const stakeTotals = useMemo(() => {
+    const map: Record<number, string> = { 15: '0', 30: '0', 90: '0', 150: '0' }
+    pools.forEach((p) => { map[p.periodDays] = p.totalStaked })
+    return map
+  }, [pools])
+
+  const refreshStake = useCallback(async () => {
+    try {
+      const res = await getStakeOverview()
+      if (res.data) {
+        setPools(res.data.pools)
+        setMinStake(res.data.minStakePeak)
+      }
+    } catch { /* chain/overview not ready */ }
+    if (hasToken()) {
+      try {
+        const rec = await getStakeRecords({ page: 1, pageSize: 50 })
+        setStakeRecords(rec.data?.list ?? [])
+      } catch { /* ignore */ }
+    }
   }, [])
 
   const formatCountdown = (ms: number): string => {
@@ -103,13 +144,16 @@ export default function Ipo() {
   const handleConfirmStake = async () => {
     setStakeTip({ text: '', type: '' })
     if (staking) return
-
+    if (!hasToken() || !connected) {
+      message.warning(t('account.walletRequired'))
+      return
+    }
     if (!selectedDay) {
       setStakeTip({ text: t('ipo.selectDurationFirst'), type: 'fail' })
       return
     }
     const amount = parseFloat(stakeAmount || '0')
-    if (!amount || amount < 1000) {
+    if (!amount || amount < minStake) {
       setStakeTip({ text: t('ipo.amountTooLow'), type: 'fail' })
       setStakeAmount('')
       return
@@ -117,90 +161,171 @@ export default function Ipo() {
 
     setStaking(true)
     setStakeTip({ text: t('ipo.staking'), type: '' })
-    await new Promise((r) => setTimeout(r, 600))
-
-    const dayNum = selectedDay
-    const newItem: StakeRecord = {
-      id: genId(),
-      amount: Math.floor(amount),
-      day: dayNum,
-      endTime: Date.now() + dayNum * 24 * 3600 * 1000,
-      status: 'staking',
-      stakeHash: genHash(),
-      redeemHash: '',
+    try {
+      const paramsRes = await getStakeParams(selectedDay, Math.floor(amount))
+      const sig = await sendDappIx(paramsRes.data)
+      await confirmStake({ txHash: sig, intentId: paramsRes.data.intentId })
+      setStakeAmount('')
+      setStakeTip({ text: t('ipo.stakeSuccess'), type: 'success' })
+      refreshStake()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (!msg.includes('User rejected')) {
+        setStakeTip({ text: `${t('ipo.stakeFail')}: ${msg.slice(0, 80)}`, type: 'fail' })
+      } else {
+        setStakeTip({ text: '', type: '' })
+      }
+    } finally {
+      setStaking(false)
     }
-    setStakeRecords((prev) => [newItem, ...prev])
-    setStakeTotals((prev) => ({ ...prev, [dayNum]: prev[dayNum] + amount }))
-    setStakeAmount('')
-    setStakeTip({ text: t('ipo.stakeSuccess'), type: 'success' })
-    setStaking(false)
   }
 
-  const handleRedeem = async (recordId: string) => {
+  const handleRedeem = async (record: DappStakeRecord) => {
+    if (!hasToken() || !connected) {
+      message.warning(t('account.walletRequired'))
+      return
+    }
     setStakeTip({ text: t('ipo.redeeming'), type: '' })
-    await new Promise((r) => setTimeout(r, 800))
-    setStakeRecords((prev) =>
-      prev.map((r) => (r.id === recordId ? { ...r, status: 'redeemed' as StakeStatus, redeemHash: genHash() } : r)),
-    )
-    setStakeTip({ text: t('ipo.redeemSuccess'), type: 'success' })
+    try {
+      const paramsRes = await getUnstakeParams(record.positionId, record.periodDays)
+      const sig = await sendDappIx(paramsRes.data)
+      await confirmUnstake({ txHash: sig, intentId: paramsRes.data.intentId })
+      setStakeTip({ text: t('ipo.redeemSuccess'), type: 'success' })
+      refreshStake()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (!msg.includes('User rejected')) {
+        setStakeTip({ text: `${t('ipo.redeemFail')}: ${msg.slice(0, 80)}`, type: 'fail' })
+      } else {
+        setStakeTip({ text: '', type: '' })
+      }
+    }
   }
 
-  /* ---------------- Airdrop state ---------------- */
+  /* ---------------- 三倍空投状态 ---------------- */
+  const [airdropConfig, setAirdropConfig] = useState<DappAirdropConfig | null>(null)
   const [quantity, setQuantity] = useState('1000')
-  const [airdropRecords, setAirdropRecords] = useState<AirdropRecord[]>([])
+  const [airdropRecords, setAirdropRecords] = useState<DappAirdropRecord[]>([])
+  const [joining, setJoining] = useState(false)
   const [joinTip, setJoinTip] = useState('')
   const joinTipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  /* ---------------- Accel pack (mock NFT) ---------------- */
-  const [accelTip, setAccelTip] = useState('')
-  const accelTipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [accelRecords, setAccelRecords] = useState<AccelRecord[]>([])
+  const refreshAirdrop = useCallback(async () => {
+    try {
+      const res = await getAirdropConfig()
+      setAirdropConfig(res.data)
+    } catch { /* ignore */ }
+    if (hasToken()) {
+      try {
+        const rec = await getAirdropRecords({ page: 1, pageSize: 50 })
+        setAirdropRecords(rec.data?.list ?? [])
+      } catch { /* ignore */ }
+    }
+  }, [])
 
-  const handleBuyPack = () => {
-    // mock: 后续对接 NFT 加速包合约 / 后台接口
-    const d = new Date()
-    const pad = (n: number) => String(n).padStart(2, '0')
-    const timeStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
-    const record: AccelRecord = { id: 'ACC' + Date.now().toString().slice(-8), time: timeStr, qty: 1, price: ACCEL_PACK.price }
-    setAccelRecords((prev) => [record, ...prev])
-    setAccelTip(t('ipo.accelBuySuccess'))
-    if (accelTipTimer.current) clearTimeout(accelTipTimer.current)
-    accelTipTimer.current = setTimeout(() => setAccelTip(''), 2500)
-  }
+  const price = airdropConfig?.priceUsdt ? parseFloat(airdropConfig.priceUsdt) : 0
 
   const airdropCalc = useMemo(() => {
     let qty = parseFloat(quantity) || 0
     if (qty < 1) qty = 1
-    const totalValue = qty * STAKE_PRICE
-    const dailyRate = totalValue < 500 ? 0.014 : 0.015
-    const rateText = totalValue < 500 ? '1.4%' : '1.5%'
+    const totalValue = qty * price
+    const threshold = airdropConfig?.tierThresholdUsd ?? 500
+    const rateLow = airdropConfig ? parseFloat(airdropConfig.dailyRateLow) : 1.4
+    const rateHigh = airdropConfig ? parseFloat(airdropConfig.dailyRateHigh) : 1.5
+    const dailyRatePct = totalValue < threshold ? rateLow : rateHigh
+    const rateText = `${dailyRatePct}%`
     const totalAirdrop = qty * AIRDROP_MULTIPLE
-    const dailyAirdrop = qty * dailyRate
+    const dailyAirdrop = (qty * dailyRatePct) / 100
     const referAccel = 0
     const teamAccel = 0
     const dailyTotal = dailyAirdrop + referAccel + teamAccel
     const totalDays = dailyTotal > 0 ? Math.ceil(totalAirdrop / dailyTotal) : 0
     return { qty, totalValue, rateText, totalAirdrop, dailyAirdrop, referAccel, teamAccel, totalDays }
-  }, [quantity])
+  }, [quantity, price, airdropConfig])
 
-  const handleJoin = () => {
-    const c = airdropCalc
-    const d = new Date()
-    const pad = (n: number) => String(n).padStart(2, '0')
-    const timeStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
-    const record: AirdropRecord = {
-      id: 'PEAK' + Date.now(),
-      time: timeStr,
-      quantity: c.qty,
-      tripleQuantity: c.totalAirdrop,
-      rate: c.rateText,
-      remainDays: c.totalDays,
+  const handleJoin = async () => {
+    if (joining) return
+    if (!hasToken() || !connected) {
+      message.warning(t('account.walletRequired'))
+      return
     }
-    setAirdropRecords((prev) => [record, ...prev])
-    setJoinTip(t('ipo.joinSuccess'))
-    if (joinTipTimer.current) clearTimeout(joinTipTimer.current)
-    joinTipTimer.current = setTimeout(() => setJoinTip(''), 2500)
+    const qty = parseFloat(quantity) || 0
+    if (qty < 1) {
+      message.warning(t('ipo.quantityPlaceholder'))
+      return
+    }
+    setJoining(true)
+    try {
+      const paramsRes = await getAirdropParams(Math.floor(qty))
+      const sig = await sendDappIx(paramsRes.data)
+      await confirmAirdrop({ txHash: sig, intentId: paramsRes.data.intentId })
+      setJoinTip(t('ipo.joinSuccess'))
+      if (joinTipTimer.current) clearTimeout(joinTipTimer.current)
+      joinTipTimer.current = setTimeout(() => setJoinTip(''), 2500)
+      refreshAirdrop()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (!msg.includes('User rejected')) {
+        message.error(`${t('ipo.joinFail')}: ${msg.slice(0, 80)}`)
+      }
+    } finally {
+      setJoining(false)
+    }
   }
+
+  /* ---------------- 100U 投资包 / 零撸卡 ---------------- */
+  const [zeroCardInfo, setZeroCardInfo] = useState<DappZeroCardInfo | null>(null)
+  const [accelRecords, setAccelRecords] = useState<DappZeroCardRecord[]>([])
+  const [buying, setBuying] = useState(false)
+  const [accelTip, setAccelTip] = useState('')
+  const accelTipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const refreshZeroCard = useCallback(async () => {
+    if (hasToken()) {
+      try {
+        const res = await getZeroCardInfo()
+        setZeroCardInfo(res.data)
+      } catch { /* ignore */ }
+      try {
+        const rec = await getZeroCardRecords({ page: 1, pageSize: 50 })
+        setAccelRecords(rec.data?.list ?? [])
+      } catch { /* ignore */ }
+    }
+  }, [])
+
+  const handleBuyPack = async () => {
+    if (buying) return
+    if (!hasToken() || !connected) {
+      message.warning(t('account.walletRequired'))
+      return
+    }
+    setBuying(true)
+    try {
+      const paramsRes = await getZeroCardParams()
+      const sig = await sendDappIx(paramsRes.data)
+      await confirmZeroCard({ txHash: sig, intentId: paramsRes.data.intentId })
+      setAccelTip(t('ipo.accelBuySuccess'))
+      if (accelTipTimer.current) clearTimeout(accelTipTimer.current)
+      accelTipTimer.current = setTimeout(() => setAccelTip(''), 2500)
+      refreshZeroCard()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (!msg.includes('User rejected')) {
+        message.error(`${t('ipo.accelBuyFail')}: ${msg.slice(0, 80)}`)
+      }
+    } finally {
+      setBuying(false)
+    }
+  }
+
+  useEffect(() => {
+    refreshStake()
+    refreshAirdrop()
+    refreshZeroCard()
+  }, [refreshStake, refreshAirdrop, refreshZeroCard, connected])
+
+  const zeroPeakAmount = zeroCardInfo?.peakAmount ?? '--'
+  const zeroPrice = zeroCardInfo?.priceUsdtFixed ?? 100
 
   return (
     <div className="staking-page">
@@ -211,7 +336,7 @@ export default function Ipo() {
       </div>
 
       <div className="staking-grid">
-        {/* ---------------- Staking card ---------------- */}
+        {/* ---------------- 质押卡片 ---------------- */}
         <section className="sp-card">
           <h2 className="sp-card-title">{t('ipo.stakeTitle')}</h2>
 
@@ -239,7 +364,7 @@ export default function Ipo() {
                 </span>
                 <span className="sp-duration-total">
                   <span className="sp-duration-total-label">{t('ipo.stakedTotal')}</span>
-                  <span className="sp-duration-total-value">{stakeTotals[day].toLocaleString()} PEAK</span>
+                  <span className="sp-duration-total-value">{stakeTotals[day]} PEAK</span>
                 </span>
               </button>
             ))}
@@ -275,49 +400,50 @@ export default function Ipo() {
               <div className="sp-record-empty">{t('ipo.noStakeRecord')}</div>
             ) : (
               stakeRecords.map((item) => {
-                const timeLeft = item.endTime - now
-                const isRedeemed = item.status === 'redeemed'
+                const timeLeft = item.unlockTime ? new Date(item.unlockTime).getTime() - now : 0
+                const isRedeemed = item.status === 'REDEEMED'
+                const txHash = isRedeemed ? item.unstakeTxHash : item.stakeTxHash
                 return (
                   <div key={item.id} className={`sp-record-card ${isRedeemed ? 'redeemed' : ''}`}>
                     <div className="sp-record-row">
                       <span className="sp-record-label">{t('ipo.recordId')}</span>
-                      <span className="sp-record-value">{item.id}</span>
+                      <span className="sp-record-value">{item.positionId}</span>
                     </div>
                     <div className="sp-record-row">
                       <span className="sp-record-label">{t('ipo.recordAmount')}</span>
-                      <span className="sp-record-value">{item.amount.toLocaleString()} PEAK</span>
+                      <span className="sp-record-value">{item.amount} PEAK</span>
                     </div>
                     <div className="sp-record-row">
                       <span className="sp-record-label">{t('ipo.recordDuration')}</span>
                       <span className="sp-record-value">
-                        {item.day} {t('ipo.dayUnit')}
+                        {item.periodDays} {t('ipo.dayUnit')}
                       </span>
                     </div>
                     <div className="sp-record-row">
                       <span className="sp-record-label">{t('ipo.recordStatus')}</span>
                       <span className="sp-record-value">
-                        {item.status === 'staking' && <span className="sp-countdown">{formatCountdown(timeLeft)}</span>}
-                        {item.status === 'wait' && (
-                          <button type="button" className="sp-redeem-btn" onClick={() => handleRedeem(item.id)}>
+                        {item.status === 'STAKING' && <span className="sp-countdown">{formatCountdown(timeLeft)}</span>}
+                        {item.status === 'REDEEMABLE' && (
+                          <button type="button" className="sp-redeem-btn" onClick={() => handleRedeem(item)}>
                             {t('ipo.statusRedeemable')}
                           </button>
                         )}
-                        {item.status === 'redeemed' && <span className="sp-redeemed-text">{t('ipo.statusRedeemed')}</span>}
+                        {item.status === 'REDEEMED' && <span className="sp-redeemed-text">{t('ipo.statusRedeemed')}</span>}
                       </span>
                     </div>
-                    <div className="sp-record-row">
-                      <span className="sp-record-label">{t('ipo.recordTxHash')}</span>
-                      <span className="sp-record-value">
-                        <a
-                          className="sp-tx-hash"
-                          onClick={() =>
-                            window.open(`${BLOCK_EXPLORER_URL}${isRedeemed ? item.redeemHash : item.stakeHash}`, '_blank')
-                          }
-                        >
-                          {shortenHash(isRedeemed ? item.redeemHash : item.stakeHash)}
-                        </a>
-                      </span>
-                    </div>
+                    {txHash && (
+                      <div className="sp-record-row">
+                        <span className="sp-record-label">{t('ipo.recordTxHash')}</span>
+                        <span className="sp-record-value">
+                          <a
+                            className="sp-tx-hash"
+                            onClick={() => window.open(`${BLOCK_EXPLORER_URL}${txHash}`, '_blank')}
+                          >
+                            {shortenHash(txHash)}
+                          </a>
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )
               })
@@ -325,7 +451,7 @@ export default function Ipo() {
           </div>
         </section>
 
-        {/* ---------------- Airdrop card ---------------- */}
+        {/* ---------------- 三倍空投卡片 ---------------- */}
         <section className="sp-card">
           <h2 className="sp-card-title">{t('ipo.airdropTitle')}</h2>
 
@@ -347,7 +473,7 @@ export default function Ipo() {
           <div className="sp-info-box">
             <div className="sp-info-line">
               <span>{t('ipo.realTimePrice')}</span>
-              <span className="sp-highlight">{STAKE_PRICE.toFixed(2)} USDT</span>
+              <span className="sp-highlight">{price > 0 ? price.toFixed(4) : '--'} USDT</span>
             </div>
             <div className="sp-info-line">
               <span>{t('ipo.totalValue')}</span>
@@ -387,7 +513,7 @@ export default function Ipo() {
             </div>
           </div>
 
-          <button type="button" className="sp-buy-btn" onClick={handleJoin}>
+          <button type="button" className="sp-buy-btn" onClick={handleJoin} disabled={joining}>
             {t('ipo.confirmJoin')}
           </button>
 
@@ -402,19 +528,19 @@ export default function Ipo() {
                 <div key={item.id} className="sp-record-card">
                   <div className="sp-record-header">
                     <span className="sp-record-id">
-                      {t('ipo.airdropRecordId')}: {item.id}
+                      {t('ipo.airdropRecordId')}: {item.grantId}
                     </span>
-                    <span className="sp-record-time">{item.time}</span>
+                    <span className="sp-record-time">{item.createdAt.slice(0, 19).replace('T', ' ')}</span>
                   </div>
                   <div className="sp-record-grid">
                     <div className="sp-record-item">
-                      {t('ipo.airdropQuantity')}: {item.quantity.toLocaleString()} PEAK
+                      {t('ipo.airdropQuantity')}: {item.principal} PEAK
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.airdropTriple')}: {item.tripleQuantity.toFixed(2)} PEAK
+                      {t('ipo.airdropTriple')}: {item.totalCap} PEAK
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.airdropRateField')}: {item.rate}
+                      {t('ipo.airdropRateField')}: {item.dailyRate}%
                     </div>
                     <div className="sp-record-item">
                       {t('ipo.airdropRemainDays')}: {item.remainDays} {t('ipo.dayUnit')}
@@ -427,7 +553,7 @@ export default function Ipo() {
         </section>
       </div>
 
-      {/* ---------------- Acceleration packs (NFT, mock) ---------------- */}
+      {/* ---------------- 100U 投资包 / 零撸卡 ---------------- */}
       <div className="staking-divider" />
 
       <section className="sp-accel-section">
@@ -437,40 +563,40 @@ export default function Ipo() {
         {accelTip && <div className="sp-tip success">{accelTip}</div>}
 
         <div className="sp-accel-layout">
-          {/* Left: the single NFT pack */}
+          {/* 投资包 NFT */}
           <div className="sp-accel-card">
             <div className="sp-accel-visual">
               <span className="sp-accel-badge">{t('ipo.accelNftBadge')}</span>
               <img src={logoImg} alt="PEAK" className="sp-accel-logo" />
-              <span className="sp-accel-visual-boost">{ACCEL_PACK.boost}</span>
+              <span className="sp-accel-visual-boost">100U</span>
             </div>
             <div className="sp-accel-body">
               <h3 className="sp-accel-name">{t('ipo.accelPackName')}</h3>
               <p className="sp-accel-desc">{t('ipo.accelPackDesc')}</p>
               <div className="sp-accel-row">
                 <span className="sp-accel-row-label">{t('ipo.accelBoost')}</span>
-                <span className="sp-accel-row-value sp-highlight">{ACCEL_PACK.boost}</span>
-              </div>
-              <div className="sp-accel-row">
-                <span className="sp-accel-row-label">{t('ipo.accelValidity')}</span>
-                <span className="sp-accel-row-value">
-                  {ACCEL_PACK.validity} {t('ipo.accelDayUnit')}
+                <span className="sp-accel-row-value sp-highlight">
+                  {zeroCardInfo?.appPointsLayers ?? 10} {t('ipo.accelLayers')}
                 </span>
               </div>
               <div className="sp-accel-row">
-                <span className="sp-accel-row-label">{t('ipo.accelStock')}</span>
-                <span className="sp-accel-row-value">{ACCEL_PACK.stock}</span>
+                <span className="sp-accel-row-label">{t('ipo.accelPeakAmount')}</span>
+                <span className="sp-accel-row-value">{zeroPeakAmount} PEAK</span>
+              </div>
+              <div className="sp-accel-row">
+                <span className="sp-accel-row-label">{t('ipo.accelSold')}</span>
+                <span className="sp-accel-row-value">{zeroCardInfo?.soldCount ?? 0}</span>
               </div>
               <div className="sp-accel-price-row">
-                <span className="sp-accel-price">{ACCEL_PACK.price} USDT</span>
-                <button type="button" className="sp-accel-buy-btn" onClick={handleBuyPack}>
+                <span className="sp-accel-price">{zeroPrice} USDT</span>
+                <button type="button" className="sp-accel-buy-btn" onClick={handleBuyPack} disabled={buying}>
                   {t('ipo.accelBuy')}
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Right: purchase records */}
+          {/* 购买记录 */}
           <div className="sp-accel-records">
             <h3 className="sp-record-title">{t('ipo.accelRecordTitle')}</h3>
             <div className="sp-record-list">
@@ -481,16 +607,16 @@ export default function Ipo() {
                   <div key={item.id} className="sp-record-card">
                     <div className="sp-record-header">
                       <span className="sp-record-id">
-                        {t('ipo.accelRecordId')}: {item.id}
+                        {t('ipo.accelRecordId')}: {item.cardId}
                       </span>
-                      <span className="sp-record-time">{item.time}</span>
+                      <span className="sp-record-time">{item.createdAt.slice(0, 19).replace('T', ' ')}</span>
                     </div>
                     <div className="sp-record-grid">
                       <div className="sp-record-item">
-                        {t('ipo.accelRecordQty')}: {item.qty}
+                        {t('ipo.accelRecordQty')}: {item.peakAmount} PEAK
                       </div>
                       <div className="sp-record-item">
-                        {t('ipo.accelRecordPrice')}: {item.price} USDT
+                        {t('ipo.accelRecordPrice')}: {item.usdValue} USDT
                       </div>
                       <div className="sp-record-item">
                         {t('ipo.accelRecordStatus')}: {t('ipo.accelStatusOwned')}

@@ -563,6 +563,12 @@
     "accelRecordQty": "Qty",
     "accelRecordPrice": "Amount",
     "accelRecordStatus": "Status",
-    "accelStatusOwned": "Owned"
+    "accelStatusOwned": "Owned",
+    "stakeFail": "Stake failed",
+    "joinFail": "Join failed",
+    "accelBuyFail": "Purchase failed",
+    "accelLayers": "layers",
+    "accelPeakAmount": "Burn PEAK",
+    "accelSold": "Sold"
   }
 }

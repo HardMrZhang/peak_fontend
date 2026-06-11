@@ -30,6 +30,17 @@ import type {
   GenesisSaleInfo,
   GenesisBuyParams,
   GenesisOrder,
+  DappStakeOverview,
+  DappStakeParams,
+  DappUnstakeParams,
+  DappStakeRecord,
+  DappAirdropConfig,
+  DappAirdropParams,
+  DappAirdropRecord,
+  DappZeroCardInfo,
+  DappZeroCardParams,
+  DappZeroCardRecord,
+  DappConfirmResult,
 } from '@/types'
 
 // ==================== Auth ====================
@@ -234,4 +245,63 @@ export function getMyNfts(params?: { status?: string; page?: number; pageSize?: 
 
 export function getNftDetail(mintId: string) {
   return get<NftRecord>(`/nft/${mintId}`)
+}
+
+// ==================== DApp: 质押 ====================
+export function getStakeOverview() {
+  return get<DappStakeOverview>('/dapp/stake/overview')
+}
+
+export function getStakeParams(periodDays: number, amount: string | number) {
+  return get<DappStakeParams>('/dapp/stake/params', { params: { periodDays, amount } })
+}
+
+export function confirmStake(data: { txHash: string; intentId: string }) {
+  return post<DappConfirmResult>('/dapp/stake/confirm', data)
+}
+
+export function getUnstakeParams(positionId: string | number, periodDays: number) {
+  return get<DappUnstakeParams>('/dapp/stake/unstake-params', { params: { positionId, periodDays } })
+}
+
+export function confirmUnstake(data: { txHash: string; intentId: string }) {
+  return post<DappConfirmResult>('/dapp/stake/unstake-confirm', data)
+}
+
+export function getStakeRecords(params?: { page?: number; pageSize?: number }) {
+  return get<PageResult<DappStakeRecord>>('/dapp/stake/records', { params })
+}
+
+// ==================== DApp: 三倍空投 ====================
+export function getAirdropConfig() {
+  return get<DappAirdropConfig>('/dapp/airdrop/config')
+}
+
+export function getAirdropParams(amount: string | number) {
+  return get<DappAirdropParams>('/dapp/airdrop/params', { params: { amount } })
+}
+
+export function confirmAirdrop(data: { txHash: string; intentId: string }) {
+  return post<DappConfirmResult>('/dapp/airdrop/confirm', data)
+}
+
+export function getAirdropRecords(params?: { page?: number; pageSize?: number }) {
+  return get<PageResult<DappAirdropRecord>>('/dapp/airdrop/records', { params })
+}
+
+// ==================== DApp: 100U 投资包 / 零撸卡 ====================
+export function getZeroCardInfo() {
+  return get<DappZeroCardInfo>('/dapp/zero-card/info')
+}
+
+export function getZeroCardParams() {
+  return get<DappZeroCardParams>('/dapp/zero-card/params')
+}
+
+export function confirmZeroCard(data: { txHash: string; intentId: string }) {
+  return post<DappConfirmResult>('/dapp/zero-card/confirm', data)
+}
+
+export function getZeroCardRecords(params?: { page?: number; pageSize?: number }) {
+  return get<PageResult<DappZeroCardRecord>>('/dapp/zero-card/records', { params })
 }

@@ -341,3 +341,124 @@ export interface TeamLevelInfo {
   levels: TeamLevelConfig[]
 }
 
+// ==================== DApp (IPO / 质押 / 三倍空投 / 投资包) ====================
+
+export interface DappIxKey {
+  pubkey: string
+  isSigner: boolean
+  isWritable: boolean
+}
+
+// 后端已完成账户布局与编码，前端据此构造 TransactionInstruction 并用钱包签名
+export interface DappIxParams {
+  intentId: string
+  programId: string
+  keys: DappIxKey[]
+  data: string // base64
+  userPeakAta: string
+}
+
+export interface DappStakePool {
+  periodDays: number
+  totalStakedRaw: string
+  totalStaked: string
+  rewardBps: number
+  rewardPercent: string
+}
+
+export interface DappStakeOverview {
+  minStakePeak: number
+  pools: DappStakePool[]
+}
+
+export interface DappStakeParams extends DappIxParams {
+  positionId: string
+  periodDays: number
+  amountRaw: string
+}
+
+export interface DappUnstakeParams extends DappIxParams {
+  positionId: string
+  periodDays: number
+}
+
+export interface DappStakeRecord {
+  id: string
+  positionId: string
+  periodDays: number
+  amount: string
+  claimedReward: string
+  startTime: string | null
+  unlockTime: string | null
+  status: 'STAKING' | 'REDEEMABLE' | 'REDEEMED'
+  stakeTxHash: string | null
+  unstakeTxHash: string | null
+  createdAt: string
+}
+
+export interface DappAirdropConfig {
+  priceUsdt: string | null
+  multiplier: number
+  dailyRateLow: string
+  dailyRateHigh: string
+  tierThresholdUsd: number
+}
+
+export interface DappAirdropParams extends DappIxParams {
+  grantId: string
+  amountRaw: string
+  usdValueRaw: string
+  usdValue: string
+  dailyRate: string
+  dailyAmount: string
+  totalCap: string
+}
+
+export interface DappAirdropRecord {
+  id: string
+  grantId: string
+  principal: string
+  usdValue: string
+  dailyRate: string
+  dailyAmount: string
+  totalCap: string
+  released: string
+  remainDays: number
+  isOut: boolean
+  sourceTxHash: string | null
+  createdAt: string
+}
+
+export interface DappZeroCardInfo {
+  priceUsdt: string | null
+  priceUsdtFixed: number
+  peakAmount: string | null
+  appPointsLayers: number
+  soldCount: number
+  myCount: number
+}
+
+export interface DappZeroCardParams extends DappIxParams {
+  cardId: string
+  amountRaw: string
+  peakAmount: string
+  usdValue: number
+}
+
+export interface DappZeroCardRecord {
+  id: string
+  cardId: string
+  peakAmount: string
+  usdValue: string
+  status: string
+  txHash: string | null
+  createdAt: string
+}
+
+export interface DappConfirmResult {
+  status: string
+  txHash?: string
+  message?: string
+  [key: string]: unknown
+}
+

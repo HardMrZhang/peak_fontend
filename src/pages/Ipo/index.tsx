@@ -568,11 +568,11 @@ export default function Ipo() {
                         <span className={hasPending ? 'sp-pending-amount' : ''}>
                           {pending ? pending.pendingReward : '0'} PEAK
                         </span>
-                        {hasPending && !isRedeemed && (
+                        {!isRedeemed && (
                           <button
                             type="button"
                             className="sp-claim-btn"
-                            disabled={claimingId !== null}
+                            disabled={!hasPending || claimingId !== null}
                             onClick={() => handleClaimReward(item)}
                           >
                             {claimingId === item.positionId ? t('ipo.claiming') : t('ipo.claimReward')}

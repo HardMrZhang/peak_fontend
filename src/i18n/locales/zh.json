@@ -9,7 +9,7 @@
     "nodeTransaction": "节点交易",
     "teamLevel": "团队等级",
     "points": "积分",
-    "ipo": "质押池",
+    "ipo": "空投与质押",
     "download": "下载"
   },
   "header": {
@@ -506,7 +506,7 @@
     "cardBuyFail": "购买失败"
   },
   "ipo": {
-    "title": "质押池",
+    "title": "空投与质押",
     "subtitle": "质押 PEAK，参与三倍空投，享链上实时收益",
     "stakeTitle": "质押 PEAK",
     "ruleTitle": "质押规则",

@@ -309,6 +309,107 @@ export default function Ipo() {
       </div>
 
       <div className="staking-grid">
+        {/* ---------------- 三倍空投卡片 ---------------- */}
+        <section className="sp-card">
+          <h2 className="sp-card-title">{t('ipo.airdropTitle')}</h2>
+
+          <div className="sp-field-block">
+            <label className="sp-field-label">{t('ipo.quantityLabel')}</label>
+            <div className="sp-input-wrap">
+              <input
+                type="number"
+                className="sp-qty-input"
+                min={1}
+                value={quantity}
+                placeholder={t('ipo.quantityPlaceholder')}
+                onChange={(e) => setQuantity(e.target.value)}
+              />
+              <span className="sp-input-unit">PEAK</span>
+            </div>
+          </div>
+
+          <div className="sp-info-box">
+            <div className="sp-info-line">
+              <span>{t('ipo.realTimePrice')}</span>
+              <span className="sp-highlight">{price > 0 ? price.toFixed(4) : '--'} USDT</span>
+            </div>
+            <div className="sp-info-line">
+              <span>{t('ipo.totalValue')}</span>
+              <span className="sp-highlight">{airdropCalc.totalValue.toFixed(2)} USDT</span>
+            </div>
+            <div className="sp-info-line">
+              <span>{t('ipo.todayRate')}</span>
+              <span className="sp-highlight">{airdropCalc.rateText}</span>
+            </div>
+          </div>
+
+          <div className="sp-airdrop-tip">✅ {t('ipo.airdropTip')}</div>
+
+          <div className="sp-earn-card">
+            <h3 className="sp-earn-title">{t('ipo.estimateTitle')}</h3>
+            <div className="sp-info-line">
+              <span>{t('ipo.totalAirdrop')}</span>
+              <span className="sp-highlight">{airdropCalc.totalAirdrop.toFixed(2)} PEAK</span>
+            </div>
+            <div className="sp-info-line">
+              <span>{t('ipo.dailyAirdrop')}</span>
+              <span className="sp-highlight">{airdropCalc.dailyAirdrop.toFixed(4)} PEAK</span>
+            </div>
+            <div className="sp-info-line">
+              <span>{t('ipo.referAirdrop')}</span>
+              <span className="sp-highlight">{airdropCalc.referAccel.toFixed(2)} PEAK</span>
+            </div>
+            <div className="sp-info-line">
+              <span>{t('ipo.teamAirdrop')}</span>
+              <span className="sp-highlight">{airdropCalc.teamAccel.toFixed(2)} PEAK</span>
+            </div>
+            <div className="sp-info-line">
+              <span>{t('ipo.estimateDays')}</span>
+              <span className="sp-highlight">
+                {airdropCalc.totalDays} {t('ipo.dayUnit')}
+              </span>
+            </div>
+          </div>
+
+          <button type="button" className="sp-buy-btn" onClick={handleJoin} disabled={joining}>
+            {t('ipo.confirmJoin')}
+          </button>
+
+          {joinTip && <div className="sp-tip success">{joinTip}</div>}
+
+          <h3 className="sp-record-title">{t('ipo.airdropRecordTitle')}</h3>
+          <div className="sp-record-list">
+            {airdropRecords.length === 0 ? (
+              <div className="sp-record-empty">{t('ipo.noAirdropRecord')}</div>
+            ) : (
+              airdropRecords.map((item) => (
+                <div key={item.id} className="sp-record-card">
+                  <div className="sp-record-header">
+                    <span className="sp-record-id">
+                      {t('ipo.airdropRecordId')}: {item.grantId}
+                    </span>
+                    <span className="sp-record-time">{item.createdAt.slice(0, 19).replace('T', ' ')}</span>
+                  </div>
+                  <div className="sp-record-grid">
+                    <div className="sp-record-item">
+                      {t('ipo.airdropQuantity')}: {item.principal} PEAK
+                    </div>
+                    <div className="sp-record-item">
+                      {t('ipo.airdropTriple')}: {item.totalCap} PEAK
+                    </div>
+                    <div className="sp-record-item">
+                      {t('ipo.airdropRateField')}: {item.dailyRate}%
+                    </div>
+                    <div className="sp-record-item">
+                      {t('ipo.airdropRemainDays')}: {item.remainDays} {t('ipo.dayUnit')}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
         {/* ---------------- 质押卡片 ---------------- */}
         <section className="sp-card">
           <h2 className="sp-card-title">{t('ipo.stakeTitle')}</h2>
@@ -424,106 +525,6 @@ export default function Ipo() {
           </div>
         </section>
 
-        {/* ---------------- 三倍空投卡片 ---------------- */}
-        <section className="sp-card">
-          <h2 className="sp-card-title">{t('ipo.airdropTitle')}</h2>
-
-          <div className="sp-field-block">
-            <label className="sp-field-label">{t('ipo.quantityLabel')}</label>
-            <div className="sp-input-wrap">
-              <input
-                type="number"
-                className="sp-qty-input"
-                min={1}
-                value={quantity}
-                placeholder={t('ipo.quantityPlaceholder')}
-                onChange={(e) => setQuantity(e.target.value)}
-              />
-              <span className="sp-input-unit">PEAK</span>
-            </div>
-          </div>
-
-          <div className="sp-info-box">
-            <div className="sp-info-line">
-              <span>{t('ipo.realTimePrice')}</span>
-              <span className="sp-highlight">{price > 0 ? price.toFixed(4) : '--'} USDT</span>
-            </div>
-            <div className="sp-info-line">
-              <span>{t('ipo.totalValue')}</span>
-              <span className="sp-highlight">{airdropCalc.totalValue.toFixed(2)} USDT</span>
-            </div>
-            <div className="sp-info-line">
-              <span>{t('ipo.todayRate')}</span>
-              <span className="sp-highlight">{airdropCalc.rateText}</span>
-            </div>
-          </div>
-
-          <div className="sp-airdrop-tip">✅ {t('ipo.airdropTip')}</div>
-
-          <div className="sp-earn-card">
-            <h3 className="sp-earn-title">{t('ipo.estimateTitle')}</h3>
-            <div className="sp-info-line">
-              <span>{t('ipo.totalAirdrop')}</span>
-              <span className="sp-highlight">{airdropCalc.totalAirdrop.toFixed(2)} PEAK</span>
-            </div>
-            <div className="sp-info-line">
-              <span>{t('ipo.dailyAirdrop')}</span>
-              <span className="sp-highlight">{airdropCalc.dailyAirdrop.toFixed(4)} PEAK</span>
-            </div>
-            <div className="sp-info-line">
-              <span>{t('ipo.referAirdrop')}</span>
-              <span className="sp-highlight">{airdropCalc.referAccel.toFixed(2)} PEAK</span>
-            </div>
-            <div className="sp-info-line">
-              <span>{t('ipo.teamAirdrop')}</span>
-              <span className="sp-highlight">{airdropCalc.teamAccel.toFixed(2)} PEAK</span>
-            </div>
-            <div className="sp-info-line">
-              <span>{t('ipo.estimateDays')}</span>
-              <span className="sp-highlight">
-                {airdropCalc.totalDays} {t('ipo.dayUnit')}
-              </span>
-            </div>
-          </div>
-
-          <button type="button" className="sp-buy-btn" onClick={handleJoin} disabled={joining}>
-            {t('ipo.confirmJoin')}
-          </button>
-
-          {joinTip && <div className="sp-tip success">{joinTip}</div>}
-
-          <h3 className="sp-record-title">{t('ipo.airdropRecordTitle')}</h3>
-          <div className="sp-record-list">
-            {airdropRecords.length === 0 ? (
-              <div className="sp-record-empty">{t('ipo.noAirdropRecord')}</div>
-            ) : (
-              airdropRecords.map((item) => (
-                <div key={item.id} className="sp-record-card">
-                  <div className="sp-record-header">
-                    <span className="sp-record-id">
-                      {t('ipo.airdropRecordId')}: {item.grantId}
-                    </span>
-                    <span className="sp-record-time">{item.createdAt.slice(0, 19).replace('T', ' ')}</span>
-                  </div>
-                  <div className="sp-record-grid">
-                    <div className="sp-record-item">
-                      {t('ipo.airdropQuantity')}: {item.principal} PEAK
-                    </div>
-                    <div className="sp-record-item">
-                      {t('ipo.airdropTriple')}: {item.totalCap} PEAK
-                    </div>
-                    <div className="sp-record-item">
-                      {t('ipo.airdropRateField')}: {item.dailyRate}%
-                    </div>
-                    <div className="sp-record-item">
-                      {t('ipo.airdropRemainDays')}: {item.remainDays} {t('ipo.dayUnit')}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
       </div>
     </div>
   )

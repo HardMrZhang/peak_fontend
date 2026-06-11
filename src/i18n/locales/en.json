@@ -9,7 +9,7 @@
     "nodeTransaction": "Node transaction",
     "teamLevel": "Team Level",
     "points": "Points",
-    "ipo": "Staking Pool",
+    "ipo": "Airdrop & Staking",
     "download": "Download"
   },
   "header": {
@@ -506,7 +506,7 @@
     "cardBuyFail": "Purchase failed"
   },
   "ipo": {
-    "title": "Staking Pool",
+    "title": "Airdrop & Staking",
     "subtitle": "Stake PEAK, join the triple airdrop, earn real-time on-chain rewards",
     "stakeTitle": "Stake PEAK",
     "ruleTitle": "Staking Rules",

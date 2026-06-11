@@ -16,6 +16,9 @@ import {
   getUnstakeParams,
   confirmUnstake,
   getStakeRecords,
+  getStakeRewards,
+  getClaimStakeRewardParams,
+  confirmClaimStakeReward,
   getAirdropConfig,
   getAirdropParams,
   confirmAirdrop,
@@ -26,6 +29,7 @@ import type {
   DappIxParams,
   DappStakePool,
   DappStakeRecord,
+  DappStakeRewardsInfo,
   DappAirdropConfig,
   DappAirdropRecord,
 } from '@/types'
@@ -106,6 +110,8 @@ export default function Ipo() {
   const [staking, setStaking] = useState(false)
   const [now, setNow] = useState(Date.now())
   const [stakeRecords, setStakeRecords] = useState<DappStakeRecord[]>([])
+  const [stakeRewards, setStakeRewards] = useState<DappStakeRewardsInfo | null>(null)
+  const [claimingId, setClaimingId] = useState<string | null>(null)
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000)
@@ -116,6 +122,25 @@ export default function Ipo() {
     const map: Record<number, string> = { 15: '0', 30: '0', 90: '0', 150: '0' }
     pools.forEach((p) => { map[p.periodDays] = p.totalStaked })
     return map
+  }, [pools])
+
+  // positionId -> 待领收益（来自 /stake/rewards）
+  const pendingByPosition = useMemo(() => {
+    const map = new Map<string, { pendingReward: string; pendingRewardRaw: string }>()
+    stakeRewards?.positions?.forEach((p) => {
+      map.set(p.positionId, { pendingReward: p.pendingReward, pendingRewardRaw: p.pendingRewardRaw })
+    })
+    return map
+  }, [stakeRewards])
+
+  // 权重占比 = 我的质押量 ÷ 该期限池子当前总质押量（池子总量变化时实时变化）
+  const weightOf = useCallback((record: DappStakeRecord): string => {
+    if (record.status === 'REDEEMED') return '-'
+    const pool = pools.find((p) => p.periodDays === record.periodDays)
+    const total = pool ? parseFloat(pool.totalStaked) : 0
+    const mine = parseFloat(record.amount)
+    if (!total || !mine || total <= 0) return '-'
+    return `${((mine / total) * 100).toFixed(2)}%`
   }, [pools])
 
   const refreshStake = useCallback(async () => {
@@ -130,6 +155,10 @@ export default function Ipo() {
       try {
         const rec = await getStakeRecords({ page: 1, pageSize: 50 })
         setStakeRecords(rec.data?.list ?? [])
+      } catch { /* ignore */ }
+      try {
+        const rw = await getStakeRewards({ page: 1, pageSize: 1 })
+        setStakeRewards(rw.data ?? null)
       } catch { /* ignore */ }
     }
   }, [])
@@ -179,6 +208,33 @@ export default function Ipo() {
       }
     } finally {
       setStaking(false)
+    }
+  }
+
+  // 领取质押收益：用户钱包单签发起链上 claim_stake_reward，自付 GAS
+  const handleClaimReward = async (record: DappStakeRecord) => {
+    if (claimingId) return
+    if (!hasToken() || !connected) {
+      message.warning(t('account.walletRequired'))
+      return
+    }
+    setClaimingId(record.positionId)
+    setStakeTip({ text: t('ipo.claiming'), type: '' })
+    try {
+      const paramsRes = await getClaimStakeRewardParams(record.positionId, record.periodDays)
+      const sig = await sendDappIx(paramsRes.data)
+      await confirmClaimStakeReward({ txHash: sig, intentId: paramsRes.data.intentId })
+      setStakeTip({ text: `${t('ipo.claimSuccess')} +${paramsRes.data.reward} PEAK`, type: 'success' })
+      refreshStake()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (!msg.includes('User rejected')) {
+        setStakeTip({ text: `${t('ipo.claimFail')}: ${msg.slice(0, 80)}`, type: 'fail' })
+      } else {
+        setStakeTip({ text: '', type: '' })
+      }
+    } finally {
+      setClaimingId(null)
     }
   }
 
@@ -468,7 +524,14 @@ export default function Ipo() {
 
           {stakeTip.text && <div className={`sp-tip ${stakeTip.type}`}>{stakeTip.text}</div>}
 
-          <h3 className="sp-record-title">{t('ipo.stakeRecordTitle')}</h3>
+          <div className="sp-record-title-row">
+            <h3 className="sp-record-title">{t('ipo.stakeRecordTitle')}</h3>
+            {stakeRewards && parseFloat(stakeRewards.totalPending) > 0 && (
+              <span className="sp-total-pending">
+                {t('ipo.totalPendingReward')}: <b>{stakeRewards.totalPending} PEAK</b>
+              </span>
+            )}
+          </div>
           <div className="sp-record-list">
             {stakeRecords.length === 0 ? (
               <div className="sp-record-empty">{t('ipo.noStakeRecord')}</div>
@@ -477,6 +540,8 @@ export default function Ipo() {
                 const timeLeft = item.unlockTime ? new Date(item.unlockTime).getTime() - now : 0
                 const isRedeemed = item.status === 'REDEEMED'
                 const txHash = isRedeemed ? item.unstakeTxHash : item.stakeTxHash
+                const pending = pendingByPosition.get(item.positionId)
+                const hasPending = !!pending && BigInt(pending.pendingRewardRaw || '0') > 0n
                 return (
                   <div key={item.id} className={`sp-record-card ${isRedeemed ? 'redeemed' : ''}`}>
                     <div className="sp-record-row">
@@ -492,6 +557,32 @@ export default function Ipo() {
                       <span className="sp-record-value">
                         {item.periodDays} {t('ipo.dayUnit')}
                       </span>
+                    </div>
+                    <div className="sp-record-row">
+                      <span className="sp-record-label">{t('ipo.weightShare')}</span>
+                      <span className="sp-record-value">{weightOf(item)}</span>
+                    </div>
+                    <div className="sp-record-row">
+                      <span className="sp-record-label">{t('ipo.pendingReward')}</span>
+                      <span className="sp-record-value">
+                        <span className={hasPending ? 'sp-pending-amount' : ''}>
+                          {pending ? pending.pendingReward : '0'} PEAK
+                        </span>
+                        {hasPending && !isRedeemed && (
+                          <button
+                            type="button"
+                            className="sp-claim-btn"
+                            disabled={claimingId !== null}
+                            onClick={() => handleClaimReward(item)}
+                          >
+                            {claimingId === item.positionId ? t('ipo.claiming') : t('ipo.claimReward')}
+                          </button>
+                        )}
+                      </span>
+                    </div>
+                    <div className="sp-record-row">
+                      <span className="sp-record-label">{t('ipo.claimedReward')}</span>
+                      <span className="sp-record-value">{item.claimedReward} PEAK</span>
                     </div>
                     <div className="sp-record-row">
                       <span className="sp-record-label">{t('ipo.recordStatus')}</span>

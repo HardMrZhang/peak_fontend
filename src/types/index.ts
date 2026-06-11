@@ -406,6 +406,43 @@ export interface DappStakeRecord {
   createdAt: string
 }
 
+export interface DappStakeRewardPosition {
+  positionId: string
+  periodDays: number
+  amount: string
+  pendingReward: string
+  pendingRewardRaw: string
+  claimedReward: string
+  redeemed: boolean
+}
+
+export interface DappStakeRewardDaily {
+  bizDate: string
+  periodDays: number
+  positionId: string
+  staked: string
+  poolStaked: string
+  reward: string
+  status: string
+}
+
+export interface DappStakeRewardsInfo {
+  totalPending: string
+  totalPendingRaw: string
+  positions: DappStakeRewardPosition[]
+  list: DappStakeRewardDaily[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export interface DappClaimStakeRewardParams extends DappIxParams {
+  positionId: string
+  periodDays: number
+  rewardRaw: string
+  reward: string
+}
+
 export interface DappMarketPrice {
   symbol: string
   priceUsdt: string | null

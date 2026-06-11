@@ -34,6 +34,8 @@ import type {
   DappStakeParams,
   DappUnstakeParams,
   DappStakeRecord,
+  DappStakeRewardsInfo,
+  DappClaimStakeRewardParams,
   DappMarketPrice,
   DappAirdropConfig,
   DappAirdropParams,
@@ -271,6 +273,19 @@ export function confirmUnstake(data: { txHash: string; intentId: string }) {
 
 export function getStakeRecords(params?: { page?: number; pageSize?: number }) {
   return get<PageResult<DappStakeRecord>>('/dapp/stake/records', { params })
+}
+
+// ==================== DApp: 质押收益（日结可提，用户付 GAS） ====================
+export function getStakeRewards(params?: { page?: number; pageSize?: number }) {
+  return get<DappStakeRewardsInfo>('/dapp/stake/rewards', { params })
+}
+
+export function getClaimStakeRewardParams(positionId: string | number, periodDays: number) {
+  return get<DappClaimStakeRewardParams>('/dapp/stake/claim-reward-params', { params: { positionId, periodDays } })
+}
+
+export function confirmClaimStakeReward(data: { txHash: string; intentId: string }) {
+  return post<DappConfirmResult>('/dapp/stake/claim-reward-confirm', data)
 }
 
 // ==================== DApp: 行情（公开，无需登录） ====================

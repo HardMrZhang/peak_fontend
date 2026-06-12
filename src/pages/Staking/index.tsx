@@ -60,13 +60,15 @@ export default function Staking() {
     return map
   }, [stakeRewards])
 
-  // 权重占比 = 我的质押量 ÷ 该期限池子当前总质押量（池子总量变化时实时变化）
+  // 权重占比 = 该笔订单质押量 ÷ 池子里所有 PEAK 总量（全部期限合计，且至少包含当前订单）
   const weightOf = useCallback((record: DappStakeRecord): string => {
     if (record.status === 'REDEEMED') return '-'
-    const pool = pools.find((p) => p.periodDays === record.periodDays)
-    const total = pool ? parseFloat(pool.totalStaked) : 0
     const mine = parseFloat(record.amount)
-    if (!total || !mine || total <= 0) return '-'
+    if (!mine || mine <= 0) return '-'
+    const totalAll = pools.reduce((sum, p) => sum + (parseFloat(p.totalStaked) || 0), 0)
+    // 链上总量尚未同步到该笔质押时兜底，保证分母包含当前订单
+    const total = Math.max(totalAll, mine)
+    if (total <= 0) return '-'
     return `${((mine / total) * 100).toFixed(2)}%`
   }, [pools])
 

@@ -239,34 +239,6 @@ export default function Airdrop() {
         {/* ---------------- 右侧：参与记录 ---------------- */}
         <section className="sp-card">
           <h2 className="sp-card-title">{t('ipo.airdropRecordTitle')}</h2>
-
-          {summary && (
-            <div className="sp-accel-bar">
-              <div className="sp-accel-item">
-                <span className="sp-accel-label">{t('ipo.accelTeam')}</span>
-                <span className="sp-accel-value">{summary.teamAccel} PEAK</span>
-              </div>
-              <div className="sp-accel-item">
-                <span className="sp-accel-label">{t('ipo.accelDirect')}</span>
-                <span className="sp-accel-value">{summary.directAccel} PEAK</span>
-              </div>
-              <div className="sp-accel-item">
-                <span className="sp-accel-label">{t('ipo.withdrawable')}</span>
-                <span className="sp-accel-value">{summary.airdropCredit} PEAK</span>
-              </div>
-              <button
-                type="button"
-                className="sp-withdraw-btn"
-                onClick={handleWithdraw}
-                disabled={withdrawing || !canWithdraw}
-              >
-                {withdrawing
-                  ? t('ipo.withdrawing')
-                  : `${t('ipo.withdrawBtn')} ${withdrawableInt} PEAK`}
-              </button>
-            </div>
-          )}
-
           <div className="sp-record-list">
             {airdropRecords.length === 0 ? (
               <div className="sp-record-empty">{t('ipo.noAirdropRecord')}</div>
@@ -292,6 +264,27 @@ export default function Airdrop() {
                     <div className="sp-record-item">
                       {t('ipo.airdropRemainDays')}: {item.remainDays} {t('ipo.dayUnit')}
                     </div>
+                    <div className="sp-record-item">
+                      {t('ipo.accelTeam')}: {summary?.teamAccel ?? '0'} PEAK
+                    </div>
+                    <div className="sp-record-item">
+                      {t('ipo.accelDirect')}: {summary?.directAccel ?? '0'} PEAK
+                    </div>
+                  </div>
+                  <div className="sp-record-footer">
+                    <span className="sp-record-item">
+                      {t('ipo.withdrawable')}: {summary?.airdropCredit ?? '0'} PEAK
+                    </span>
+                    <button
+                      type="button"
+                      className="sp-withdraw-btn"
+                      onClick={handleWithdraw}
+                      disabled={withdrawing || !canWithdraw}
+                    >
+                      {withdrawing
+                        ? t('ipo.withdrawing')
+                        : `${t('ipo.withdrawBtn')} ${withdrawableInt} PEAK`}
+                    </button>
                   </div>
                 </div>
               ))

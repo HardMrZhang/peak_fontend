@@ -168,34 +168,16 @@
   cursor: not-allowed;
 }
 
-/* 加速汇总 + 提币 */
-.sp-accel-bar {
+/* 记录卡底部：可提余额 + 提币按钮 */
+.sp-record-footer {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
-  gap: 16px 28px;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  background: var(--bg-secondary);
-}
-
-.sp-accel-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.sp-accel-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.sp-accel-value {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--accent-orange);
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-color);
 }
 
 .sp-withdraw-btn {

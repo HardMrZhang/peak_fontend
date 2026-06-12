@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Modal, Table, Pagination, message, Spin } from 'antd'
+import { Button, Modal, Table, Pagination, message, Spin, Tooltip } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
@@ -11,8 +11,10 @@ import {
   cancelGenesisBuyIntent,
   confirmGenesisBuy,
   getGenesisVipLevel,
+  getGenesisVipTeamDetail,
   getGenesisOrders,
 } from '@/api'
+import type { GenesisVipTeamDetail } from '@/api'
 import type { GenesisOrder, PageResult } from '@/types'
 import './index.css'
 
@@ -82,6 +84,24 @@ export default function GenesisNodes() {
   const [orderPage, setOrderPage] = useState(1)
   const [orderLoading, setOrderLoading] = useState(false)
   const orderPageSize = 10
+
+  const [teamDetail, setTeamDetail] = useState<GenesisVipTeamDetail | null>(null)
+  const [teamDetailLoading, setTeamDetailLoading] = useState(false)
+  const teamDetailLoaded = useRef(false)
+
+  const loadTeamDetail = useCallback(async () => {
+    if (teamDetailLoaded.current || !localStorage.getItem('peak_token')) return
+    teamDetailLoaded.current = true
+    setTeamDetailLoading(true)
+    try {
+      const res = await getGenesisVipTeamDetail()
+      if (res.data) setTeamDetail(res.data)
+    } catch {
+      teamDetailLoaded.current = false
+    } finally {
+      setTeamDetailLoading(false)
+    }
+  }, [])
 
   const readChainSaleState = useCallback(async () => {
     try {
@@ -423,12 +443,6 @@ export default function GenesisNodes() {
               <span className="genesis-right-badge active">{t('genesis.badgeActive')}</span>
             </div>
             <div className="genesis-right-card">
-              <div className="genesis-right-icon peak">P</div>
-              <div className="genesis-right-title">{t('genesis.rightPeakTitle')}</div>
-              <div className="genesis-right-desc">{t('genesis.rightPeakDesc')}</div>
-              <span className="genesis-right-badge active">{t('genesis.badgeActive')}</span>
-            </div>
-            <div className="genesis-right-card">
               <div className="genesis-right-icon airdrop">&#x2728;</div>
               <div className="genesis-right-title">{t('genesis.rightAirdropTitle')}</div>
               <div className="genesis-right-desc">{t('genesis.rightAirdropDesc')}</div>
@@ -476,14 +490,55 @@ export default function GenesisNodes() {
                 { label: 'T5', lvl: 5 },
                 { label: 'T6', lvl: 6 },
                 { label: 'T7', lvl: 7 },
-              ].map((tier) => (
-                <span
-                  key={tier.lvl}
-                  className={`genesis-vip-tier ${vipLevel >= tier.lvl ? 'reached' : ''} ${vipLevel === tier.lvl ? 'current' : ''}`}
-                >
-                  {tier.label}
-                </span>
-              ))}
+              ].map((tier) => {
+                const chip = (
+                  <span
+                    key={tier.lvl}
+                    className={`genesis-vip-tier ${vipLevel >= tier.lvl ? 'reached' : ''} ${vipLevel === tier.lvl ? 'current' : ''}`}
+                    onMouseEnter={vipLevel === tier.lvl ? loadTeamDetail : undefined}
+                  >
+                    {tier.label}
+                  </span>
+                )
+                if (vipLevel !== tier.lvl) return chip
+                return (
+                  <Tooltip
+                    key={tier.lvl}
+                    overlayClassName="genesis-vip-tooltip"
+                    title={
+                      teamDetailLoading || !teamDetail ? (
+                        <div className="vip-tooltip-loading"><Spin size="small" /></div>
+                      ) : (
+                        <div className="vip-tooltip-body">
+                          <div className="vip-tooltip-title">{t('genesis.vipTooltipDirects')}</div>
+                          {teamDetail.directs.length === 0 ? (
+                            <div className="vip-tooltip-empty">{t('genesis.vipTooltipEmpty')}</div>
+                          ) : (
+                            teamDetail.directs.map((d, i) => (
+                              <div className="vip-tooltip-row" key={d.address || i}>
+                                <span className="vip-tooltip-addr">
+                                  {d.address ? `${d.address.slice(0, 6)}...${d.address.slice(-6)}` : '--'}
+                                </span>
+                                <span className="vip-tooltip-amount">{d.totalAmountUsdt} USDT</span>
+                              </div>
+                            ))
+                          )}
+                          <div className="vip-tooltip-total">
+                            <span>{t('genesis.vipTooltipIncome')}</span>
+                            <span className="vip-tooltip-amount">
+                              {teamDetail.directReferralIncomeUsdt != null
+                                ? `${teamDetail.directReferralIncomeUsdt} USDT`
+                                : '--'}
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    }
+                  >
+                    {chip}
+                  </Tooltip>
+                )
+              })}
             </div>
           </div>
         </div>

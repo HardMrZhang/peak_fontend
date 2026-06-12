@@ -233,6 +233,16 @@ export function getGenesisVipLevel() {
   return get<{ vipLevel: number; vipLabel: string }>('/genesis-vip/my-level')
 }
 
+export interface GenesisVipTeamDetail {
+  directs: { address: string; totalAmountUsdt: string }[]
+  directReferralIncomeUsdt: string | null
+  referralFeeBps: number | null
+}
+
+export function getGenesisVipTeamDetail() {
+  return get<GenesisVipTeamDetail>('/genesis-vip/team-detail')
+}
+
 export function getMyGenesisNfts(params?: { page?: number; pageSize?: number }) {
   return get<PageResult<NftRecord>>('/genesis/my-nfts', { params })
 }

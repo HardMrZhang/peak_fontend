@@ -1,12 +1,10 @@
 {
   "nav": {
-    "films": "Films",
     "account": "Account",
     "generalization": "Generalization",
     "nodes": "Nodes",
     "filmNodes": "Shareholder Nodes",
     "genesisNodes": "Film Nodes",
-    "nodeTransaction": "Node transaction",
     "teamLevel": "Team Level",
     "points": "Points",
     "ipo": "Airdrop & Staking",
@@ -15,22 +13,6 @@
   "header": {
     "connectWallet": "Connect Wallet",
     "disconnect": "Disconnect"
-  },
-  "films": {
-    "online": "Until PEAK Film App Platform",
-    "onlineTag": "online",
-    "tagFilm": "Film",
-    "tagNode": "Node",
-    "tagNft": "NFT",
-    "tagTrade": "Trade",
-    "shortDrama": "Short-form drama",
-    "shortDramaDesc": "Our short drama channel offers fast-paced, high-energy mini-series across romance, suspense, fantasy, and more. Binge-watch anytime, with new stories updated daily.",
-    "videoEditing": "Film",
-    "videoEditingDesc": "We focus on high-quality film & TV commentary, with in-depth analysis of plots, characters and behind-the-scenes stories. Helping you quickly understand great movies and shows, and enjoy the charm of cinema easily.",
-    "tvSeries": "TV series",
-    "tvSeriesDesc": "Dedicated to in-depth commentary on TV series. We sort out plot lines, analyze characters and foreshadowing, helping you understand every great show and enjoy watching without confusion.",
-    "aiAnime": "AI Anime & Micro Variety",
-    "aiAnimeDesc": "A curated channel featuring AI-generated anime and premium micro-variety shows. Enjoy immersive, fun, and trendy viewing experiences with innovative visuals and lighthearted content."
   },
   "download": {
     "title": "Peak TV",
@@ -417,17 +399,6 @@
     "balanceTopUp": "Balance Top-up",
     "nodes": "Nodes",
     "filmNodes": "Shareholder Nodes"
-  },
-  "nodeTransaction": {
-    "title": "Node Trading",
-    "subtitle": "Node marketplace is under preparation",
-    "days": "Days",
-    "hours": "Hours",
-    "minutes": "Min",
-    "seconds": "Sec",
-    "desc": "Node trading will officially open on June 6, 2026. You will be able to freely buy and sell nodes on the marketplace.",
-    "rewardNotice": "PEAK rewards are distributed based on Node NFT holdings",
-    "transferNotice": "Transferring your Node NFT will result in the loss of your node rewards"
   },
   "points": {
     "title": "Points Exchange",

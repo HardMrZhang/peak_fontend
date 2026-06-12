@@ -1,12 +1,10 @@
 {
   "nav": {
-    "films": "影视",
     "account": "账户",
     "generalization": "推广",
     "nodes": "节点",
     "filmNodes": "股东节点",
     "genesisNodes": "影视节点",
-    "nodeTransaction": "节点交易",
     "teamLevel": "团队等级",
     "points": "积分",
     "ipo": "空投与质押",
@@ -15,22 +13,6 @@
   "header": {
     "connectWallet": "连接钱包",
     "disconnect": "断开连接"
-  },
-  "films": {
-    "online": "距PEAK影视APP平台",
-    "onlineTag": "上线",
-    "tagFilm": "影视",
-    "tagNode": "节点",
-    "tagNft": "NFT",
-    "tagTrade": "交易",
-    "shortDrama": "短剧",
-    "shortDramaDesc": "本短剧频道提供节奏紧凑、高能精彩的迷你剧集，涵盖言情、悬疑、奇幻等多种题材。随时随地随心追看，全新故事每日更新。",
-    "videoEditing": "影视",
-    "videoEditingDesc": "专注优质影视解说，深度解析剧情、人物与幕后故事，带你快速看懂好片、发现佳作，轻松享受光影魅力。",
-    "tvSeries": "电视剧",
-    "tvSeriesDesc": "专注电视剧深度解说，梳理剧情脉络、解析人物与伏笔，带你看懂每一部好剧，轻松追剧不迷路。",
-    "aiAnime": "AI动漫+微综艺",
-    "aiAnimeDesc": "汇聚 AI 生成动漫与精品微综艺，以创新视觉与轻松内容，带来趣味、治愈、潮流的沉浸式观看体验。"
   },
   "download": {
     "title": "Peak TV",
@@ -417,17 +399,6 @@
     "balanceTopUp": "余额充值",
     "nodes": "节点",
     "filmNodes": "股东节点"
-  },
-  "nodeTransaction": {
-    "title": "节点交易",
-    "subtitle": "节点交易市场正在筹备中",
-    "days": "天",
-    "hours": "时",
-    "minutes": "分",
-    "seconds": "秒",
-    "desc": "节点交易将于 2026 年 6 月 6 日正式开放，届时您可以在市场上自由买卖节点。",
-    "rewardNotice": "PEAK的收益根据节点NFT的持有分配",
-    "transferNotice": "转让节点NFT将会失去你的节点收益"
   },
   "points": {
     "title": "积分兑换",

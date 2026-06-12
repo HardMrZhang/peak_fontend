@@ -12,19 +12,19 @@ export default function InvitePage() {
   useEffect(() => {
     const raw = (code || '').trim()
     if (!raw) {
-      navigate('/films', { replace: true })
+      navigate('/nodes', { replace: true })
       return
     }
 
     const inviteCode = normalizeInviteCode(raw)
 
     if (token && user && user.referrerUserId) {
-      navigate('/films', { replace: true })
+      navigate('/nodes', { replace: true })
       return
     }
 
     localStorage.setItem(INVITE_CODE_STORAGE_KEY, inviteCode)
-    navigate('/films', { replace: true })
+    navigate('/nodes', { replace: true })
   }, [code, token, user, navigate])
 
   return null

@@ -523,17 +523,6 @@ export default function Nodes() {
           </Spin>
 
           {/* 等级规则表已隐藏，功能保留 */}
-
-          <div className="rules-desc-section">
-            <div className="rules-desc-list">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <div key={n} className="rules-desc-item">
-                  <span className="rules-desc-num">{n}</span>
-                  <span className="rules-desc-text">{t(`teamLevel.ruleDesc${n}`)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
 

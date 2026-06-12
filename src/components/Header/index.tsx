@@ -17,12 +17,10 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navItems = [
-    { key: '/films', label: t('nav.films') },
     { key: '/account', label: t('nav.account') },
     { key: '/generalization', label: t('nav.generalization') },
     { key: '/nodes', label: t('nav.filmNodes') },
     { key: '/genesis-nodes', label: t('nav.genesisNodes') },
-    { key: '/node-transaction', label: t('nav.nodeTransaction') },
     { key: '/points', label: t('nav.points') },
     { key: '/ipo', label: t('nav.ipo') },
     { key: '/download', label: t('nav.download') },
@@ -64,7 +62,7 @@ export default function Header() {
             src={logoImg}
             alt="Peak"
             className="header-logo"
-            onClick={() => handleNav('/films')}
+            onClick={() => handleNav('/nodes')}
           />
           <nav className="header-nav">
             {navItems.map((item) => (

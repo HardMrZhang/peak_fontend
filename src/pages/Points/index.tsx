@@ -35,9 +35,10 @@ import './index.css'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-/* exchange floor: 10000 points => 40 PEAK */
+/* exchange floor: 10000 points => 价值 1U 的 PEAK（按实时价格折算，取整）；40 为价格未加载时的兜底值 */
 const RATE_POINTS = 10000
-const RATE_PEAK = 40
+const RATE_PEAK_FALLBACK = 40
+const RATE_USDT = 1
 
 const DASH = '-'
 
@@ -144,8 +145,8 @@ export default function Points() {
   // prefer backend data (by email) when available, fall back to URL-injected profile
   const score = overview ? overview.score : urlScore
   const nftCount = overview ? overview.nftCount : urlNft
-  // 权益层级：未持有 NFT 为 1 层，持有（>1）为 10 层
-  const tierLevels = nftCount > 1 ? 10 : 1
+  // 权益层级：未持有 NFT 为 1 层，持有 NFT 为 10 层
+  const tierLevels = nftCount > 0 ? 10 : 1
   const available = score
   // 头像/昵称：优先后端按邮箱取到的 ling 资料，回退到 APP 注入的 profile
   const username = overview?.username || profile?.username || null
@@ -353,6 +354,10 @@ export default function Points() {
   }, [])
 
   const cardPrice = livePrice ?? (cardInfo?.priceUsdt ? parseFloat(cardInfo.priceUsdt) : null)
+  // 兑换价底：价值 1U 的 PEAK 数量（按实时价格折算，取整数）
+  const ratePeak = cardPrice && cardPrice > 0
+    ? Math.max(1, Math.round(RATE_USDT / cardPrice))
+    : RATE_PEAK_FALLBACK
   const cardUsdtFixed = cardInfo?.priceUsdtFixed ?? 100
   // 价值 100U 的 PEAK 数量（按实时价格折算）
   const cardPeakAmountNum = cardPrice && cardPrice > 0 ? cardUsdtFixed / cardPrice : null
@@ -491,7 +496,7 @@ export default function Points() {
               <SwapOutlined />
             </div>
             <div className="pts-rate-side right">
-              <span className="pts-rate-num">{RATE_PEAK}</span>
+              <span className="pts-rate-num">{ratePeak.toLocaleString()}</span>
               <span className="pts-rate-unit">PEAK</span>
             </div>
           </div>

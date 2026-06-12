@@ -6,9 +6,12 @@ import {
   getAirdropParams,
   confirmAirdrop,
   getAirdropRecords,
+  getAirdropSummary,
+  getDappWithdrawParams,
+  confirmDappWithdraw,
   getPeakPrice,
 } from '@/api'
-import type { DappAirdropConfig, DappAirdropRecord } from '@/types'
+import type { DappAirdropConfig, DappAirdropRecord, DappAirdropSummary } from '@/types'
 import { useDappTx, hasToken } from '@/hooks/useDappTx'
 import './index.css'
 
@@ -21,7 +24,9 @@ export default function Airdrop() {
   const [airdropConfig, setAirdropConfig] = useState<DappAirdropConfig | null>(null)
   const [quantity, setQuantity] = useState('1000')
   const [airdropRecords, setAirdropRecords] = useState<DappAirdropRecord[]>([])
+  const [summary, setSummary] = useState<DappAirdropSummary | null>(null)
   const [joining, setJoining] = useState(false)
+  const [withdrawing, setWithdrawing] = useState(false)
   const [joinTip, setJoinTip] = useState('')
   const joinTipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -34,6 +39,10 @@ export default function Airdrop() {
       try {
         const rec = await getAirdropRecords({ page: 1, pageSize: 50 })
         setAirdropRecords(rec.data?.list ?? [])
+      } catch { /* ignore */ }
+      try {
+        const sum = await getAirdropSummary()
+        setSummary(sum.data)
       } catch { /* ignore */ }
     }
   }, [])
@@ -71,12 +80,13 @@ export default function Airdrop() {
     const rateText = `${dailyRatePct}%`
     const totalAirdrop = qty * AIRDROP_MULTIPLE
     const dailyAirdrop = (qty * dailyRatePct) / 100
-    const referAccel = 0
-    const teamAccel = 0
+    // 真实加速数据：直推加速 = 直推静态实时累加 ×10%；团队加速 = 最近日结级差+平级（封顶后）
+    const referAccel = summary ? parseFloat(summary.directAccel) || 0 : 0
+    const teamAccel = summary ? parseFloat(summary.teamAccel) || 0 : 0
     const dailyTotal = dailyAirdrop + referAccel + teamAccel
     const totalDays = dailyTotal > 0 ? Math.ceil(totalAirdrop / dailyTotal) : 0
     return { qty, totalValue, rateText, totalAirdrop, dailyAirdrop, referAccel, teamAccel, totalDays }
-  }, [quantity, price, airdropConfig])
+  }, [quantity, price, airdropConfig, summary])
 
   const handleJoin = async () => {
     if (joining) return
@@ -114,6 +124,39 @@ export default function Airdrop() {
       }
     } finally {
       setJoining(false)
+    }
+  }
+
+  // 提币数量 = 链上可提余额小数点前整数（直接截断，不四舍五入）
+  const withdrawableInt = summary?.withdrawableInt ?? '0'
+  const canWithdraw = Number(withdrawableInt) > 0
+
+  const handleWithdraw = async () => {
+    if (withdrawing) return
+    if (!hasToken() || !connected) {
+      message.warning(t('account.walletRequired'))
+      return
+    }
+    if (!canWithdraw) {
+      message.warning(t('ipo.noWithdrawable'))
+      return
+    }
+    setWithdrawing(true)
+    try {
+      const paramsRes = await getDappWithdrawParams(withdrawableInt)
+      const sig = await sendDappIx(paramsRes.data)
+      await confirmDappWithdraw({ txHash: sig, intentId: paramsRes.data.intentId })
+      message.success(t('ipo.withdrawSuccess'))
+      refreshAirdrop()
+    } catch (err: unknown) {
+      const serverMsg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? ''
+      const msg = err instanceof Error ? err.message : String(err)
+      if (!msg.includes('User rejected')) {
+        message.error(`${t('ipo.withdrawFail')}: ${(serverMsg || msg).slice(0, 80)}`)
+      }
+    } finally {
+      setWithdrawing(false)
     }
   }
 
@@ -196,6 +239,34 @@ export default function Airdrop() {
         {/* ---------------- 右侧：参与记录 ---------------- */}
         <section className="sp-card">
           <h2 className="sp-card-title">{t('ipo.airdropRecordTitle')}</h2>
+
+          {summary && (
+            <div className="sp-accel-bar">
+              <div className="sp-accel-item">
+                <span className="sp-accel-label">{t('ipo.accelTeam')}</span>
+                <span className="sp-accel-value">{summary.teamAccel} PEAK</span>
+              </div>
+              <div className="sp-accel-item">
+                <span className="sp-accel-label">{t('ipo.accelDirect')}</span>
+                <span className="sp-accel-value">{summary.directAccel} PEAK</span>
+              </div>
+              <div className="sp-accel-item">
+                <span className="sp-accel-label">{t('ipo.withdrawable')}</span>
+                <span className="sp-accel-value">{summary.airdropCredit} PEAK</span>
+              </div>
+              <button
+                type="button"
+                className="sp-withdraw-btn"
+                onClick={handleWithdraw}
+                disabled={withdrawing || !canWithdraw}
+              >
+                {withdrawing
+                  ? t('ipo.withdrawing')
+                  : `${t('ipo.withdrawBtn')} ${withdrawableInt} PEAK`}
+              </button>
+            </div>
+          )}
+
           <div className="sp-record-list">
             {airdropRecords.length === 0 ? (
               <div className="sp-record-empty">{t('ipo.noAirdropRecord')}</div>

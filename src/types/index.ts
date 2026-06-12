@@ -526,6 +526,27 @@ export interface DappAirdropRecord {
   createdAt: string
 }
 
+// 空投加速汇总 + 链上可提余额（参与记录页展示）
+export interface DappAirdropSummary {
+  directStaticRaw: string
+  directStatic: string
+  directAccelRaw: string
+  directAccel: string
+  teamAccelRaw: string
+  teamAccel: string
+  teamAccelDate: string | null
+  airdropCreditRaw: string
+  airdropCredit: string
+  // 小数点前整数（直接截断、不四舍五入），提币按钮可提数量
+  withdrawableInt: string
+}
+
+// 空投收益提现（链上 withdraw_airdrop，扣 20% 手续费七份拆分，用户单签付 GAS）
+export interface DappWithdrawParams extends DappIxParams {
+  amountRaw: string
+  amount: string
+}
+
 export interface DappZeroCardInfo {
   priceUsdt: string | null
   priceUsdtFixed: number

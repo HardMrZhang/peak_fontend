@@ -168,6 +168,59 @@
   cursor: not-allowed;
 }
 
+/* 加速汇总 + 提币 */
+.sp-accel-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 28px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: var(--bg-secondary);
+}
+
+.sp-accel-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sp-accel-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.sp-accel-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent-orange);
+}
+
+.sp-withdraw-btn {
+  margin-left: auto;
+  background: var(--gradient-orange);
+  border: none;
+  color: #000;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.sp-withdraw-btn:hover {
+  opacity: 0.9;
+}
+
+.sp-withdraw-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Records */
 .sp-record-list {
   display: flex;
@@ -262,6 +315,11 @@
 
   .sp-card {
     padding: 22px 18px;
+  }
+
+  .sp-withdraw-btn {
+    margin-left: 0;
+    width: 100%;
   }
 }
 

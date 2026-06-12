@@ -544,7 +544,15 @@
     "airdropRemainDays": "Remaining Days",
     "stakeFail": "Stake failed",
     "joinFail": "Join failed",
-    "minJoinUsd": "Minimum participation is {{min}}U worth of PEAK"
+    "minJoinUsd": "Minimum participation is {{min}}U worth of PEAK",
+    "accelTeam": "Team Boost",
+    "accelDirect": "Direct Referral Boost",
+    "withdrawable": "Withdrawable",
+    "withdrawBtn": "Withdraw",
+    "withdrawing": "Withdrawing...",
+    "withdrawSuccess": "Withdraw successful",
+    "withdrawFail": "Withdraw failed",
+    "noWithdrawable": "No withdrawable balance"
   },
   "dividend": {
     "title": "Equity Dividends",

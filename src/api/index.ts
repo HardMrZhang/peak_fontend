@@ -43,6 +43,8 @@ import type {
   DappAirdropConfig,
   DappAirdropParams,
   DappAirdropRecord,
+  DappAirdropSummary,
+  DappWithdrawParams,
   DappZeroCardInfo,
   DappZeroCardParams,
   DappZeroCardRecord,
@@ -348,6 +350,20 @@ export function confirmAirdrop(data: { txHash: string; intentId: string }) {
 
 export function getAirdropRecords(params?: { page?: number; pageSize?: number }) {
   return get<PageResult<DappAirdropRecord>>('/dapp/airdrop/records', { params })
+}
+
+// 加速汇总：直推加速（直推静态实时累加）+ 团队加速（最近日结）+ 链上可提余额
+export function getAirdropSummary() {
+  return get<DappAirdropSummary>('/dapp/airdrop/summary')
+}
+
+// ==================== DApp: 空投收益提现（扣 20% 手续费，用户单签付 GAS） ====================
+export function getDappWithdrawParams(amount: string | number) {
+  return get<DappWithdrawParams>('/dapp/withdraw/params', { params: { amount }, skipErrorToast: true })
+}
+
+export function confirmDappWithdraw(data: { txHash: string; intentId: string }) {
+  return post<DappConfirmResult>('/dapp/withdraw/confirm', data)
 }
 
 // ==================== DApp: 100U 投资包 / 零撸卡 ====================

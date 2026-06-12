@@ -36,6 +36,9 @@ import type {
   DappStakeRecord,
   DappStakeRewardsInfo,
   DappClaimStakeRewardParams,
+  DappPromoSummary,
+  DappT7Summary,
+  DappDividendClaimParams,
   DappMarketPrice,
   DappAirdropConfig,
   DappAirdropParams,
@@ -298,6 +301,32 @@ export function confirmClaimStakeReward(data: { txHash: string; intentId: string
   return post<DappConfirmResult>('/dapp/stake/claim-reward-confirm', data)
 }
 
+// ==================== DApp: 1推5 推广分红（每日平均分配，用户付 GAS 领取） ====================
+export function getPromoSummary(params?: { page?: number; pageSize?: number }) {
+  return get<DappPromoSummary>('/dapp/promo/summary', { params })
+}
+
+export function getPromoClaimParams() {
+  return get<DappDividendClaimParams>('/dapp/promo/claim-params')
+}
+
+export function confirmPromoClaim(data: { txHash: string; intentId: string }) {
+  return post<DappConfirmResult>('/dapp/promo/claim-confirm', data)
+}
+
+// ==================== DApp: T7 加权分红（按小区业绩每日加权计提，用户付 GAS 领取） ====================
+export function getT7Summary(params?: { page?: number; pageSize?: number }) {
+  return get<DappT7Summary>('/dapp/t7/summary', { params })
+}
+
+export function getT7ClaimParams() {
+  return get<DappDividendClaimParams>('/dapp/t7/claim-params')
+}
+
+export function confirmT7Claim(data: { txHash: string; intentId: string }) {
+  return post<DappConfirmResult>('/dapp/t7/claim-confirm', data)
+}
+
 // ==================== DApp: 行情（公开，无需登录） ====================
 export function getPeakPrice() {
   return get<DappMarketPrice>('/dapp/market/price')
@@ -309,7 +338,8 @@ export function getAirdropConfig() {
 }
 
 export function getAirdropParams(amount: string | number) {
-  return get<DappAirdropParams>('/dapp/airdrop/params', { params: { amount } })
+  // 错误由空投页自行提示（如最低参与门槛），跳过全局错误弹窗
+  return get<DappAirdropParams>('/dapp/airdrop/params', { params: { amount }, skipErrorToast: true })
 }
 
 export function confirmAirdrop(data: { txHash: string; intentId: string }) {

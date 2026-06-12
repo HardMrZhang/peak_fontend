@@ -443,6 +443,48 @@ export interface DappClaimStakeRewardParams extends DappIxParams {
   reward: string
 }
 
+// ---- 1推5 推广分红 / T7 加权分红 ----
+export interface DappPromoDividendDaily {
+  bizDate: string
+  qualifiedCount: number
+  directCount: number
+  share: string
+  status: 'ACCRUED' | 'CLAIMED'
+  claimTxHash: string | null
+}
+
+export interface DappPromoSummary {
+  pending: string
+  pendingRaw: string
+  list: DappPromoDividendDaily[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export interface DappT7DividendDaily {
+  bizDate: string
+  smallAreaUsdt: string
+  share: string
+  status: 'ACCRUED' | 'CLAIMED'
+  claimTxHash: string | null
+}
+
+export interface DappT7Summary {
+  pending: string
+  pendingRaw: string
+  list: DappT7DividendDaily[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export interface DappDividendClaimParams extends DappIxParams {
+  amountRaw: string
+  amount: string
+  recipientAta: string
+}
+
 export interface DappMarketPrice {
   symbol: string
   priceUsdt: string | null
@@ -456,6 +498,7 @@ export interface DappAirdropConfig {
   dailyRateLow: string
   dailyRateHigh: string
   tierThresholdUsd: number
+  minUsd: number
 }
 
 export interface DappAirdropParams extends DappIxParams {

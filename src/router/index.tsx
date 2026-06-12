@@ -7,7 +7,9 @@ import Nodes from '@/pages/Nodes'
 import GenesisNodes from '@/pages/GenesisNodes'
 import Generalization from '@/pages/Generalization'
 import Points from '@/pages/Points'
-import Ipo from '@/pages/Ipo'
+import Airdrop from '@/pages/Airdrop'
+import Staking from '@/pages/Staking'
+import Dividend from '@/pages/Dividend'
 import InvitePage from '@/pages/Invite'
 import Download from '@/pages/Download'
 
@@ -25,7 +27,10 @@ const router = createBrowserRouter([
       { path: 'generalization', element: <Generalization /> },
       { path: 'team-level', element: <Navigate to="/nodes" replace /> },
       { path: 'points', element: <Points /> },
-      { path: 'ipo', element: <Ipo /> },
+      { path: 'airdrop', element: <Airdrop /> },
+      { path: 'staking', element: <Staking /> },
+      { path: 'dividend', element: <Dividend /> },
+      { path: 'ipo', element: <Navigate to="/airdrop" replace /> },
       { path: 'download', element: <Download /> },
       { path: 'invite/:code', element: <InvitePage /> },
     ],

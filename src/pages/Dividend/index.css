@@ -1,0 +1,367 @@
+.dividend-page {
+  min-height: calc(100vh - 64px);
+  background: var(--bg-primary);
+  padding-bottom: 60px;
+}
+
+/* 顶部简介：保持紧凑，不占太多纵向空间 */
+.dv-intro {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 36px 40px 0;
+  text-align: center;
+}
+
+.dv-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+  letter-spacing: 1px;
+}
+
+.dv-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* 双栏布局：推广权益 + T7 股东分红 并排，避免页面拉长 */
+.dv-grid {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 40px 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* Card */
+.dv-card {
+  background: var(--bg-card);
+  background-image: var(--gradient-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 26px 24px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.dv-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 20px rgba(245, 166, 35, 0.06);
+}
+
+.dv-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.dv-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 0.5px;
+}
+
+.dv-card-icon {
+  color: var(--accent-orange);
+  font-size: 18px;
+}
+
+.dv-badge {
+  font-size: 12px;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+
+.dv-badge b {
+  color: var(--accent-orange);
+  font-weight: 700;
+}
+
+.dv-desc {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0 0 16px;
+}
+
+/* 直推地址列表 */
+.dv-ref-list {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  padding: 6px 0;
+  margin-bottom: 16px;
+}
+
+.dv-ref-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 16px;
+  font-size: 13px;
+}
+
+.dv-ref-item + .dv-ref-item {
+  border-top: 1px dashed var(--border-color);
+}
+
+.dv-ref-addr {
+  color: var(--text-primary);
+  font-family: monospace;
+}
+
+.dv-copy {
+  color: var(--accent-cyan);
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.dv-copy:hover {
+  opacity: 0.75;
+}
+
+.dv-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: calc(100% - 24px);
+  margin: 6px 12px 4px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dv-expand-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-glow);
+}
+
+/* 统计区块 */
+.dv-stats {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.dv-stat-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.dv-stat-line:last-child {
+  margin-bottom: 0;
+}
+
+.dv-stat-label {
+  color: var(--text-secondary);
+}
+
+.dv-stat-value {
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dv-num {
+  color: var(--accent-orange);
+  font-weight: 700;
+}
+
+.dv-addr {
+  color: var(--accent-cyan);
+  font-family: monospace;
+  font-size: 13px;
+}
+
+/* 领取按钮 */
+.dv-claim-btn {
+  width: 100%;
+  background: var(--gradient-orange);
+  border: none;
+  color: #000;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.dv-claim-btn:hover {
+  opacity: 0.9;
+}
+
+.dv-claim-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 操作提示 */
+.dv-tip {
+  font-size: 13px;
+  text-align: center;
+  margin-top: 10px;
+  color: var(--text-secondary);
+}
+
+.dv-tip.success { color: var(--accent-green); }
+.dv-tip.fail { color: var(--accent-red); }
+
+/* 领取记录 */
+.dv-record-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 20px 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dv-record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.dv-record-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dv-record-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+
+.dv-record-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.dv-record-date {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.dv-record-amount {
+  flex: 1;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.dv-record-status {
+  white-space: nowrap;
+}
+
+.dv-status-accrued {
+  color: var(--accent-orange);
+  font-weight: 600;
+}
+
+.dv-status-claimed {
+  color: var(--text-muted);
+}
+
+.dv-tx-hash {
+  color: var(--accent-cyan);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.dv-record-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 20px 0;
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+  .dv-grid {
+    grid-template-columns: 1fr;
+    max-width: 620px;
+    padding: 24px 24px 0;
+  }
+
+  .dv-intro {
+    padding: 30px 24px 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .dv-grid {
+    padding: 20px 14px 0;
+    gap: 18px;
+  }
+
+  .dv-card {
+    padding: 22px 18px;
+  }
+
+  .dv-title {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dv-intro {
+    padding-top: 24px;
+  }
+
+  .dv-card-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .dv-record-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .dv-record-amount {
+    text-align: left;
+  }
+}

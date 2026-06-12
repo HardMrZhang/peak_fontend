@@ -1,47 +1,16 @@
-.staking-page {
+.stake-page {
   min-height: calc(100vh - 64px);
   background: var(--bg-primary);
   padding-bottom: 60px;
 }
 
-.staking-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 48px 24px 32px;
-}
-
-.staking-logo {
-  width: 56px;
-  height: 56px;
-  object-fit: cover;
-  border-radius: 14px;
-  box-shadow: 0 4px 24px rgba(245, 166, 35, 0.25);
-  margin-bottom: 20px;
-}
-
-.staking-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin: 0 0 8px;
-  letter-spacing: 1px;
-}
-
-.staking-subtitle {
-  font-size: 15px;
-  color: var(--text-secondary);
-  margin: 0;
-  text-align: center;
-}
-
-/* Layout grid */
-.staking-grid {
-  max-width: 1080px;
+/* 全宽双栏布局：左侧质押表单，右侧质押记录 */
+.st-grid {
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 40px 40px 0;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: minmax(380px, 520px) 1fr;
   gap: 24px;
   align-items: start;
 }
@@ -237,26 +206,54 @@
 .sp-tip.fail { color: var(--accent-red); }
 
 /* Records */
-.sp-record-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 20px 0 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-color);
+.sp-record-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.sp-record-title-row .sp-card-title {
+  flex: 1;
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.sp-total-pending {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.sp-total-pending b {
+  color: var(--accent-orange);
+  font-weight: 700;
 }
 
 .sp-record-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-height: 720px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.sp-record-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sp-record-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
 }
 
 .sp-record-empty {
   text-align: center;
   color: var(--text-muted);
   font-size: 13px;
-  padding: 24px 0;
+  padding: 48px 0;
 }
 
 .sp-record-card {
@@ -323,29 +320,7 @@
   opacity: 0.85;
 }
 
-/* ---- 质押收益领取 ---- */
-.sp-record-title-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.sp-record-title-row .sp-record-title {
-  flex: 1;
-}
-
-.sp-total-pending {
-  font-size: 13px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.sp-total-pending b {
-  color: var(--accent-orange);
-  font-weight: 700;
-}
-
+/* 收益领取 */
 .sp-pending-amount {
   color: var(--accent-orange);
   font-weight: 600;
@@ -373,166 +348,25 @@
   cursor: not-allowed;
 }
 
-/* ---- Airdrop card ---- */
-.sp-field-block {
-  margin-bottom: 20px;
-}
-
-.sp-field-label {
-  display: block;
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: 10px;
-}
-
-.sp-input-wrap {
-  position: relative;
-}
-
-.sp-qty-input {
-  width: 100%;
-  background: var(--bg-secondary);
-  border: 1.5px solid var(--border-color);
-  border-radius: 10px;
-  padding: 14px 70px 14px 16px;
-  color: var(--text-primary);
-  font-size: 17px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.sp-qty-input:focus {
-  border-color: var(--accent-orange);
-  box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.12);
-}
-
-.sp-input-unit {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--accent-orange);
-  font-size: 15px;
-  font-weight: 600;
-  pointer-events: none;
-}
-
-.sp-info-box {
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 18px;
-  background: var(--bg-secondary);
-}
-
-.sp-info-line {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: 12px;
-}
-
-.sp-info-line:last-child {
-  margin-bottom: 0;
-}
-
-.sp-highlight {
-  color: var(--accent-orange);
-  font-weight: 700;
-}
-
-.sp-airdrop-tip {
-  border: 1px dashed var(--border-color);
-  border-radius: 10px;
-  padding: 14px 16px;
-  margin-bottom: 20px;
-  font-size: 13px;
-  line-height: 1.7;
-  color: var(--text-secondary);
-}
-
-.sp-earn-card {
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 20px;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.sp-earn-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 16px;
-}
-
-.sp-buy-btn {
-  width: 100%;
-  background: var(--gradient-orange);
-  border: none;
-  color: #000;
-  padding: 15px;
-  font-size: 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  font-weight: 700;
-}
-
-.sp-buy-btn:hover {
-  opacity: 0.9;
-}
-
-/* Airdrop record cards */
-.sp-record-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed var(--border-color);
-}
-
-.sp-record-id {
-  color: var(--accent-orange);
-  font-weight: 600;
-  font-size: 13px;
-}
-
-.sp-record-time {
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-.sp-record-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.sp-record-item {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
 /* Responsive */
-@media (max-width: 900px) {
-  .staking-grid {
+@media (max-width: 1100px) {
+  .st-grid {
     grid-template-columns: 1fr;
-    max-width: 560px;
+    max-width: 640px;
+    padding: 32px 24px 0;
+  }
+
+  .sp-record-list {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 }
 
 @media (max-width: 768px) {
-  .staking-grid {
-    padding: 0 14px;
+  .st-grid {
+    padding: 24px 14px 0;
     gap: 18px;
-  }
-
-  .staking-title {
-    font-size: 22px;
   }
 
   .sp-card {
@@ -541,16 +375,12 @@
 }
 
 @media (max-width: 480px) {
-  .staking-header {
-    padding: 32px 16px 24px;
+  .st-grid {
+    padding-top: 18px;
   }
 
   .sp-duration-day {
     font-size: 17px;
-  }
-
-  .sp-record-grid {
-    grid-template-columns: 1fr;
   }
 
   .sp-input-group {
@@ -559,5 +389,11 @@
 
   .sp-confirm-btn {
     padding: 14px;
+  }
+
+  .sp-record-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 }

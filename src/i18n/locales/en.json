@@ -8,6 +8,9 @@
     "teamLevel": "Team Level",
     "points": "Points",
     "ipo": "Airdrop & Staking",
+    "airdrop": "Triple Airdrop",
+    "staking": "Staking",
+    "dividend": "Dividends",
     "download": "Download"
   },
   "header": {
@@ -540,6 +543,38 @@
     "airdropRateField": "Rate",
     "airdropRemainDays": "Remaining Days",
     "stakeFail": "Stake failed",
-    "joinFail": "Join failed"
+    "joinFail": "Join failed",
+    "minJoinUsd": "Minimum participation is {{min}}U worth of PEAK"
+  },
+  "dividend": {
+    "title": "Equity Dividends",
+    "subtitle": "Only film node holders and triple airdrop promoters are eligible; shareholder node users do not participate",
+    "promoTitle": "Referral Rewards",
+    "totalDirect": "Direct Referrals",
+    "personUnit": "",
+    "promoQualified": "You meet the platform referral requirement with 5+ valid direct referrals and can participate in daily referral dividends.",
+    "promoNotQualified": "Reach 5 valid direct referrals and hold a film node NFT to participate in daily referral dividends.",
+    "expandList": "Expand List",
+    "collapseList": "Collapse List",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyFail": "Copy failed",
+    "qualifiedCount": "Total Qualified Users",
+    "pendingDividend": "Claimable Dividends",
+    "claimNow": "Claim Now",
+    "claiming": "Claiming...",
+    "claimSuccess": "Claimed",
+    "claimFail": "Claim failed",
+    "noClaimable": "Nothing to claim",
+    "promoRecordTitle": "Referral Dividend Records",
+    "noRecord": "No dividend records yet",
+    "statusAccrued": "Claimable",
+    "statusClaimed": "Claimed",
+    "t7Title": "T7 Shareholder Dividends",
+    "t7Congrats": "Congratulations! You have reached T7 level and share daily dividends weighted by your small-area volume.",
+    "t7NotQualified": "Reach T7 team level to share daily dividends weighted by small-area volume.",
+    "smallAreaPerf": "Small-area Volume",
+    "latestSettleDate": "Latest Settlement",
+    "t7RecordTitle": "T7 Dividend Records"
   }
 }

@@ -8,6 +8,9 @@
     "teamLevel": "团队等级",
     "points": "积分",
     "ipo": "空投与质押",
+    "airdrop": "三倍空投",
+    "staking": "质押",
+    "dividend": "分红",
     "download": "下载"
   },
   "header": {
@@ -540,6 +543,38 @@
     "airdropRateField": "发放比例",
     "airdropRemainDays": "剩余发放天数",
     "stakeFail": "质押失败",
-    "joinFail": "参与失败"
+    "joinFail": "参与失败",
+    "minJoinUsd": "参与空投最低 {{min}}U"
+  },
+  "dividend": {
+    "title": "权益分红",
+    "subtitle": "本权益分红仅支持影视节点及三倍投资推广，股东节点用户不参与权益分红",
+    "promoTitle": "推广权益",
+    "totalDirect": "累计直推",
+    "personUnit": "人",
+    "promoQualified": "您符合平台推广要求，已成功直推五人及以上，可正常参与推广分红。",
+    "promoNotQualified": "有效直推满 5 人且本人持有影视节点 NFT，即可参与每日推广分红。",
+    "expandList": "展开列表",
+    "collapseList": "收起列表",
+    "copy": "复制",
+    "copied": "已复制",
+    "copyFail": "复制失败",
+    "qualifiedCount": "当前达标总人数",
+    "pendingDividend": "待领分红",
+    "claimNow": "立即领取",
+    "claiming": "领取中...",
+    "claimSuccess": "领取成功",
+    "claimFail": "领取失败",
+    "noClaimable": "暂无可领分红",
+    "promoRecordTitle": "推广分红记录",
+    "noRecord": "暂无分红记录",
+    "statusAccrued": "待领取",
+    "statusClaimed": "已领取",
+    "t7Title": "T7股东分红",
+    "t7Congrats": "恭喜您成功达到 T7 股东等级，可按小区业绩权重参与每日股东分红。",
+    "t7NotQualified": "达到 T7 团队等级后，即可按小区业绩权重参与每日股东分红。",
+    "smallAreaPerf": "小区业绩",
+    "latestSettleDate": "最近结算日期",
+    "t7RecordTitle": "T7股东分红记录"
   }
 }

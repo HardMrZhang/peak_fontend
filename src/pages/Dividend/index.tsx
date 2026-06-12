@@ -77,9 +77,9 @@ export default function Dividend() {
 
   const promoPending = promo ? BigInt(promo.pendingRaw || '0') : 0n
   const t7Pending = t7 ? BigInt(t7.pendingRaw || '0') : 0n
-  const promoQualified = (promo?.list?.length ?? 0) > 0
+  // 实时资格（后端与每日结算同一口径统计），不依赖是否已有分红记录
+  const promoQualified = promo?.myQualified ?? false
   const t7Qualified = (t7?.list?.length ?? 0) > 0
-  const latestPromo = promo?.list?.[0] ?? null
   const latestT7 = t7?.list?.[0] ?? null
 
   // 领取推广分红：后端先补写链上额度，用户钱包单签领取、自付 GAS
@@ -200,7 +200,7 @@ export default function Dividend() {
             <div className="dv-stat-line">
               <span className="dv-stat-label">{t('dividend.qualifiedCount')}</span>
               <span className="dv-stat-value">
-                <b className="dv-num">{latestPromo?.qualifiedCount ?? 0}</b> {t('dividend.personUnit')}
+                <b className="dv-num">{promo?.qualifiedCount ?? 0}</b> {t('dividend.personUnit')}
               </span>
             </div>
             <div className="dv-stat-line">

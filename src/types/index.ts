@@ -456,6 +456,10 @@ export interface DappPromoDividendDaily {
 export interface DappPromoSummary {
   pending: string
   pendingRaw: string
+  // 实时统计（与每日结算同一口径）：全网达标总人数 / 本人是否达标 / 本人有效直推数
+  qualifiedCount: number
+  myQualified: boolean
+  myValidDirectCount: number
   list: DappPromoDividendDaily[]
   total: number
   page: number

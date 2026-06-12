@@ -97,6 +97,17 @@ export default function Staking() {
     refreshStake()
   }, [refreshStake, connected])
 
+  // 定时刷新池子总量：有新订单（包括他人质押/赎回）时权重占比自动更新
+  useEffect(() => {
+    const timer = setInterval(async () => {
+      try {
+        const res = await getStakeOverview()
+        if (res.data) setPools(res.data.pools)
+      } catch { /* ignore */ }
+    }, 10000)
+    return () => clearInterval(timer)
+  }, [])
+
   const formatCountdown = (ms: number): string => {
     if (ms <= 0) return ''
     const s = Math.floor(ms / 1000)
@@ -136,7 +147,7 @@ export default function Staking() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
       if (!msg.includes('User rejected')) {
-        setStakeTip({ text: `${t('ipo.stakeFail')}: ${msg.slice(0, 80)}`, type: 'fail' })
+        setStakeTip({ text: t('ipo.stakeFail'), type: 'fail' })
       } else {
         setStakeTip({ text: '', type: '' })
       }

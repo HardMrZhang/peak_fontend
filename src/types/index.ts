@@ -84,6 +84,8 @@ export interface PointsOverview {
   username?: string | null
   avatar?: string | null
   nftCount: number
+  cardCount?: number
+  tierLevels?: number
   peakAvailable: string
   hasPeakAccount?: boolean
   redeemRate: {

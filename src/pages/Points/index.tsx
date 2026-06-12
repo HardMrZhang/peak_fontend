@@ -145,8 +145,6 @@ export default function Points() {
   // prefer backend data (by email) when available, fall back to URL-injected profile
   const score = overview ? overview.score : urlScore
   const nftCount = overview ? overview.nftCount : urlNft
-  // 权益层级：未持有 NFT 为 1 层，持有 NFT 为 10 层
-  const tierLevels = nftCount > 0 ? 10 : 1
   const available = score
   // 头像/昵称：优先后端按邮箱取到的 ling 资料，回退到 APP 注入的 profile
   const username = overview?.username || profile?.username || null
@@ -255,6 +253,12 @@ export default function Points() {
   const [cardRecords, setCardRecords] = useState<DappZeroCardRecord[]>([])
   const [peakBalance, setPeakBalance] = useState<number | null>(null)
   const [buyingCard, setBuyingCard] = useState(false)
+
+  // 已购买的积分卡牌数量：优先用积分总览（后端按账户查库），回退到钱包登录的卡牌接口
+  const cardCount = overview?.cardCount ?? cardInfo?.myCount ?? 0
+  // 权益层级：持有股东节点 NFT 或购买过积分卡牌为 10 层，否则 1 层（以后端为准）
+  const tierLevels = overview?.tierLevels ?? (nftCount > 0 || cardCount > 0 ? 10 : 1)
+  const tierReady = displayReady || Boolean(cardInfo)
 
   // 发送后端构造好的链上指令 / 部分签名交易（用户钱包签名并付 GAS）
   const sendDappIx = useCallback(
@@ -439,11 +443,19 @@ export default function Points() {
             <span className="pts-nft-count-val">{num(nftCount)}</span>
           </div>
 
-          {/* rights: 推广层级（按 NFT 持有量） */}
+          {/* 已购积分卡牌数量 */}
+          <div className="pts-nft-count">
+            <span className="pts-label">{t('points.cardHolding')}</span>
+            <span className="pts-nft-count-val">
+              {overview || cardInfo ? cardCount.toLocaleString() : DASH}
+            </span>
+          </div>
+
+          {/* rights: 持有股东节点 NFT 或购买过积分卡牌 => 10 层 */}
           <div className="pts-rights">
             <span className="pts-label">{t('points.rightsLabel')}</span>
             <span className="pts-nft-count-val">
-              {displayReady ? t('points.tierLevels', { count: tierLevels }) : DASH}
+              {tierReady ? t('points.tierLevels', { count: tierLevels }) : DASH}
             </span>
           </div>
 

@@ -875,6 +875,23 @@
   .genesis-modal-title { font-size: 18px; padding: 12px 16px 2px; }
   .genesis-records-section .ant-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .genesis-records-section .ant-table { min-width: 480px; }
+
+  /* VIP team detail tooltip: fit small screens */
+  .genesis-vip-tooltip { max-width: calc(100vw - 24px); }
+  .genesis-vip-tooltip .ant-tooltip-inner {
+    min-width: 0;
+    max-width: calc(100vw - 24px);
+    padding: 10px 12px;
+  }
+  .vip-tooltip-title { font-size: 11px; }
+  .vip-tooltip-row,
+  .vip-tooltip-total { font-size: 11px; gap: 10px; }
+  .vip-tooltip-addr {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
 }
 
 @media (max-width: 480px) {

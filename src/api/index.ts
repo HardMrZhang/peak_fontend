@@ -98,10 +98,10 @@ export function getPointsOverview(email?: string | null, walletAddress?: string 
   })
 }
 
-export function bindPointsEmail(email: string) {
+export function bindPointsEmail(email: string, walletAddress?: string | null) {
   return post<{ emailBound: boolean; email: string | null; rebound: boolean; hasPeakAccount: boolean; score: number }>(
     '/points/bind-email',
-    { email },
+    { email, walletAddress: walletAddress || undefined },
   )
 }
 

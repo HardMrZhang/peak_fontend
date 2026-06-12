@@ -201,7 +201,8 @@ export default function Points() {
     }
     setBinding(true)
     try {
-      const res = await bindPointsEmail(email)
+      // 带上已连接的钱包：后端会把邮箱挂到该钱包账户，之后按邮箱即可查到 NFT/卡牌
+      const res = await bindPointsEmail(email, walletAddress)
       message.success(res.data?.rebound ? t('points.rebindSuccess') : t('points.bindSuccess'))
       try {
         localStorage.setItem(EMAIL_STORAGE_KEY, email)
@@ -254,10 +255,11 @@ export default function Points() {
   const [peakBalance, setPeakBalance] = useState<number | null>(null)
   const [buyingCard, setBuyingCard] = useState(false)
 
-  // 已购买的积分卡牌数量：优先用积分总览（后端按账户查库），回退到钱包登录的卡牌接口
-  const cardCount = overview?.cardCount ?? cardInfo?.myCount ?? 0
-  // 权益层级：持有股东节点 NFT 或购买过积分卡牌为 10 层，否则 1 层（以后端为准）
-  const tierLevels = overview?.tierLevels ?? (nftCount > 0 || cardCount > 0 ? 10 : 1)
+  // 已购买的积分卡牌数量：积分总览（按邮箱/钱包查库）与卡牌接口（按登录态查库）
+  // 两路数据源取较大值，避免邮箱侧定位不到账户时误显示 0
+  const cardCount = Math.max(overview?.cardCount ?? 0, cardInfo?.myCount ?? 0)
+  // 权益层级：持有股东节点 NFT 或购买过积分卡牌为 10 层，否则 1 层
+  const tierLevels = nftCount > 0 || cardCount > 0 ? 10 : 1
   const tierReady = displayReady || Boolean(cardInfo)
 
   // 发送后端构造好的链上指令 / 部分签名交易（用户钱包签名并付 GAS）

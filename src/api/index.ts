@@ -358,8 +358,8 @@ export function getAirdropSummary() {
 }
 
 // ==================== DApp: 空投收益提现（扣 20% 手续费，用户单签付 GAS） ====================
-export function getDappWithdrawParams(amount: string | number) {
-  return get<DappWithdrawParams>('/dapp/withdraw/params', { params: { amount }, skipErrorToast: true })
+export function getDappWithdrawParams(amount: string | number, packageId: string) {
+  return get<DappWithdrawParams>('/dapp/withdraw/params', { params: { amount, packageId }, skipErrorToast: true })
 }
 
 export function confirmDappWithdraw(data: { txHash: string; intentId: string }) {

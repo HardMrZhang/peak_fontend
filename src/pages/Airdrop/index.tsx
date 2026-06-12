@@ -27,6 +27,7 @@ export default function Airdrop() {
   const [summary, setSummary] = useState<DappAirdropSummary | null>(null)
   const [joining, setJoining] = useState(false)
   const [withdrawing, setWithdrawing] = useState(false)
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
   const [joinTip, setJoinTip] = useState('')
   const joinTipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -127,23 +128,22 @@ export default function Airdrop() {
     }
   }
 
-  // 提币数量 = 链上可提余额小数点前整数（直接截断，不四舍五入）
-  const withdrawableInt = summary?.withdrawableInt ?? '0'
-  const canWithdraw = Number(withdrawableInt) > 0
-
-  const handleWithdraw = async () => {
+  // 每个订单（空投包）单独提币：可提数量 = 本包累计释放 − 本包已提，取小数点前整数
+  const handleWithdraw = async (record: DappAirdropRecord) => {
     if (withdrawing) return
     if (!hasToken() || !connected) {
       message.warning(t('account.walletRequired'))
       return
     }
-    if (!canWithdraw) {
+    const withdrawableInt = record.withdrawableInt ?? '0'
+    if (Number(withdrawableInt) <= 0) {
       message.warning(t('ipo.noWithdrawable'))
       return
     }
     setWithdrawing(true)
+    setWithdrawingId(record.id)
     try {
-      const paramsRes = await getDappWithdrawParams(withdrawableInt)
+      const paramsRes = await getDappWithdrawParams(withdrawableInt, record.id)
       const sig = await sendDappIx(paramsRes.data)
       await confirmDappWithdraw({ txHash: sig, intentId: paramsRes.data.intentId })
       message.success(t('ipo.withdrawSuccess'))
@@ -157,6 +157,7 @@ export default function Airdrop() {
       }
     } finally {
       setWithdrawing(false)
+      setWithdrawingId(null)
     }
   }
 
@@ -276,17 +277,17 @@ export default function Airdrop() {
                   </div>
                   <div className="sp-record-footer">
                     <span className="sp-record-item">
-                      {t('ipo.withdrawable')}: {summary?.airdropCredit ?? '0'} PEAK
+                      {t('ipo.withdrawable')}: {item.withdrawable ?? '0'} PEAK
                     </span>
                     <button
                       type="button"
                       className="sp-withdraw-btn"
-                      onClick={handleWithdraw}
-                      disabled={withdrawing || !canWithdraw}
+                      onClick={() => handleWithdraw(item)}
+                      disabled={withdrawing || Number(item.withdrawableInt ?? '0') <= 0}
                     >
-                      {withdrawing
+                      {withdrawing && withdrawingId === item.id
                         ? t('ipo.withdrawing')
-                        : `${t('ipo.withdrawBtn')} ${withdrawableInt} PEAK`}
+                        : t('ipo.withdrawBtn')}
                     </button>
                   </div>
                 </div>

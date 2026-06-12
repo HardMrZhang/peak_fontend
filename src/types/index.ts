@@ -526,6 +526,10 @@ export interface DappAirdropRecord {
   dailyAmount: string
   totalCap: string
   released: string
+  // 本包可提 = 本包累计释放 − 本包已提（每个订单单独计算）
+  withdrawableRaw: string
+  withdrawable: string
+  withdrawableInt: string
   remainDays: number
   isOut: boolean
   sourceTxHash: string | null

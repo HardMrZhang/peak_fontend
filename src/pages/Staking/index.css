@@ -231,6 +231,36 @@
   font-weight: 700;
 }
 
+/* 按周期领取分红（链上额度按用户+周期聚合在对应 dividend 合约） */
+.sp-period-claims {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.sp-period-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(255, 165, 0, 0.08);
+  border: 1px solid rgba(255, 165, 0, 0.35);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.sp-period-chip-label {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.sp-period-chip-amount {
+  color: var(--accent-orange);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .sp-record-list {
   display: flex;
   flex-direction: column;

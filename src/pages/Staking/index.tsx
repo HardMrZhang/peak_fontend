@@ -38,7 +38,7 @@ export default function Staking() {
   const [now, setNow] = useState(Date.now())
   const [stakeRecords, setStakeRecords] = useState<DappStakeRecord[]>([])
   const [stakeRewards, setStakeRewards] = useState<DappStakeRewardsInfo | null>(null)
-  const [claimingId, setClaimingId] = useState<string | null>(null)
+  const [claimingPeriod, setClaimingPeriod] = useState<number | null>(null)
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000)
@@ -57,6 +57,30 @@ export default function Staking() {
     stakeRewards?.positions?.forEach((p) => {
       map.set(p.positionId, { pendingReward: p.pendingReward, pendingRewardRaw: p.pendingRewardRaw })
     })
+    return map
+  }, [stakeRewards])
+
+  // 分红额度链上按「用户 + 周期」聚合（独立 dividend 合约），领取按周期一键结清。
+  // periodDays -> { raw 合计, display 展示值, positionId 任一仓位（接口参数用） }
+  const pendingByPeriod = useMemo(() => {
+    const map = new Map<number, { raw: bigint; display: string; positionId: string }>()
+    stakeRewards?.positions?.forEach((p) => {
+      const raw = BigInt(p.pendingRewardRaw || '0')
+      if (raw <= 0n) return
+      const prev = map.get(p.periodDays)
+      map.set(p.periodDays, {
+        raw: (prev?.raw ?? 0n) + raw,
+        display: '',
+        positionId: prev?.positionId ?? p.positionId,
+      })
+    })
+    // 9 位精度格式化，最多 4 位小数（与后端展示口径一致）
+    for (const [period, v] of map) {
+      const base = 10n ** 9n
+      const intPart = v.raw / base
+      const frac = (v.raw % base).toString().padStart(9, '0').slice(0, 4).replace(/0+$/, '')
+      map.set(period, { ...v, display: frac ? `${intPart}.${frac}` : intPart.toString() })
+    }
     return map
   }, [stakeRewards])
 
@@ -156,17 +180,19 @@ export default function Staking() {
     }
   }
 
-  // 领取质押收益：用户钱包单签发起链上 claim_stake_reward，自付 GAS
-  const handleClaimReward = async (record: DappStakeRecord) => {
-    if (claimingId) return
+  // 领取质押分红（按周期一键结清）：用户钱包单签到对应周期分红合约 claim，自付 GAS
+  const handleClaimPeriod = async (periodDays: number) => {
+    if (claimingPeriod !== null) return
     if (!hasToken() || !connected) {
       message.warning(t('account.walletRequired'))
       return
     }
-    setClaimingId(record.positionId)
+    const pending = pendingByPeriod.get(periodDays)
+    if (!pending || pending.raw <= 0n) return
+    setClaimingPeriod(periodDays)
     setStakeTip({ text: t('ipo.claiming'), type: '' })
     try {
-      const paramsRes = await getClaimStakeRewardParams(record.positionId, record.periodDays)
+      const paramsRes = await getClaimStakeRewardParams(pending.positionId, periodDays)
       const sig = await sendDappIx(paramsRes.data)
       await confirmClaimStakeReward({ txHash: sig, intentId: paramsRes.data.intentId })
       setStakeTip({ text: `${t('ipo.claimSuccess')} +${paramsRes.data.reward} PEAK`, type: 'success' })
@@ -179,7 +205,7 @@ export default function Staking() {
         setStakeTip({ text: '', type: '' })
       }
     } finally {
-      setClaimingId(null)
+      setClaimingPeriod(null)
     }
   }
 
@@ -277,6 +303,31 @@ export default function Staking() {
               </span>
             )}
           </div>
+          {/* 按周期领取分红：链上额度按「用户 + 周期」记在对应 dividend 合约，一键结清该周期全部待领 */}
+          {pendingByPeriod.size > 0 && (
+            <div className="sp-period-claims">
+              {DURATIONS.filter((d) => pendingByPeriod.has(d)).map((d) => {
+                const pending = pendingByPeriod.get(d)!
+                return (
+                  <div key={d} className="sp-period-chip">
+                    <span className="sp-period-chip-label">
+                      {d}
+                      {t('ipo.dayUnit')} {t('ipo.pendingReward')}
+                    </span>
+                    <span className="sp-period-chip-amount">{pending.display} PEAK</span>
+                    <button
+                      type="button"
+                      className="sp-claim-btn"
+                      disabled={claimingPeriod !== null}
+                      onClick={() => handleClaimPeriod(d)}
+                    >
+                      {claimingPeriod === d ? t('ipo.claiming') : t('ipo.claimReward')}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
           <div className="sp-record-list">
             {stakeRecords.length === 0 ? (
               <div className="sp-record-empty">{t('ipo.noStakeRecord')}</div>
@@ -313,16 +364,6 @@ export default function Staking() {
                         <span className={hasPending ? 'sp-pending-amount' : ''}>
                           {pending ? pending.pendingReward : '0'} PEAK
                         </span>
-                        {!isRedeemed && (
-                          <button
-                            type="button"
-                            className="sp-claim-btn"
-                            disabled={!hasPending || claimingId !== null}
-                            onClick={() => handleClaimReward(item)}
-                          >
-                            {claimingId === item.positionId ? t('ipo.claiming') : t('ipo.claimReward')}
-                          </button>
-                        )}
                       </span>
                     </div>
                     <div className="sp-record-row">

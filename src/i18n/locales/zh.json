@@ -545,6 +545,7 @@
     "stakeFail": "质押失败",
     "joinFail": "参与失败",
     "minJoinUsd": "参与空投最低 {{min}}U",
+    "dailyStatic": "日静态收益",
     "accelTeam": "团队加速",
     "accelDirect": "直推加速",
     "withdrawable": "可提余额",

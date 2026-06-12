@@ -545,6 +545,7 @@
     "stakeFail": "Stake failed",
     "joinFail": "Join failed",
     "minJoinUsd": "Minimum participation is {{min}}U worth of PEAK",
+    "dailyStatic": "Daily Static Yield",
     "accelTeam": "Team Boost",
     "accelDirect": "Direct Referral Boost",
     "withdrawable": "Withdrawable",

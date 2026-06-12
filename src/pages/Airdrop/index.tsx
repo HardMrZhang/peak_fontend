@@ -262,6 +262,9 @@ export default function Airdrop() {
                       {t('ipo.airdropRateField')}: {item.dailyRate}%
                     </div>
                     <div className="sp-record-item">
+                      {t('ipo.dailyStatic')}: {item.dailyAmount} PEAK
+                    </div>
+                    <div className="sp-record-item">
                       {t('ipo.airdropRemainDays')}: {item.remainDays} {t('ipo.dayUnit')}
                     </div>
                     <div className="sp-record-item">

@@ -18,7 +18,7 @@ const router = createBrowserRouter([
     path: '/',
     element: <MainLayout />,
     children: [
-      { index: true, element: <Navigate to="/nodes" replace /> },
+      { index: true, element: <Navigate to="/account" replace /> },
       { path: 'account', element: <Account /> },
       { path: 'account/topup', element: <TopUp /> },
       { path: 'account/withdrawal', element: <Withdrawal /> },

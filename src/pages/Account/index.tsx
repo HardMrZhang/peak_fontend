@@ -191,7 +191,6 @@ export default function Account() {
             <div className="card-row">
               <span className="balance-icon usdt">◉</span>
               <span className="balance-amount">{balanceLoading ? '--' : usdtAmount} USDT</span>
-              <Button className="topup-btn" onClick={() => handleWalletAction('/account/topup')}>{t('account.topUp')}</Button>
               <Button className="withdraw-btn" onClick={() => handleWalletAction('/account/withdrawal')}>{t('account.withdrawal')}</Button>
             </div>
             <div className="peak-stat-row">
@@ -205,7 +204,6 @@ export default function Account() {
             <div className="card-row">
               <span className="node-icon">●</span>
               <span className="node-count">{userNodes}</span>
-              <Button className="purchase-btn-sm" onClick={() => navigate('/nodes')}>{t('account.purchase')}</Button>
             </div>
             <div className="peak-stat-row">
               <span className="balance-icon peak">◉</span>

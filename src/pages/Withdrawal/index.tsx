@@ -28,8 +28,9 @@ export default function Withdrawal() {
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  // 提现地址固定为当前登录钱包，不允许手改
   useEffect(() => {
-    if (publicKey && !walletAddress) {
+    if (publicKey) {
       setWalletAddress(publicKey.toBase58())
     }
   }, [publicKey])
@@ -77,7 +78,6 @@ export default function Withdrawal() {
       await submitWithdraw({ asset: tokenType, toAddress: walletAddress, amount: Number(amount) })
       message.success(t('withdrawal.submitSuccess'))
       setAmount('')
-      setWalletAddress('')
       getBalances().then((r) => setBalances(r.data)).catch(() => { })
     } catch {
       // error handled by interceptor
@@ -151,14 +151,10 @@ export default function Withdrawal() {
                 <span className="address-label">{t('withdrawal.addressLabel')}</span>
                 <Input
                   value={walletAddress}
-                  onChange={(e) => setWalletAddress(e.target.value)}
                   className="amount-input"
                   size="large"
-                  placeholder={t('withdrawal.addrPlaceholder')}
+                  readOnly
                 />
-              </div>
-              <div className="tip-box">
-                ⓘ {t('withdrawal.addrTip')}
               </div>
             </div>
           </div>

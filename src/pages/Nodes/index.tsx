@@ -321,7 +321,6 @@ export default function Nodes() {
             <div className="sale-header">
               <span className="sale-icon">✦</span>
               <span className="sale-title">{t('nodes.nodeSales')}</span>
-              <span className="what-is-nft" onClick={() => setInfoOpen(true)}>{t('nodes.whatIsNft')}</span>
             </div>
             <div className="sale-info">
               <Button

@@ -435,6 +435,7 @@
     "rightMultiplier": "积分×3倍",
     "rightWhitelist": "打新白名单",
     "tierLevels": "{{count}}层",
+    "noRights": "无",
     "appPoints": "APP积分",
     "inflatedPoints": "NFT膨胀后可获得积分",
     "inflate": "膨胀",

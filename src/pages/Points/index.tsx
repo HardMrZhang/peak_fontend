@@ -258,8 +258,8 @@ export default function Points() {
   // 已购买的积分卡牌数量：积分总览（按邮箱/钱包查库）与卡牌接口（按登录态查库）
   // 两路数据源取较大值，避免邮箱侧定位不到账户时误显示 0
   const cardCount = Math.max(overview?.cardCount ?? 0, cardInfo?.myCount ?? 0)
-  // 权益层级：持有股东节点 NFT 或购买过积分卡牌为 10 层，否则 1 层
-  const tierLevels = nftCount > 0 || cardCount > 0 ? 10 : 1
+  // 权益：持有股东节点 NFT 或购买过积分卡牌即有权益（显示五角星），否则显示「无」
+  const hasRights = nftCount > 0 || cardCount > 0
   const tierReady = displayReady || Boolean(cardInfo)
 
   // 发送后端构造好的链上指令 / 部分签名交易（用户钱包签名并付 GAS）
@@ -453,11 +453,11 @@ export default function Points() {
             </span>
           </div>
 
-          {/* rights: 持有股东节点 NFT 或购买过积分卡牌 => 10 层 */}
+          {/* rights: 持有股东节点 NFT 或购买过积分卡牌 => 五角星，否则「无」 */}
           <div className="pts-rights">
             <span className="pts-label">{t('points.rightsLabel')}</span>
             <span className="pts-nft-count-val">
-              {tierReady ? t('points.tierLevels', { count: tierLevels }) : DASH}
+              {tierReady ? (hasRights ? '★' : t('points.noRights')) : DASH}
             </span>
           </div>
 

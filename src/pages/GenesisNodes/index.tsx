@@ -54,10 +54,9 @@ async function hasTransactionLanded(signature: string, connection: ReturnType<ty
 interface GenesisSaleData {
   premintedTotal: number
   soldTotal: number
-  peakAirdropAmount: number
 }
 
-function parseGenesisSaleState(data: Buffer): Omit<GenesisSaleData, 'peakAirdropAmount'> | null {
+function parseGenesisSaleState(data: Buffer): GenesisSaleData | null {
   if (data.length < 17) return null
   return {
     premintedTotal: data.readUInt32LE(8),
@@ -108,7 +107,7 @@ export default function GenesisNodes() {
       const accountInfo = await connection.getAccountInfo(SALE_PDA)
       if (accountInfo?.data) {
         const parsed = parseGenesisSaleState(accountInfo.data as Buffer)
-        if (parsed) setSaleData((prev) => ({ peakAirdropAmount: prev?.peakAirdropAmount ?? 0, ...parsed }))
+        if (parsed) setSaleData(parsed)
       }
     } catch {
       /* chain read failed, try API fallback */
@@ -126,7 +125,6 @@ export default function GenesisNodes() {
           setSaleData({
             premintedTotal: res.data.premintedTotal,
             soldTotal: res.data.soldTotal,
-            peakAirdropAmount: Number(res.data.peakAirdropAmount) || 0,
           })
         }
       } catch {
@@ -362,7 +360,6 @@ export default function GenesisNodes() {
     { title: t('genesis.orderColQty'), dataIndex: 'qty', width: 70, render: (v: number) => <span style={{ color: '#f5a623' }}>{v}</span> },
     { title: t('genesis.orderColUnitPrice'), dataIndex: 'unitPriceUsdt', width: 110, render: (v: string) => <span style={{ color: '#f5a623' }}>{v} USDT</span> },
     { title: t('genesis.orderColTotal'), dataIndex: 'totalAmountUsdt', width: 120, render: (v: string) => <span style={{ color: '#f5a623' }}>{v} USDT</span> },
-    { title: t('genesis.orderColPeakAirdrop'), dataIndex: 'peakAirdropTotal', width: 120, render: (v: string) => <span style={{ color: '#52c41a' }}>+{v} PEAK</span> },
     { title: t('genesis.orderColStatus'), dataIndex: 'status', width: 100, render: (v: string) => statusLabelMap[v] || v },
     { title: t('genesis.orderColTime'), dataIndex: 'createdAt', width: 170, render: (v: string) => v?.slice(0, 19).replace('T', ' ') },
   ]
@@ -620,13 +617,6 @@ export default function GenesisNodes() {
             <div className="genesis-modal-row">
               <span className="genesis-modal-label">{t('genesis.unitPrice')}</span>
               <span className="genesis-modal-value orange">{NODE_PRICE} USDT</span>
-            </div>
-
-            <div className="genesis-modal-row">
-              <span className="genesis-modal-label">{t('genesis.airdropPeak')}</span>
-              <span className="genesis-modal-value" style={{ color: 'var(--accent-green)' }}>
-                +{(saleData?.peakAirdropAmount ?? 0) * quantity} PEAK
-              </span>
             </div>
 
             <div className="genesis-modal-highlight">

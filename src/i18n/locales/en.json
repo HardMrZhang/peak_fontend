@@ -567,7 +567,7 @@
     "copy": "Copy",
     "copied": "Copied",
     "copyFail": "Copy failed",
-    "airdropAmountHint": "Cumulative 3x airdrop amount (requires a single asset package purchase of 500U or more, or holding a film node NFT; multiple smaller purchases do not count)",
+    "airdropAmountHint": "Cumulative 3x airdrop amount (includes film node purchase amount; requires a single asset package purchase of 500U or more, or purchasing a film node; multiple smaller purchases do not count)",
     "qualifiedCount": "Total Qualified Users",
     "pendingDividend": "Claimable Dividends",
     "claimNow": "Claim Now",

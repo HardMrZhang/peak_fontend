@@ -567,7 +567,7 @@
     "copy": "复制",
     "copied": "已复制",
     "copyFail": "复制失败",
-    "airdropAmountHint": "累计三倍空投金额（需单笔购买≥500U资产包或持有影视节点NFT，分多次累计不计入）",
+    "airdropAmountHint": "累计三倍空投金额（含影视节点购买金额；需单笔购买≥500U资产包或购买影视节点，分多次累计不计入）",
     "qualifiedCount": "当前达标总人数",
     "pendingDividend": "待领分红",
     "claimNow": "立即领取",

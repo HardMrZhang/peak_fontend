@@ -176,6 +176,9 @@ export interface DirectReferralRecord {
   joinedAt: string
   nodeQty: number
   rewardAmount: string
+  // 累计三倍空投金额（USDT）；仅当达标（单笔≥500U 资产包 或 持影视节点NFT）时返回
+  airdropQualified?: boolean
+  airdropUsdValue?: string | null
 }
 
 export interface TeamNodeRecord {

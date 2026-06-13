@@ -175,6 +175,12 @@ export default function Dividend() {
               {visibleReferrals.map((r) => (
                 <div key={r.walletAddress} className="dv-ref-item">
                   <span className="dv-ref-addr">{shortenAddr(r.walletAddress)}</span>
+                  <span
+                    className={`dv-ref-airdrop${r.airdropQualified ? '' : ' empty'}`}
+                    title={t('dividend.airdropAmountHint')}
+                  >
+                    {r.airdropQualified ? `${r.airdropUsdValue} U` : '--'}
+                  </span>
                   <span className="dv-copy" onClick={() => handleCopy(r.walletAddress)}>
                     <CopyOutlined /> {t('dividend.copy')}
                   </span>

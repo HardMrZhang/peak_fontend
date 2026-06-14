@@ -23,6 +23,7 @@ export default function Account() {
   const [activeTab, setActiveTab] = useState<TabKey>('transaction')
   const [page, setPage] = useState(1)
   const [walletTipOpen, setWalletTipOpen] = useState(false)
+  const [noticeOpen, setNoticeOpen] = useState(true)
   const pageSize = 10
 
   const [balances, setBalances] = useState<AssetBalance[]>([])
@@ -182,6 +183,33 @@ export default function Account() {
 
   return (
     <div className="account-page">
+      {noticeOpen && (
+        <div className="sp-notice-mask" onClick={() => setNoticeOpen(false)}>
+          <div className="sp-notice-modal" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="sp-notice-close" onClick={() => setNoticeOpen(false)} aria-label="close">
+              ×
+            </button>
+            <h3 className="sp-notice-title">{t('ipo.noticeTitle')}</h3>
+            <p className="sp-notice-time">{t('ipo.noticeTime')}</p>
+            <div className="sp-notice-body">
+              <p>{t('ipo.noticeP1')}</p>
+              <p>{t('ipo.noticeP2')}</p>
+              <p>{t('ipo.noticeP3')}</p>
+              <p>{t('ipo.noticeP4')}</p>
+              <p>{t('ipo.noticeP5')}</p>
+              <p>{t('ipo.noticeP6')}</p>
+              <p>{t('ipo.noticeP7')}</p>
+            </div>
+            <div className="sp-notice-sign">
+              <span>{t('ipo.noticeSignName')}</span>
+              <span>{t('ipo.noticeSignDate')}</span>
+            </div>
+            <button type="button" className="sp-notice-confirm" onClick={() => setNoticeOpen(false)}>
+              {t('ipo.noticeConfirm')}
+            </button>
+          </div>
+        </div>
+      )}
       <div className="account-inner">
         <h1 className="page-title">{t('account.title')}</h1>
 

@@ -39,7 +39,6 @@ export default function Staking() {
   const [stakeRecords, setStakeRecords] = useState<DappStakeRecord[]>([])
   const [stakeRewards, setStakeRewards] = useState<DappStakeRewardsInfo | null>(null)
   const [claimingPeriod, setClaimingPeriod] = useState<number | null>(null)
-  const [noticeOpen, setNoticeOpen] = useState(true)
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000)
@@ -234,33 +233,6 @@ export default function Staking() {
 
   return (
     <div className="stake-page">
-      {noticeOpen && (
-        <div className="sp-notice-mask" onClick={() => setNoticeOpen(false)}>
-          <div className="sp-notice-modal" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="sp-notice-close" onClick={() => setNoticeOpen(false)} aria-label="close">
-              ×
-            </button>
-            <h3 className="sp-notice-title">{t('ipo.noticeTitle')}</h3>
-            <p className="sp-notice-time">{t('ipo.noticeTime')}</p>
-            <div className="sp-notice-body">
-              <p>{t('ipo.noticeP1')}</p>
-              <p>{t('ipo.noticeP2')}</p>
-              <p>{t('ipo.noticeP3')}</p>
-              <p>{t('ipo.noticeP4')}</p>
-              <p>{t('ipo.noticeP5')}</p>
-              <p>{t('ipo.noticeP6')}</p>
-              <p>{t('ipo.noticeP7')}</p>
-            </div>
-            <div className="sp-notice-sign">
-              <span>{t('ipo.noticeSignName')}</span>
-              <span>{t('ipo.noticeSignDate')}</span>
-            </div>
-            <button type="button" className="sp-notice-confirm" onClick={() => setNoticeOpen(false)}>
-              {t('ipo.noticeConfirm')}
-            </button>
-          </div>
-        </div>
-      )}
       <div className="st-grid">
         {/* ---------------- 左侧：质押表单 ---------------- */}
         <section className="sp-card">

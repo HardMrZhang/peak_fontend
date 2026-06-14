@@ -188,7 +188,7 @@ export default function WalletButton() {
       )
     }
 
-    // 已连接但未登录：必须由用户点击触发签名（避免 OKX 4100 / 移动端无响应）
+    // 已连接但未登录：显示地址 + 一键「签名登录」（点击=可信手势，避免 OKX 4100）
     if (!token) {
       return (
         <div className="wallet-connect-wrapper">
@@ -196,8 +196,9 @@ export default function WalletButton() {
             className="wallet-adapter-button wallet-adapter-button-trigger"
             onClick={requestWalletLogin}
             disabled={loginLoading}
+            title={publicKey.toBase58()}
           >
-            {loginLoading ? t('header.signingIn') : t('header.signIn')}
+            {loginLoading ? t('header.signingIn') : `${shortAddress} · ${t('header.signIn')}`}
           </button>
         </div>
       )

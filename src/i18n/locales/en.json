@@ -558,7 +558,19 @@
     "withdrawing": "Withdrawing...",
     "withdrawSuccess": "Withdraw successful",
     "withdrawFail": "Withdraw failed",
-    "noWithdrawable": "No withdrawable balance"
+    "noWithdrawable": "No withdrawable balance",
+    "noticeTitle": "Notice on Film Node Conversion",
+    "noticeTime": "Published: 2026-06-14 00:00:00",
+    "noticeP1": "To thank all users for actively participating in the PEAK project and various activities, and to recognize the continuous support of our early users, we hereby announce the following regarding the film node conversion:",
+    "noticeP2": "This film node conversion will be executed uniformly at 18:18 on June 15, 2026. Each film node can be converted into one triple-airdrop order; holding multiple nodes will generate the corresponding number of orders.",
+    "noticeP3": "No manual action is required for this conversion. Once completed, you can check the order details on the Triple Airdrop page.",
+    "noticeP4": "This conversion applies only to film nodes purchased earlier. Newly purchased film nodes will automatically generate triple orders in real time.",
+    "noticeP5": "Due to system data synchronization, some user data may be delayed by 1-10 minutes. This is normal, so please do not worry.",
+    "noticeP6": "If you have any questions or notice data anomalies during the query, please contact our staff promptly for verification.",
+    "noticeP7": "Thank you for your companionship and support. We will continue to optimize our products and benefit system to create a win-win future together!",
+    "noticeSignName": "PEAK Operations Center",
+    "noticeSignDate": "June 14, 2026",
+    "noticeConfirm": "I Understand"
   },
   "dividend": {
     "title": "Equity Dividends",

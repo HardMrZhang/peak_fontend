@@ -127,7 +127,7 @@ export default function Withdrawal() {
             <ExclamationCircleOutlined className="empty-guard-icon" />
             <h3>{t('account.loginFailed')}</h3>
             <p>{t('account.loginFailedDesc')}</p>
-            <Button className="empty-guard-btn" onClick={() => setLoginFailed(false)}>{t('account.retryLogin')}</Button>
+            <Button className="empty-guard-btn" onClick={() => { setLoginFailed(false); window.dispatchEvent(new CustomEvent('auth:login')) }}>{t('account.retryLogin')}</Button>
           </div>
         </div>
       </div>

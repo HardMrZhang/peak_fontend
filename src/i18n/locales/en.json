@@ -15,7 +15,9 @@
   },
   "header": {
     "connectWallet": "Connect Wallet",
-    "disconnect": "Disconnect"
+    "disconnect": "Disconnect",
+    "signIn": "Sign In",
+    "signingIn": "Signing in..."
   },
   "download": {
     "title": "Peak TV",

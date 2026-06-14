@@ -89,14 +89,13 @@ export function useAuth() {
         typeof err === 'object' && err !== null &&
         ('response' in err || 'request' in err || 'config' in err)
       if (!isLikelyAxiosError) {
-        // 钱包侧错误：不要把原始英文（如 4100 未授权）直接弹给用户
+        // 钱包侧错误：不要把原始英文（如 4100 未授权）直接弹给用户。
+        // 不主动 disconnect，保持已连接状态，用户可在账户页「重新登录」重试签名。
         const walletErr = classifyWalletError(err)
         if (walletErr === 'rejected') {
           message.info(t('account.signCancelled'))
         } else if (walletErr === 'unauthorized') {
-          // 会话失效/未授权：断开钱包，让用户重新连接并在钱包内确认签名
           message.error(t('account.reconnectNeeded'))
-          disconnect().catch(() => {})
         } else {
           message.error(t('account.loginFailedRetry'))
         }
@@ -109,7 +108,7 @@ export function useAuth() {
       loginInProgress.current = false
       setLoginLoading(false)
     }
-  }, [publicKey, signMessage, setAuth, setLoginLoading, setLoginFailed, logout, setUser, disconnect, t])
+  }, [publicKey, signMessage, setAuth, setLoginLoading, setLoginFailed, logout, setUser, t])
 
   useEffect(() => {
     if (connected && publicKey) {
@@ -118,11 +117,14 @@ export function useAuth() {
     }
   }, [connected, publicKey, setLoginFailed])
 
+  // 登录签名必须由「用户手势」同步触发，不能在 effect 里自动调用 signMessage：
+  // 否则 OKX 等钱包会抛 4100（未授权），移动端钱包还会因导航被拦截而「无响应」。
+  // 由 WalletButton 的「签名登录」按钮、各页「重新登录」按钮派发 auth:login 事件触发。
   useEffect(() => {
-    if (connected && publicKey && !token && !loginFailed && !loginLoading && !loginInProgress.current) {
-      doLogin()
-    }
-  }, [connected, publicKey, token, loginFailed, loginLoading, doLogin])
+    const handler = () => { doLogin() }
+    window.addEventListener('auth:login', handler)
+    return () => window.removeEventListener('auth:login', handler)
+  }, [doLogin])
 
   useEffect(() => {
     if (token && !user) {

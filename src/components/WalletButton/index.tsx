@@ -3,7 +3,13 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import { useTranslation } from 'react-i18next'
 import { useAutoConnectWallet } from '@/hooks/useAutoConnectWallet'
+import { useAuthStore } from '@/store/useAuthStore'
 import './index.css'
+
+// 登录签名必须由用户点击触发（trusted event），否则 OKX 等钱包会报 4100。
+function requestWalletLogin() {
+  window.dispatchEvent(new CustomEvent('auth:login'))
+}
 
 interface WalletOption {
   name: string
@@ -112,6 +118,8 @@ export default function WalletButton() {
   const { connected } = useWallet()
   const { t } = useTranslation()
   const [modalOpen, setModalOpen] = useState(false)
+  const token = useAuthStore((s) => s.token)
+  const loginLoading = useAuthStore((s) => s.loginLoading)
 
   useAutoConnectWallet()
 
@@ -175,6 +183,21 @@ export default function WalletButton() {
             onClick={() => setWalletModalVisible(true)}
           >
             {t('header.connectWallet')}
+          </button>
+        </div>
+      )
+    }
+
+    // 已连接但未登录：必须由用户点击触发签名（避免 OKX 4100 / 移动端无响应）
+    if (!token) {
+      return (
+        <div className="wallet-connect-wrapper">
+          <button
+            className="wallet-adapter-button wallet-adapter-button-trigger"
+            onClick={requestWalletLogin}
+            disabled={loginLoading}
+          >
+            {loginLoading ? t('header.signingIn') : t('header.signIn')}
           </button>
         </div>
       )

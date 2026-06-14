@@ -15,7 +15,9 @@
   },
   "header": {
     "connectWallet": "连接钱包",
-    "disconnect": "断开连接"
+    "disconnect": "断开连接",
+    "signIn": "签名登录",
+    "signingIn": "登录中..."
   },
   "download": {
     "title": "Peak TV",

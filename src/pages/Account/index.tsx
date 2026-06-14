@@ -289,7 +289,7 @@ export default function Account() {
             <>
               <h3 className="wallet-tip-title">{t('account.loginFailed')}</h3>
               <p className="wallet-tip-desc">{t('account.loginFailedDesc')}</p>
-              <Button className="wallet-tip-btn" block onClick={() => { setLoginFailed(false); setWalletTipOpen(false) }}>
+              <Button className="wallet-tip-btn" block onClick={() => { setLoginFailed(false); setWalletTipOpen(false); window.dispatchEvent(new CustomEvent('auth:login')) }}>
                 {t('account.retryLogin')}
               </Button>
             </>

@@ -186,7 +186,10 @@
     "loginFailed": "Wallet Login Failed",
     "loginFailedDesc": "The wallet is connected but login failed. This may be because the signature was rejected or the server is unavailable. Please try again.",
     "retryLogin": "Retry Login",
-    "understood": "Got it"
+    "understood": "Got it",
+    "signCancelled": "Signature cancelled. Please reconnect your wallet to sign in.",
+    "reconnectNeeded": "Wallet authorization expired. Please reconnect your wallet and approve the signature.",
+    "loginFailedRetry": "Wallet login failed. Please reconnect and sign again."
   },
   "topup": {
     "breadcrumb": "Account/",

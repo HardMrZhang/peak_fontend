@@ -9,6 +9,24 @@ import { INVITE_CODE_STORAGE_KEY, normalizeInviteCode } from '@/constants/invite
 
 const AUTO_CONNECT_GRACE_MS = 3000
 
+// 钱包注入 provider 抛出的错误分类（EIP-1193 标准码 + 文案兜底）：
+// rejected     -> 用户主动取消签名（4001）
+// unauthorized -> 会话未授权/失效（4100），需断开后重新连接授权
+const WALLET_ERR_REJECTED = /user rejected|rejected the request|user denied|user cancel|cancell?ed by user|approval denied/i
+const WALLET_ERR_UNAUTHORIZED = /not been authorized|not authorized|unauthorized|wallet ?not ?connected/i
+
+function classifyWalletError(err: unknown): 'rejected' | 'unauthorized' | null {
+  if (typeof err !== 'object' || err === null) return null
+  const e = err as { code?: number | string; name?: string; message?: string }
+  const code = typeof e.code === 'number' ? e.code : Number(e.code)
+  const msg = `${e.name || ''} ${e.message || ''}`
+  if (code === 4001 || WALLET_ERR_REJECTED.test(msg)) return 'rejected'
+  if (code === 4100 || e.name === 'WalletNotConnectedError' || WALLET_ERR_UNAUTHORIZED.test(msg)) {
+    return 'unauthorized'
+  }
+  return null
+}
+
 export function useAuth() {
   const { publicKey, signMessage, connected, disconnect } = useWallet()
   const { t } = useTranslation()
@@ -71,12 +89,19 @@ export function useAuth() {
         typeof err === 'object' && err !== null &&
         ('response' in err || 'request' in err || 'config' in err)
       if (!isLikelyAxiosError) {
-        const localMessage = err instanceof Error && err.message
-          ? err.message
-          : 'Wallet login failed, please reconnect and sign again'
-        message.error(localMessage)
+        // 钱包侧错误：不要把原始英文（如 4100 未授权）直接弹给用户
+        const walletErr = classifyWalletError(err)
+        if (walletErr === 'rejected') {
+          message.info(t('account.signCancelled'))
+        } else if (walletErr === 'unauthorized') {
+          // 会话失效/未授权：断开钱包，让用户重新连接并在钱包内确认签名
+          message.error(t('account.reconnectNeeded'))
+          disconnect().catch(() => {})
+        } else {
+          message.error(t('account.loginFailedRetry'))
+        }
       } else if (!backendMessage) {
-        message.error('Wallet login failed, please reconnect and sign again')
+        message.error(t('account.loginFailedRetry'))
       }
       logout()
       setLoginFailed(true)
@@ -84,7 +109,7 @@ export function useAuth() {
       loginInProgress.current = false
       setLoginLoading(false)
     }
-  }, [publicKey, signMessage, setAuth, setLoginLoading, setLoginFailed, logout, setUser, t])
+  }, [publicKey, signMessage, setAuth, setLoginLoading, setLoginFailed, logout, setUser, disconnect, t])
 
   useEffect(() => {
     if (connected && publicKey) {

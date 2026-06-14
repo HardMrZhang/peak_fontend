@@ -186,7 +186,10 @@
     "loginFailed": "钱包登录失败",
     "loginFailedDesc": "钱包已连接但登录失败，可能是签名被拒绝或服务器不可用，请重试。",
     "retryLogin": "重新登录",
-    "understood": "我知道了"
+    "understood": "我知道了",
+    "signCancelled": "您已取消签名，请重新连接钱包登录",
+    "reconnectNeeded": "钱包授权已失效，请重新连接钱包并在钱包中确认签名",
+    "loginFailedRetry": "钱包登录失败，请重新连接并签名"
   },
   "topup": {
     "breadcrumb": "账户/",

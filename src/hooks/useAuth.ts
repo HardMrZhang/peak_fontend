@@ -37,7 +37,7 @@ function isMobileBrowser(): boolean {
 }
 
 export function useAuth() {
-  const { publicKey, signMessage, connected, disconnect } = useWallet()
+  const { publicKey, signMessage, connected, wallet } = useWallet()
   const { t } = useTranslation()
   const { token, user, loginLoading, loginFailed, setAuth, setUser, setLoginLoading, setLoginFailed, logout } = useAuthStore()
   const loginInProgress = useRef(false)
@@ -59,7 +59,16 @@ export function useAuth() {
   }, [connected])
 
   const doLogin = useCallback(async (silent = false) => {
-    if (!publicKey || !signMessage || loginInProgress.current) return
+    // 已有登录在进行中：手动点击时给出提示而非静默吞掉（避免「点了没反应」）
+    if (loginInProgress.current) {
+      if (!silent) message.info(t('header.signingIn'))
+      return
+    }
+    // 钱包未就绪（未连接 / 适配器未注入 signMessage）：手动点击时提示重连
+    if (!publicKey || !signMessage) {
+      if (!silent) message.error(t('account.reconnectNeeded'))
+      return
+    }
     loginInProgress.current = true
     setLoginLoading(true)
     setLoginFailed(false)
@@ -69,7 +78,14 @@ export function useAuth() {
       const nonce = nonceRes.data.nonce
 
       const msg = new TextEncoder().encode(`PEAK Login Nonce: ${nonce}`)
-      const rawSig = await signMessage(msg)
+      // 给签名加超时：OKX 等钱包弹窗被连接抖动打断时 Promise 可能永不 resolve，
+      // 会把 loginInProgress 锁死导致后续点击全部失效。超时后抛错以释放锁。
+      const rawSig = await Promise.race([
+        signMessage(msg),
+        new Promise<Uint8Array>((_, reject) =>
+          setTimeout(() => reject(new Error('SIGN_TIMEOUT')), 60000),
+        ),
+      ])
       const sigBytes = new Uint8Array(rawSig.buffer, rawSig.byteOffset, rawSig.byteLength)
       const signature = bs58.encode(sigBytes)
 
@@ -143,11 +159,15 @@ export function useAuth() {
   // 移动端不自动调用 signMessage：连接后紧接着自动签名会被导航拦截而「无响应」，改为手动点击。
   useEffect(() => {
     if (isMobileBrowser()) return
+    // OKX 桌面插件在自动签名时会抛 4100 / 抖动连接，且可能让 signMessage 永久挂起把登录锁卡死，
+    // 导致后续手动点击全部失效。故对 OKX 跳过自动签名，仅由「签名登录」按钮手动触发。
+    const walletName = wallet?.adapter.name?.toLowerCase() || ''
+    if (walletName.includes('okx')) return
     if (connected && publicKey && !token && !autoLoginTried.current && !loginLoading && !loginInProgress.current) {
       autoLoginTried.current = true
       doLogin(true)
     }
-  }, [connected, publicKey, token, loginLoading, doLogin])
+  }, [connected, publicKey, token, loginLoading, doLogin, wallet])
 
   // 手动签名登录：必须由用户点击（可信事件）同步触发，避免 OKX 4100 / 移动端无响应。
   // 由 WalletButton 的「签名登录」按钮、各页「重新登录」按钮派发 auth:login 事件触发。
@@ -240,13 +260,13 @@ export function useAuth() {
   }, [connected, publicKey, token, logout, setLoginFailed])
 
   useEffect(() => {
-    const handler = () => {
-      logout()
-      disconnect().catch(() => {})
-    }
+    // 401（如旧 token 失效）时只清登录态，不强制断开钱包：
+    // 断开会把地址也清掉、逼用户重连钱包，且 401 分支不弹错 → 表现为「签完名地址消失且无提示」。
+    // 保留钱包连接后界面会回到「签名登录」，用户重签即可。
+    const handler = () => { logout() }
     window.addEventListener('auth:logout', handler)
     return () => window.removeEventListener('auth:logout', handler)
-  }, [logout, disconnect])
+  }, [logout])
 
   return { token, user, connected, loginLoading, loginFailed, doLogin, logout }
 }

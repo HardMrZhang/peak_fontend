@@ -274,6 +274,9 @@ export default function Airdrop() {
                     <div className="sp-record-item">
                       {t('ipo.accelDirect')}: {summary?.directAccel ?? '0'} PEAK
                     </div>
+                    <div className="sp-record-item">
+                      {t('ipo.accelDirectOnce')}: {summary?.directOnce ?? '0'} PEAK
+                    </div>
                   </div>
                   <div className="sp-record-footer">
                     <span className="sp-record-item">

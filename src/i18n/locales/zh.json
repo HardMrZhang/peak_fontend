@@ -553,6 +553,7 @@
     "dailyStatic": "日静态收益",
     "accelTeam": "团队加速",
     "accelDirect": "直推加速",
+    "accelDirectOnce": "直推一次性加速",
     "withdrawable": "可提余额",
     "withdrawBtn": "提币",
     "withdrawing": "提币中...",

@@ -548,6 +548,9 @@ export interface DappAirdropSummary {
   directStatic: string
   directAccelRaw: string
   directAccel: string
+  // 直推一次性加速（当日触发、次日归零）
+  directOnceRaw: string
+  directOnce: string
   teamAccelRaw: string
   teamAccel: string
   teamAccelDate: string | null

@@ -553,6 +553,7 @@
     "dailyStatic": "Daily Static Yield",
     "accelTeam": "Team Boost",
     "accelDirect": "Direct Referral Boost",
+    "accelDirectOnce": "One-Time Direct Referral Boost",
     "withdrawable": "Withdrawable",
     "withdrawBtn": "Withdraw",
     "withdrawing": "Withdrawing...",

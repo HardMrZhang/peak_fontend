@@ -122,6 +122,16 @@
 .dv-ref-addr {
   color: var(--text-primary);
   font-family: monospace;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* 「一推五」达标星标：该直推自身也满足推广分红资格 */
+.dv-ref-star {
+  color: var(--accent-orange);
+  font-size: 12px;
+  filter: drop-shadow(0 0 3px rgba(245, 166, 35, 0.5));
 }
 
 /* 累计三倍空投金额（达标才显示数值，否则灰显 --） */

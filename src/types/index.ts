@@ -179,6 +179,9 @@ export interface DirectReferralRecord {
   // 累计三倍空投金额（USDT）；仅当达标（单笔≥500U 资产包 或 持影视节点NFT）时返回
   airdropQualified?: boolean
   airdropUsdValue?: string | null
+  // 「一推五」星标：该直推自身也满足推广分红资格
+  //（本人单笔≥500U + 有效直推≥5 + 持影视节点NFT）
+  promoQualified?: boolean
 }
 
 export interface TeamNodeRecord {

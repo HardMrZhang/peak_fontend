@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { message } from 'antd'
-import { CopyOutlined, DownOutlined, UpOutlined, TeamOutlined, CrownOutlined } from '@ant-design/icons'
+import { CopyOutlined, DownOutlined, UpOutlined, TeamOutlined, CrownOutlined, StarFilled } from '@ant-design/icons'
 import {
   getReferralInfo,
   getDirectReferrals,
@@ -174,7 +174,12 @@ export default function Dividend() {
             <div className="dv-ref-list">
               {visibleReferrals.map((r) => (
                 <div key={r.walletAddress} className="dv-ref-item">
-                  <span className="dv-ref-addr">{shortenAddr(r.walletAddress)}</span>
+                  <span className="dv-ref-addr">
+                    {shortenAddr(r.walletAddress)}
+                    {r.promoQualified && (
+                      <StarFilled className="dv-ref-star" title={t('dividend.promoStarHint')} />
+                    )}
+                  </span>
                   <span
                     className={`dv-ref-airdrop${r.airdropQualified ? '' : ' empty'}`}
                     title={t('dividend.airdropAmountHint')}

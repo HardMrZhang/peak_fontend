@@ -586,6 +586,7 @@
     "copied": "Copied",
     "copyFail": "Copy failed",
     "airdropAmountHint": "Cumulative 3x airdrop amount (includes film node purchase amount; requires a single asset package purchase of 500U or more, or purchasing a film node; multiple smaller purchases do not count)",
+    "promoStarHint": "This address qualifies for the 1-to-5 referral: a single deposit of 500U or more, 5+ valid direct referrals (each 500U or more) and holding a film node NFT",
     "qualifiedCount": "Total Qualified Users",
     "pendingDividend": "Claimable Dividends",
     "claimNow": "Claim Now",

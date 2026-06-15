@@ -8,6 +8,10 @@ import bs58 from 'bs58'
 import { INVITE_CODE_STORAGE_KEY, normalizeInviteCode } from '@/constants/invite'
 
 const AUTO_CONNECT_GRACE_MS = 3000
+// 钱包断连缓冲：OKX 等钱包在签名/授权期间会瞬时把 connected 抖动成 false 再恢复。
+// 若立刻 logout 会把刚建立的登录态误杀（表现为「签完又退出、且无报错」），
+// 故断连后延迟复查，仅当持续断开才真正登出。
+const DISCONNECT_GRACE_MS = 1500
 
 // 钱包注入 provider 抛出的错误分类（EIP-1193 标准码 + 文案兜底）：
 // rejected     -> 用户主动取消签名（4001）
@@ -41,6 +45,9 @@ export function useAuth() {
   const hasBeenConnected = useRef(false)
   const mountedAt = useRef(Date.now())
   const autoLoginTried = useRef(false)
+  // 最新的「钱包就绪」状态，供断连缓冲定时器在延迟后复查（闭包内拿不到最新 hook 值）
+  const walletReadyRef = useRef(false)
+  walletReadyRef.current = connected && !!publicKey
 
   useEffect(() => {
     if (connected) {
@@ -213,28 +220,22 @@ export function useAuth() {
 
   useEffect(() => {
     const walletReady = connected && !!publicKey
-    if (!walletReady && token) {
-      if (hasBeenConnected.current) {
-        // 真正断开（之前连过）时立即登出
-        logout()
-      } else {
-        // 首次加载给 autoConnect 一个缓冲窗口，避免刷新即退出
-        const remaining = AUTO_CONNECT_GRACE_MS - (Date.now() - mountedAt.current)
-        if (remaining <= 0) {
-          logout()
-          return
-        }
-        const timer = setTimeout(() => {
-          const state = useAuthStore.getState()
-          if (state.token && !hasBeenConnected.current) {
-            logout()
-          }
-        }, remaining)
-        return () => clearTimeout(timer)
-      }
-    }
     if (!walletReady) {
       setLoginFailed(false)
+    }
+    if (!walletReady && token) {
+      // 首次加载给 autoConnect 更长的缓冲窗口；之前已连过则用较短的抖动缓冲。
+      // 两种情况都延迟复查，避免 OKX 瞬时断连把刚建立的登录态误杀。
+      const grace = hasBeenConnected.current
+        ? DISCONNECT_GRACE_MS
+        : Math.max(0, AUTO_CONNECT_GRACE_MS - (Date.now() - mountedAt.current))
+      const timer = setTimeout(() => {
+        // 缓冲结束后钱包仍未恢复连接才真正登出
+        if (!walletReadyRef.current && useAuthStore.getState().token) {
+          logout()
+        }
+      }, grace)
+      return () => clearTimeout(timer)
     }
   }, [connected, publicKey, token, logout, setLoginFailed])
 

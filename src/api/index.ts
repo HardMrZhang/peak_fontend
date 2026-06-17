@@ -43,6 +43,7 @@ import type {
   DappAirdropConfig,
   DappAirdropParams,
   DappAirdropRecord,
+  DappAirdropReleaseRecord,
   DappAirdropSummary,
   DappWithdrawParams,
   DappZeroCardInfo,
@@ -350,6 +351,15 @@ export function confirmAirdrop(data: { txHash: string; intentId: string }) {
 
 export function getAirdropRecords(params?: { page?: number; pageSize?: number }) {
   return get<PageResult<DappAirdropRecord>>('/dapp/airdrop/records', { params })
+}
+
+// 单个空投包的「每日可提（每日释放）记录」
+export function getAirdropReleaseRecords(params: {
+  packageId: string
+  page?: number
+  pageSize?: number
+}) {
+  return get<PageResult<DappAirdropReleaseRecord>>('/dapp/airdrop/release-records', { params })
 }
 
 // 加速汇总：直推加速（直推静态实时累加）+ 团队加速（最近日结）+ 链上可提余额

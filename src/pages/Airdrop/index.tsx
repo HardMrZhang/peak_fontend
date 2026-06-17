@@ -6,12 +6,18 @@ import {
   getAirdropParams,
   confirmAirdrop,
   getAirdropRecords,
+  getAirdropReleaseRecords,
   getAirdropSummary,
   getDappWithdrawParams,
   confirmDappWithdraw,
   getPeakPrice,
 } from '@/api'
-import type { DappAirdropConfig, DappAirdropRecord, DappAirdropSummary } from '@/types'
+import type {
+  DappAirdropConfig,
+  DappAirdropRecord,
+  DappAirdropReleaseRecord,
+  DappAirdropSummary,
+} from '@/types'
 import { useDappTx, hasToken } from '@/hooks/useDappTx'
 import './index.css'
 
@@ -36,6 +42,30 @@ export default function Airdrop() {
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
   const [joinTip, setJoinTip] = useState('')
   const joinTipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // 每日释放（每日可提）记录：按包展开加载
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [releaseMap, setReleaseMap] = useState<Record<string, DappAirdropReleaseRecord[]>>({})
+  const [releaseLoadingId, setReleaseLoadingId] = useState<string | null>(null)
+
+  const toggleReleaseRecords = useCallback(async (packageId: string) => {
+    if (expandedId === packageId) {
+      setExpandedId(null)
+      return
+    }
+    setExpandedId(packageId)
+    if (!releaseMap[packageId]) {
+      setReleaseLoadingId(packageId)
+      try {
+        const res = await getAirdropReleaseRecords({ packageId, page: 1, pageSize: 200 })
+        setReleaseMap((prev) => ({ ...prev, [packageId]: res.data?.list ?? [] }))
+      } catch {
+        setReleaseMap((prev) => ({ ...prev, [packageId]: [] }))
+      } finally {
+        setReleaseLoadingId(null)
+      }
+    }
+  }, [expandedId, releaseMap])
 
   const refreshAirdrop = useCallback(async () => {
     try {
@@ -299,6 +329,39 @@ export default function Airdrop() {
                         : t('ipo.withdrawBtn')}
                     </button>
                   </div>
+
+                  <button
+                    type="button"
+                    className="sp-release-toggle"
+                    onClick={() => toggleReleaseRecords(item.id)}
+                  >
+                    {expandedId === item.id
+                      ? t('ipo.releaseRecordsHide')
+                      : t('ipo.releaseRecordsShow')}
+                  </button>
+
+                  {expandedId === item.id && (
+                    <div className="sp-release-list">
+                      {releaseLoadingId === item.id ? (
+                        <div className="sp-release-empty">{t('ipo.loading')}</div>
+                      ) : (releaseMap[item.id]?.length ?? 0) === 0 ? (
+                        <div className="sp-release-empty">{t('ipo.noReleaseRecord')}</div>
+                      ) : (
+                        <>
+                          <div className="sp-release-row sp-release-head">
+                            <span>{t('ipo.releaseDate')}</span>
+                            <span>{t('ipo.releaseAmount')}</span>
+                          </div>
+                          {releaseMap[item.id].map((r) => (
+                            <div key={r.id} className="sp-release-row">
+                              <span>{r.bizDate}</span>
+                              <span>{r.amount} PEAK</span>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))
             )}

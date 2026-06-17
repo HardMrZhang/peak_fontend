@@ -203,6 +203,63 @@
   cursor: not-allowed;
 }
 
+/* 每日释放（每日可提）记录 */
+.sp-release-toggle {
+  margin-top: 10px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 8px 0;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.sp-release-toggle:hover {
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.sp-release-list {
+  margin-top: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--bg-primary);
+}
+
+.sp-release-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 20px 0;
+}
+
+.sp-release-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sp-release-row:last-child {
+  border-bottom: none;
+}
+
+.sp-release-head {
+  color: var(--text-muted);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+}
+
 /* Records */
 .sp-record-list {
   display: flex;

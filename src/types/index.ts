@@ -542,6 +542,17 @@ export interface DappAirdropRecord {
   createdAt: string
 }
 
+// 单个空投包的每日释放（每日可提）记录
+export interface DappAirdropReleaseRecord {
+  id: string
+  bizDate: string
+  dayNo: number
+  amount: string
+  status: string
+  txHash: string | null
+  createdAt: string
+}
+
 // 空投加速汇总 + 链上可提余额（参与记录页展示）
 export interface DappAirdropSummary {
   directStaticRaw: string

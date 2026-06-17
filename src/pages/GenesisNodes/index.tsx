@@ -443,7 +443,7 @@ export default function GenesisNodes() {
               <div className="genesis-right-icon airdrop">&#x2728;</div>
               <div className="genesis-right-title">{t('genesis.rightAirdropTitle')}</div>
               <div className="genesis-right-desc">{t('genesis.rightAirdropDesc')}</div>
-              <span className="genesis-right-badge coming">{t('genesis.badgeComing')}</span>
+              <span className="genesis-right-badge active">{t('genesis.badgeActive')}</span>
             </div>
           </div>
         </div>

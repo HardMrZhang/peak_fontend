@@ -17,6 +17,12 @@ import './index.css'
 
 const AIRDROP_MULTIPLE = 3
 
+// 记录编号展示格式：固定前缀 PK + 6 位补零编号（如 767 → PK000767）
+const formatRecordNo = (grantId: string | number) => {
+  const digits = String(grantId).replace(/\D/g, '')
+  return `PK${digits.padStart(6, '0')}`
+}
+
 export default function Airdrop() {
   const { t } = useTranslation()
   const { sendDappIx, connected } = useDappTx()
@@ -248,7 +254,7 @@ export default function Airdrop() {
                 <div key={item.id} className="sp-record-card">
                   <div className="sp-record-header">
                     <span className="sp-record-id">
-                      {t('ipo.airdropRecordId')}: {item.grantId}
+                      {t('ipo.airdropRecordId')}: {formatRecordNo(item.grantId)}
                     </span>
                     <span className="sp-record-time">{item.createdAt.slice(0, 19).replace('T', ' ')}</span>
                   </div>

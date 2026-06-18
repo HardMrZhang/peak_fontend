@@ -29,6 +29,16 @@ const formatRecordNo = (grantId: string | number) => {
   return `PK${digits.padStart(6, '0')}`
 }
 
+const toSafeBigInt = (value: string | number | bigint | null | undefined): bigint => {
+  if (value === null || value === undefined) return 0n
+  try {
+    const parsed = BigInt(value)
+    return parsed > 0n ? parsed : 0n
+  } catch {
+    return 0n
+  }
+}
+
 export default function Airdrop() {
   const { t } = useTranslation()
   const { sendDappIx, connected } = useDappTx()
@@ -47,6 +57,10 @@ export default function Airdrop() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [releaseMap, setReleaseMap] = useState<Record<string, DappAirdropReleaseRecord[]>>({})
   const [releaseLoadingId, setReleaseLoadingId] = useState<string | null>(null)
+  const summaryWithdrawableInt = useMemo(
+    () => toSafeBigInt(summary?.withdrawableInt),
+    [summary?.withdrawableInt],
+  )
 
   const toggleReleaseRecords = useCallback(async (packageId: string) => {
     if (expandedId === packageId) {
@@ -165,21 +179,39 @@ export default function Airdrop() {
   }
 
   // 每个订单（空投包）单独提币：可提数量 = 本包累计释放 − 本包已提，取小数点前整数
+  const getPackageWithdrawableInt = useCallback(
+    (record: DappAirdropRecord) => toSafeBigInt(record.withdrawableInt),
+    [],
+  )
+
+  // 发送到后端的提币数量优先受链上余额约束；若链上暂时为 0 但包内有额度，仍发起请求触发后端自愈。
+  const getWithdrawRequestInt = useCallback((record: DappAirdropRecord) => {
+    const packageWithdrawable = getPackageWithdrawableInt(record)
+    if (packageWithdrawable <= 0n) return 0n
+    if (summaryWithdrawableInt <= 0n) return packageWithdrawable
+    return packageWithdrawable < summaryWithdrawableInt ? packageWithdrawable : summaryWithdrawableInt
+  }, [getPackageWithdrawableInt, summaryWithdrawableInt])
+
   const handleWithdraw = async (record: DappAirdropRecord) => {
     if (withdrawing) return
     if (!hasToken() || !connected) {
       message.warning(t('account.walletRequired'))
       return
     }
-    const withdrawableInt = record.withdrawableInt ?? '0'
-    if (Number(withdrawableInt) <= 0) {
+    const packageWithdrawableInt = getPackageWithdrawableInt(record)
+    if (packageWithdrawableInt <= 0n) {
+      message.warning(t('ipo.noWithdrawable'))
+      return
+    }
+    const withdrawableInt = getWithdrawRequestInt(record)
+    if (withdrawableInt <= 0n) {
       message.warning(t('ipo.noWithdrawable'))
       return
     }
     setWithdrawing(true)
     setWithdrawingId(record.id)
     try {
-      const paramsRes = await getDappWithdrawParams(withdrawableInt, record.id)
+      const paramsRes = await getDappWithdrawParams(withdrawableInt.toString(), record.id)
       const sig = await sendDappIx(paramsRes.data)
       await confirmDappWithdraw({ txHash: sig, intentId: paramsRes.data.intentId })
       message.success(t('ipo.withdrawSuccess'))
@@ -322,7 +354,7 @@ export default function Airdrop() {
                       type="button"
                       className="sp-withdraw-btn"
                       onClick={() => handleWithdraw(item)}
-                      disabled={withdrawing || Number(item.withdrawableInt ?? '0') <= 0}
+                      disabled={withdrawing || getPackageWithdrawableInt(item) <= 0n}
                     >
                       {withdrawing && withdrawingId === item.id
                         ? t('ipo.withdrawing')

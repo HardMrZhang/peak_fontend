@@ -373,7 +373,7 @@
 .sp-notice-modal {
   position: relative;
   width: 100%;
-  max-width: 460px;
+  max-width: 620px;
   max-height: 88vh;
   overflow-y: auto;
   background: var(--bg-card);
@@ -428,6 +428,7 @@
   text-align: center;
   margin: 0 24px 8px;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .sp-notice-time {

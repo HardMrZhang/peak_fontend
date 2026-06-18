@@ -131,12 +131,13 @@ export default function Airdrop() {
     const rateText = `${dailyRatePct}%`
     const totalAirdrop = qty * AIRDROP_MULTIPLE
     const dailyAirdrop = (qty * dailyRatePct) / 100
-    // 真实加速数据：直推加速 = 直推静态实时累加 ×10%；团队加速 = 最近日结级差+平级（封顶后）
+    // 真实加速数据：直推静态收益 = 直推静态实时累加 ×10%；团队加速与平级加速分开展示
     const referAccel = summary ? parseFloat(summary.directAccel) || 0 : 0
     const teamAccel = summary ? parseFloat(summary.teamAccel) || 0 : 0
-    const dailyTotal = dailyAirdrop + referAccel + teamAccel
+    const peerAccel = summary ? parseFloat(summary.peerAccel) || 0 : 0
+    const dailyTotal = dailyAirdrop + referAccel + teamAccel + peerAccel
     const totalDays = dailyTotal > 0 ? Math.ceil(totalAirdrop / dailyTotal) : 0
-    return { qty, totalValue, rateText, totalAirdrop, dailyAirdrop, referAccel, teamAccel, totalDays }
+    return { qty, totalValue, rateText, totalAirdrop, dailyAirdrop, referAccel, teamAccel, peerAccel, totalDays }
   }, [quantity, price, airdropConfig, summary])
 
   const handleJoin = async () => {
@@ -291,6 +292,10 @@ export default function Airdrop() {
               <span className="sp-highlight">{airdropCalc.teamAccel.toFixed(2)} PEAK</span>
             </div>
             <div className="sp-info-line">
+              <span>{t('ipo.peerAirdrop')}</span>
+              <span className="sp-highlight">{airdropCalc.peerAccel.toFixed(2)} PEAK</span>
+            </div>
+            <div className="sp-info-line">
               <span>{t('ipo.estimateDays')}</span>
               <span className="sp-highlight">
                 {airdropCalc.totalDays} {t('ipo.dayUnit')}
@@ -338,6 +343,9 @@ export default function Airdrop() {
                     </div>
                     <div className="sp-record-item">
                       {t('ipo.accelTeam')}: {summary?.teamAccel ?? '0'} PEAK
+                    </div>
+                    <div className="sp-record-item">
+                      {t('ipo.accelPeer')}: {summary?.peerAccel ?? '0'} PEAK
                     </div>
                     <div className="sp-record-item">
                       {t('ipo.accelDirect')}: {summary?.directAccel ?? '0'} PEAK

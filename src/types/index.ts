@@ -562,8 +562,12 @@ export interface DappAirdropSummary {
   // 直推一次性加速（当日触发、次日归零）
   directOnceRaw: string
   directOnce: string
+  // 团队级差加速（不含平级）
   teamAccelRaw: string
   teamAccel: string
+  // 平级加速（单独展示）
+  peerAccelRaw: string
+  peerAccel: string
   teamAccelDate: string | null
   airdropCreditRaw: string
   airdropCredit: string

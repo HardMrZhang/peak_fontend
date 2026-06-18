@@ -1,36 +1,19 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Button, Table, Pagination, Modal } from 'antd'
 import { ExclamationCircleOutlined, InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo, getMyGenesisNfts, getNotices } from '@/api'
-import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, PageResult, Notice } from '@/types'
+import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo, getMyGenesisNfts } from '@/api'
+import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, PageResult } from '@/types'
 import { useAuthStore } from '@/store/useAuthStore'
 import './index.css'
 
 type TabKey = 'transaction' | 'node' | 'reward'
 
-function sanitizeNoticeHtml(html: string): string {
-  if (!html || typeof window === 'undefined') return html || ''
-  const parser = new window.DOMParser()
-  const doc = parser.parseFromString(html, 'text/html')
-  doc.querySelectorAll('script,iframe,object,embed,link,meta,style').forEach((el) => el.remove())
-  doc.querySelectorAll('*').forEach((el) => {
-    Array.from(el.attributes).forEach((attr) => {
-      const name = attr.name.toLowerCase()
-      const value = attr.value.trim().toLowerCase()
-      if (name.startsWith('on') || value.startsWith('javascript:')) {
-        el.removeAttribute(attr.name)
-      }
-    })
-  })
-  return doc.body.innerHTML
-}
-
 export default function Account() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { connected } = useWallet()
   const token = useAuthStore((s) => s.token)
@@ -40,8 +23,7 @@ export default function Account() {
   const [activeTab, setActiveTab] = useState<TabKey>('transaction')
   const [page, setPage] = useState(1)
   const [walletTipOpen, setWalletTipOpen] = useState(false)
-  const [noticeOpen, setNoticeOpen] = useState(false)
-  const [notices, setNotices] = useState<Notice[]>([])
+  const [noticeOpen, setNoticeOpen] = useState(true)
   const pageSize = 10
 
   const [balances, setBalances] = useState<AssetBalance[]>([])
@@ -53,7 +35,6 @@ export default function Account() {
   const [genesisNftCount, setGenesisNftCount] = useState(0)
   const [balanceLoading, setBalanceLoading] = useState(true)
   const [tableLoading, setTableLoading] = useState(false)
-  const langCode = useMemo(() => String(i18n.language || '').toLowerCase().startsWith('zh') ? 'zh-CN' : 'en', [i18n.language])
 
   const refreshBalances = useCallback(async () => {
     if (!token) return
@@ -102,25 +83,6 @@ export default function Account() {
   }, [token, activeTab, page, pageSize])
 
   useEffect(() => { fetchTab() }, [fetchTab])
-
-  useEffect(() => {
-    let active = true
-    getNotices(langCode)
-      .then((res) => {
-        if (!active) return
-        const list = (res.data || []).filter((item) => String(item.contentHtml || '').trim())
-        setNotices(list)
-        setNoticeOpen(list.length > 0)
-      })
-      .catch(() => {
-        if (!active) return
-        setNotices([])
-        setNoticeOpen(false)
-      })
-    return () => {
-      active = false
-    }
-  }, [langCode])
 
   const emptyText = (
     <div className="table-empty">
@@ -218,32 +180,35 @@ export default function Account() {
   const currentData = activeTab === 'transaction' ? ledgerData : activeTab === 'node' ? nodeData : rewardData
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const columnsMap: Record<TabKey, ColumnsType<any>> = { transaction: transactionColumns, node: nodeColumns, reward: rewardColumns }
-  const currentNotice = notices[0] || null
-  const safeNoticeHtml = useMemo(() => sanitizeNoticeHtml(currentNotice?.contentHtml || ''), [currentNotice?.contentHtml])
-  const noticeTitle = currentNotice?.title || (langCode === 'zh-CN' ? '平台公告' : 'Platform Notice')
-  const noticeTime = currentNotice?.publishedAt ? currentNotice.publishedAt.slice(0, 19).replace('T', ' ') : ''
 
   return (
     <div className="account-page">
-      {noticeOpen && currentNotice && (
+      {noticeOpen && (
         <div className="sp-notice-mask" onClick={() => setNoticeOpen(false)}>
           <div className="sp-notice-modal" onClick={(e) => e.stopPropagation()}>
             <button type="button" className="sp-notice-close" onClick={() => setNoticeOpen(false)} aria-label="close">
               ×
             </button>
-            <h3 className="sp-notice-title">{noticeTitle}</h3>
-            {noticeTime ? <p className="sp-notice-time">{noticeTime}</p> : null}
-            <div
-              className="sp-notice-body"
-              dangerouslySetInnerHTML={{ __html: safeNoticeHtml || '<p>-</p>' }}
-            />
-            {currentNotice.targetUrl ? (
-              <a href={currentNotice.targetUrl} target="_blank" rel="noreferrer" className="sp-notice-link">
-                {langCode === 'zh-CN' ? '查看详情' : 'View details'}
-              </a>
-            ) : null}
+            <h3 className="sp-notice-title">影视节点福利倒计时｜6月30日全面停售</h3>
+            <p className="sp-notice-time">发布时间：2026-06-16 00:00:00</p>
+            <div className="sp-notice-body">
+              <p>各位合作伙伴、渠道同仁：</p>
+              <p>影视专属节点优惠政策将于2026年6月30日24:00全面关闭销售通道，截止后所有节点专属福利、折扣权益、配套扶持政策同步停止。</p>
+              <p>本次节点专属福利包含项目优惠认购、额外增值权益、配套扶持资源等多重专属利好，是平台启动的福利性政策。距离截止仅剩最后窗口期，望各位抓紧申购，避免错过优惠。</p>
+              <p className="sp-notice-strong">重要提示</p>
+              <ol className="sp-notice-list">
+                <li>所有认购均需在6月30日24点前全部办结，逾期系统自动关闭通道，无法补办节点优惠；</li>
+                <li>截止后统一恢复常规标准政策，不再享受本次节点全部让利福利；</li>
+                <li>如有签约流程疑问，请及时联系对接专员加急处理。</li>
+              </ol>
+              <p>请大家把握最后机遇，全力冲刺节点业绩！</p>
+              <div className="sp-notice-signature">
+                <span>PEAK.TV影视运营部</span>
+                <span>2026年6月16日</span>
+              </div>
+            </div>
             <button type="button" className="sp-notice-confirm" onClick={() => setNoticeOpen(false)}>
-              {t('ipo.noticeConfirm')}
+              我已知晓
             </button>
           </div>
         </div>

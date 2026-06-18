@@ -1,19 +1,36 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Button, Table, Pagination, Modal } from 'antd'
 import { ExclamationCircleOutlined, InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo, getMyGenesisNfts } from '@/api'
-import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, PageResult } from '@/types'
+import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo, getMyGenesisNfts, getNotices } from '@/api'
+import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, PageResult, Notice } from '@/types'
 import { useAuthStore } from '@/store/useAuthStore'
 import './index.css'
 
 type TabKey = 'transaction' | 'node' | 'reward'
 
+function sanitizeNoticeHtml(html: string): string {
+  if (!html || typeof window === 'undefined') return html || ''
+  const parser = new window.DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+  doc.querySelectorAll('script,iframe,object,embed,link,meta,style').forEach((el) => el.remove())
+  doc.querySelectorAll('*').forEach((el) => {
+    Array.from(el.attributes).forEach((attr) => {
+      const name = attr.name.toLowerCase()
+      const value = attr.value.trim().toLowerCase()
+      if (name.startsWith('on') || value.startsWith('javascript:')) {
+        el.removeAttribute(attr.name)
+      }
+    })
+  })
+  return doc.body.innerHTML
+}
+
 export default function Account() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { connected } = useWallet()
   const token = useAuthStore((s) => s.token)
@@ -23,7 +40,8 @@ export default function Account() {
   const [activeTab, setActiveTab] = useState<TabKey>('transaction')
   const [page, setPage] = useState(1)
   const [walletTipOpen, setWalletTipOpen] = useState(false)
-  const [noticeOpen, setNoticeOpen] = useState(true)
+  const [noticeOpen, setNoticeOpen] = useState(false)
+  const [notices, setNotices] = useState<Notice[]>([])
   const pageSize = 10
 
   const [balances, setBalances] = useState<AssetBalance[]>([])
@@ -35,6 +53,7 @@ export default function Account() {
   const [genesisNftCount, setGenesisNftCount] = useState(0)
   const [balanceLoading, setBalanceLoading] = useState(true)
   const [tableLoading, setTableLoading] = useState(false)
+  const langCode = useMemo(() => String(i18n.language || '').toLowerCase().startsWith('zh') ? 'zh-CN' : 'en', [i18n.language])
 
   const refreshBalances = useCallback(async () => {
     if (!token) return
@@ -83,6 +102,25 @@ export default function Account() {
   }, [token, activeTab, page, pageSize])
 
   useEffect(() => { fetchTab() }, [fetchTab])
+
+  useEffect(() => {
+    let active = true
+    getNotices(langCode)
+      .then((res) => {
+        if (!active) return
+        const list = (res.data || []).filter((item) => String(item.contentHtml || '').trim())
+        setNotices(list)
+        setNoticeOpen(list.length > 0)
+      })
+      .catch(() => {
+        if (!active) return
+        setNotices([])
+        setNoticeOpen(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [langCode])
 
   const emptyText = (
     <div className="table-empty">
@@ -180,30 +218,30 @@ export default function Account() {
   const currentData = activeTab === 'transaction' ? ledgerData : activeTab === 'node' ? nodeData : rewardData
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const columnsMap: Record<TabKey, ColumnsType<any>> = { transaction: transactionColumns, node: nodeColumns, reward: rewardColumns }
+  const currentNotice = notices[0] || null
+  const safeNoticeHtml = useMemo(() => sanitizeNoticeHtml(currentNotice?.contentHtml || ''), [currentNotice?.contentHtml])
+  const noticeTitle = currentNotice?.title || (langCode === 'zh-CN' ? '平台公告' : 'Platform Notice')
+  const noticeTime = currentNotice?.publishedAt ? currentNotice.publishedAt.slice(0, 19).replace('T', ' ') : ''
 
   return (
     <div className="account-page">
-      {noticeOpen && (
+      {noticeOpen && currentNotice && (
         <div className="sp-notice-mask" onClick={() => setNoticeOpen(false)}>
           <div className="sp-notice-modal" onClick={(e) => e.stopPropagation()}>
             <button type="button" className="sp-notice-close" onClick={() => setNoticeOpen(false)} aria-label="close">
               ×
             </button>
-            <h3 className="sp-notice-title">{t('ipo.noticeTitle')}</h3>
-            <p className="sp-notice-time">{t('ipo.noticeTime')}</p>
-            <div className="sp-notice-body">
-              <p>{t('ipo.noticeP1')}</p>
-              <p>{t('ipo.noticeP2')}</p>
-              <p>{t('ipo.noticeP3')}</p>
-              <p>{t('ipo.noticeP4')}</p>
-              <p>{t('ipo.noticeP5')}</p>
-              <p>{t('ipo.noticeP6')}</p>
-              <p>{t('ipo.noticeP7')}</p>
-            </div>
-            <div className="sp-notice-sign">
-              <span>{t('ipo.noticeSignName')}</span>
-              <span>{t('ipo.noticeSignDate')}</span>
-            </div>
+            <h3 className="sp-notice-title">{noticeTitle}</h3>
+            {noticeTime ? <p className="sp-notice-time">{noticeTime}</p> : null}
+            <div
+              className="sp-notice-body"
+              dangerouslySetInnerHTML={{ __html: safeNoticeHtml || '<p>-</p>' }}
+            />
+            {currentNotice.targetUrl ? (
+              <a href={currentNotice.targetUrl} target="_blank" rel="noreferrer" className="sp-notice-link">
+                {langCode === 'zh-CN' ? '查看详情' : 'View details'}
+              </a>
+            ) : null}
             <button type="button" className="sp-notice-confirm" onClick={() => setNoticeOpen(false)}>
               {t('ipo.noticeConfirm')}
             </button>

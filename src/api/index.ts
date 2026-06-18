@@ -21,6 +21,7 @@ import type {
   DailyEarning,
   DailyRelease,
   Banner,
+  Notice,
   PageResult,
   PointsExchangeRecord,
   PointsExchangeResult,
@@ -72,6 +73,10 @@ export function getMe() {
 // ==================== Home ====================
 export function getBanners(lang?: string) {
   return get<Banner[]>('/home/banners', { params: { lang } })
+}
+
+export function getNotices(lang?: string) {
+  return get<Notice[]>('/home/notices', { params: { lang } })
 }
 
 export function getSaleSummary() {

@@ -285,6 +285,15 @@ export interface Banner {
   sortOrder: number
 }
 
+export interface Notice {
+  id: string
+  title: string | null
+  contentHtml: string
+  targetUrl: string | null
+  sortOrder: number
+  publishedAt: string
+}
+
 export interface GenesisSaleInfo {
   premintedTotal: number
   soldTotal: number

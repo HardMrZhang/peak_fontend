@@ -448,15 +448,41 @@
   margin: 0 0 12px;
 }
 
-.sp-notice-sign {
-  margin-top: 18px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  font-size: 13px;
-  font-weight: 600;
+.sp-notice-body h1,
+.sp-notice-body h2,
+.sp-notice-body h3,
+.sp-notice-body h4 {
+  margin: 0 0 10px;
   color: var(--text-primary);
+}
+
+.sp-notice-body ul,
+.sp-notice-body ol {
+  margin: 0 0 12px 20px;
+  padding: 0;
+}
+
+.sp-notice-body li {
+  margin-bottom: 6px;
+}
+
+.sp-notice-body a {
+  color: #f5a623;
+  text-decoration: underline;
+}
+
+.sp-notice-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.sp-notice-link {
+  display: inline-block;
+  margin-top: 4px;
+  color: #f5a623;
+  font-size: 13px;
+  text-decoration: underline;
 }
 
 .sp-notice-confirm {

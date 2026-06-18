@@ -283,6 +283,10 @@ export default function Airdrop() {
               <span className="sp-highlight">{airdropCalc.dailyAirdrop.toFixed(4)} PEAK</span>
             </div>
             <div className="sp-info-line">
+              <span>{t('ipo.directStaticBase')}</span>
+              <span className="sp-highlight">{summary?.directStatic ?? '0'} PEAK</span>
+            </div>
+            <div className="sp-info-line">
               <span>{t('ipo.referAirdrop')}</span>
               <span className="sp-highlight">{airdropCalc.referAccel.toFixed(2)} PEAK</span>
             </div>
@@ -338,6 +342,9 @@ export default function Airdrop() {
                     </div>
                     <div className="sp-record-item">
                       {t('ipo.accelTeam')}: {summary?.teamAccel ?? '0'} PEAK
+                    </div>
+                    <div className="sp-record-item">
+                      {t('ipo.directStaticBase')}: {summary?.directStatic ?? '0'} PEAK
                     </div>
                     <div className="sp-record-item">
                       {t('ipo.accelDirect')}: {summary?.directAccel ?? '0'} PEAK

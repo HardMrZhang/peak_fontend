@@ -315,21 +315,17 @@
 
 .sp-record-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 10px;
 }
 
 .sp-record-item {
   font-size: 13px;
   color: var(--text-secondary);
-}
-
-/* Responsive */
-@media (min-width: 1101px) {
-  /* 宽屏下记录卡内信息一行四列，撑满右侧空间 */
-  .sp-record-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 @media (max-width: 1100px) {

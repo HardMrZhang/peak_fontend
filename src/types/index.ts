@@ -547,6 +547,8 @@ export interface DappAirdropRecord {
   withdrawableInt: string
   remainDays: number
   isOut: boolean
+  // 只有用户历史第一笔三倍空投订单承接各种加速；其他订单仅静态释放
+  isAccelerationOrder: boolean
   sourceTxHash: string | null
   createdAt: string
 }
@@ -564,6 +566,8 @@ export interface DappAirdropReleaseRecord {
 
 // 空投加速汇总 + 链上可提余额（参与记录页展示）
 export interface DappAirdropSummary {
+  accelerationPackageId: string | null
+  hasAccelerationPackage: boolean
   directStaticRaw: string
   directStatic: string
   directAccelRaw: string
@@ -621,4 +625,3 @@ export interface DappConfirmResult {
   message?: string
   [key: string]: unknown
 }
-

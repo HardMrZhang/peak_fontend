@@ -342,16 +342,16 @@ export default function Airdrop() {
                       {t('ipo.airdropRemainDays')}: {item.remainDays} {t('ipo.dayUnit')}
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.accelTeam')}: {summary?.teamAccel ?? '0'} PEAK
+                      {t('ipo.accelTeam')}: {item.isAccelerationOrder ? (summary?.teamAccel ?? '0') : '0'} PEAK
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.accelPeer')}: {summary?.peerAccel ?? '0'} PEAK
+                      {t('ipo.accelPeer')}: {item.isAccelerationOrder ? (summary?.peerAccel ?? '0') : '0'} PEAK
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.accelDirect')}: {summary?.directAccel ?? '0'} PEAK
+                      {t('ipo.accelDirect')}: {item.isAccelerationOrder ? (summary?.directAccel ?? '0') : '0'} PEAK
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.accelDirectOnce')}: {summary?.directOnce ?? '0'} PEAK
+                      {t('ipo.accelDirectOnce')}: {item.isAccelerationOrder ? (summary?.directOnce ?? '0') : '0'} PEAK
                     </div>
                   </div>
                   <div className="sp-record-footer">

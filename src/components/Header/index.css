@@ -52,9 +52,51 @@
 
 .notice-link {
   text-decoration: none;
+  cursor: pointer;
 }
 
+.notice-link:hover,
 a.notice-link:hover {
+  color: var(--accent-orange);
+}
+
+.notice-html-inline {
+  display: inline;
+}
+
+/* 公告栏为单行滚动展示:保留富文本的字体/颜色/加粗等行内样式,
+   但把块级元素压成行内,避免换行撑破布局。 */
+.notice-html-inline :where(p, h1, h2, h3, h4, ul, ol, li, div) {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.notice-html-inline :where(ul, ol) {
+  list-style: none;
+}
+
+.notice-html-inline :where(li)::after {
+  content: '\00a0\00a0';
+}
+
+.notice-html-inline a {
+  color: inherit;
+}
+
+.notice-detail-content {
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+.notice-detail-content img {
+  max-width: 100%;
+}
+
+.notice-detail-content a {
   color: var(--accent-orange);
 }
 

@@ -1,19 +1,19 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Button, Table, Pagination, Modal } from 'antd'
 import { ExclamationCircleOutlined, InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo, getMyGenesisNfts } from '@/api'
-import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, PageResult } from '@/types'
+import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo, getMyGenesisNfts, getNotices } from '@/api'
+import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, PageResult, Notice } from '@/types'
 import { useAuthStore } from '@/store/useAuthStore'
 import './index.css'
 
 type TabKey = 'transaction' | 'node' | 'reward'
 
 export default function Account() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { connected } = useWallet()
   const token = useAuthStore((s) => s.token)
@@ -24,7 +24,41 @@ export default function Account() {
   const [page, setPage] = useState(1)
   const [walletTipOpen, setWalletTipOpen] = useState(false)
   const [noticeOpen, setNoticeOpen] = useState(true)
+  const [notices, setNotices] = useState<Notice[]>([])
   const pageSize = 10
+
+  const noticeLangCode = useMemo(() => {
+    const lang = String(i18n.language || '').toLowerCase()
+    return lang.startsWith('zh') ? 'zh-CN' : 'en'
+  }, [i18n.language])
+
+  useEffect(() => {
+    let active = true
+    getNotices(noticeLangCode)
+      .then((res) => {
+        if (!active) return
+        const list = (res.data || []).filter(
+          (item) => !!String(item.title || '').trim() || !!String(item.contentHtml || '').trim(),
+        )
+        setNotices(list)
+        setNoticeOpen(list.length > 0)
+      })
+      .catch(() => {
+        if (!active) return
+        setNotices([])
+        setNoticeOpen(false)
+      })
+    return () => { active = false }
+  }, [noticeLangCode])
+
+  const activeNotice = notices[0] || null
+  const noticeTime = useMemo(() => {
+    if (!activeNotice?.publishedAt) return ''
+    const d = new Date(activeNotice.publishedAt)
+    if (Number.isNaN(d.getTime())) return ''
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  }, [activeNotice])
 
   const [balances, setBalances] = useState<AssetBalance[]>([])
   const [rewardSummary, setRewardSummary] = useState<RewardSummary | null>(null)
@@ -183,32 +217,31 @@ export default function Account() {
 
   return (
     <div className="account-page">
-      {noticeOpen && (
+      {noticeOpen && activeNotice && (
         <div className="sp-notice-mask" onClick={() => setNoticeOpen(false)}>
           <div className="sp-notice-modal" onClick={(e) => e.stopPropagation()}>
             <button type="button" className="sp-notice-close" onClick={() => setNoticeOpen(false)} aria-label="close">
               ×
             </button>
-            <h3 className="sp-notice-title">影视节点福利倒计时｜6月30日全面停售</h3>
-            <p className="sp-notice-time">发布时间：2026-06-16 00:00:00</p>
-            <div className="sp-notice-body">
-              <p>各位合作伙伴、渠道同仁：</p>
-              <p>影视专属节点优惠政策将于2026年6月30日24:00全面关闭销售通道，截止后所有节点专属福利、折扣权益、配套扶持政策同步停止。</p>
-              <p>本次节点专属福利包含项目优惠认购、额外增值权益、配套扶持资源等多重专属利好，是平台启动的福利性政策。距离截止仅剩最后窗口期，望各位抓紧申购，避免错过优惠。</p>
-              <p className="sp-notice-strong">重要提示</p>
-              <ol className="sp-notice-list">
-                <li>所有认购均需在6月30日24点前全部办结，逾期系统自动关闭通道，无法补办节点优惠；</li>
-                <li>截止后统一恢复常规标准政策，不再享受本次节点全部让利福利；</li>
-                <li>如有签约流程疑问，请及时联系对接专员加急处理。</li>
-              </ol>
-              <p>请大家把握最后机遇，全力冲刺节点业绩！</p>
-              <div className="sp-notice-signature">
-                <span>PEAK.TV影视运营部</span>
-                <span>2026年6月16日</span>
+            {activeNotice.title ? <h3 className="sp-notice-title">{activeNotice.title}</h3> : null}
+            {noticeTime ? (
+              <p className="sp-notice-time">
+                {noticeLangCode === 'zh-CN' ? '发布时间：' : 'Published: '}{noticeTime}
+              </p>
+            ) : null}
+            <div
+              className="sp-notice-body"
+              dangerouslySetInnerHTML={{ __html: activeNotice.contentHtml || '' }}
+            />
+            {activeNotice.targetUrl ? (
+              <div className="sp-notice-link-row">
+                <a href={activeNotice.targetUrl} target="_blank" rel="noreferrer">
+                  {noticeLangCode === 'zh-CN' ? '查看详情' : 'View details'}
+                </a>
               </div>
-            </div>
+            ) : null}
             <button type="button" className="sp-notice-confirm" onClick={() => setNoticeOpen(false)}>
-              我已知晓
+              {noticeLangCode === 'zh-CN' ? '我已知晓' : 'Got it'}
             </button>
           </div>
         </div>

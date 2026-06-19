@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Dropdown } from 'antd'
+import { Dropdown, Modal } from 'antd'
 import type { MenuProps } from 'antd'
 import { GlobalOutlined, MenuOutlined, CloseOutlined, NotificationOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
@@ -20,6 +20,7 @@ export default function Header() {
   const [notices, setNotices] = useState<Notice[]>([])
   const [noticeLoading, setNoticeLoading] = useState(true)
   const [noticeIndex, setNoticeIndex] = useState(0)
+  const [detailNotice, setDetailNotice] = useState<Notice | null>(null)
 
   const navItems = [
     { key: '/account', label: t('nav.account') },
@@ -71,7 +72,9 @@ export default function Header() {
     getNotices(langCode)
       .then((res) => {
         if (!active) return
-        const list = (res.data || []).filter((item) => !!String(item.title || '').trim())
+        const list = (res.data || []).filter(
+          (item) => !!String(item.title || '').trim() || !!String(item.contentHtml || '').trim(),
+        )
         setNotices(list)
         setNoticeIndex(0)
       })
@@ -148,25 +151,51 @@ export default function Header() {
           <span>{langCode === 'zh-CN' ? '公告' : 'Notice'}</span>
         </span>
         {currentNotice ? (
-          currentNotice.targetUrl ? (
-            <a
-              href={currentNotice.targetUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="notice-link"
-              title={currentNotice.title || ''}
-            >
-              {currentNotice.title || '-'}
-            </a>
-          ) : (
-            <span className="notice-link" title={currentNotice.title || ''}>
-              {currentNotice.title || '-'}
-            </span>
-          )
+          <span
+            className="notice-link"
+            title={currentNotice.title || ''}
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+              if (currentNotice.contentHtml) setDetailNotice(currentNotice)
+              else if (currentNotice.targetUrl) window.open(currentNotice.targetUrl, '_blank', 'noopener')
+            }}
+          >
+            {currentNotice.contentHtml ? (
+              <span
+                className="notice-html-inline"
+                dangerouslySetInnerHTML={{ __html: currentNotice.contentHtml }}
+              />
+            ) : (
+              currentNotice.title || '-'
+            )}
+          </span>
         ) : (
           <span className="notice-empty">{noticeLoading ? loadingNoticeText : emptyNoticeText}</span>
         )}
       </div>
+
+      <Modal
+        open={!!detailNotice}
+        title={detailNotice?.title || (langCode === 'zh-CN' ? '公告' : 'Notice')}
+        footer={null}
+        onCancel={() => setDetailNotice(null)}
+        width={640}
+      >
+        {detailNotice?.contentHtml ? (
+          <div
+            className="notice-detail-content"
+            dangerouslySetInnerHTML={{ __html: detailNotice.contentHtml }}
+          />
+        ) : null}
+        {detailNotice?.targetUrl ? (
+          <div style={{ marginTop: 16 }}>
+            <a href={detailNotice.targetUrl} target="_blank" rel="noreferrer">
+              {langCode === 'zh-CN' ? '查看详情' : 'View details'}
+            </a>
+          </div>
+        ) : null}
+      </Modal>
 
       {mobileMenuOpen && (
         <div className="mobile-menu">

@@ -479,12 +479,44 @@
 .sp-notice-body ul,
 .sp-notice-body ol {
   margin: 0 0 22px;
-  padding: 0;
-  list-style: none;
+  padding-left: 22px;
+}
+
+.sp-notice-body ul {
+  list-style: disc;
+}
+
+.sp-notice-body ol {
+  list-style: decimal;
 }
 
 .sp-notice-body li {
   margin-bottom: 6px;
+}
+
+.sp-notice-body strong,
+.sp-notice-body b {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.sp-notice-body a {
+  color: #f5a623;
+  text-decoration: underline;
+}
+
+.sp-notice-body img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.sp-notice-link-row {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.sp-notice-link-row a {
+  color: #f5a623;
 }
 
 .sp-notice-confirm {

@@ -550,7 +550,7 @@
     "airdropRemainDays": "剩余发放天数",
     "stakeFail": "质押失败",
     "joinFail": "参与失败",
-    "minJoinUsd": "参与空投最低 {{min}}U",
+    "minJoinUsd": "参与空投需最少价值 {{min}}U 的 PEAK",
     "dailyStatic": "日静态收益",
     "accelTeam": "团队加速（级差）",
     "accelPeer": "平级加速",

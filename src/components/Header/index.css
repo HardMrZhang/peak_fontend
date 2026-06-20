@@ -29,6 +29,7 @@
   align-items: center;
   gap: 12px;
   background: rgba(245, 166, 35, 0.06);
+  overflow: hidden;
 }
 
 .notice-prefix {
@@ -53,6 +54,8 @@
 .notice-link {
   text-decoration: none;
   cursor: pointer;
+  flex: 1;
+  min-width: 0;
 }
 
 .notice-link:hover,
@@ -60,13 +63,14 @@ a.notice-link:hover {
   color: var(--accent-orange);
 }
 
+/* 公告栏为单行滚动展示:保留富文本的字体/颜色/加粗等行内样式,
+   但把块级元素压成行内、去掉换行,避免整段展开撑破布局。 */
 .notice-html-inline {
   display: inline;
+  white-space: nowrap;
 }
 
-/* 公告栏为单行滚动展示:保留富文本的字体/颜色/加粗等行内样式,
-   但把块级元素压成行内,避免换行撑破布局。 */
-.notice-html-inline :where(p, h1, h2, h3, h4, ul, ol, li, div) {
+.notice-html-inline :where(p, h1, h2, h3, h4, ul, ol, li, div, blockquote) {
   display: inline;
   margin: 0;
   padding: 0;
@@ -74,11 +78,16 @@ a.notice-link:hover {
   line-height: inherit;
 }
 
+.notice-html-inline br {
+  display: none;
+}
+
 .notice-html-inline :where(ul, ol) {
   list-style: none;
 }
 
-.notice-html-inline :where(li)::after {
+/* 块级元素压成行内后用空格分隔,避免文字粘连 */
+.notice-html-inline :where(p, div, li, h1, h2, h3, h4):not(:last-child)::after {
   content: '\00a0\00a0';
 }
 

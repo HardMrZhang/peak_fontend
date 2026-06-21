@@ -552,6 +552,7 @@
     "joinFail": "参与失败",
     "minJoinUsd": "参与空投需最少价值 {{min}}U 的 PEAK",
     "dailyStatic": "日静态收益",
+    "airdropRemaining": "剩余释放余额",
     "accelTeam": "团队加速（级差）",
     "accelPeer": "平级加速",
     "accelDirect": "直推静态收益",

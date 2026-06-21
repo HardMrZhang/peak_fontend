@@ -552,6 +552,7 @@
     "joinFail": "Join failed",
     "minJoinUsd": "Minimum participation is {{min}}U worth of PEAK",
     "dailyStatic": "Daily Static Yield",
+    "airdropRemaining": "Remaining Release Balance",
     "accelTeam": "Team Boost (Diff)",
     "accelPeer": "Peer Boost",
     "accelDirect": "Direct Static Yield",

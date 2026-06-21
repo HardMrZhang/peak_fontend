@@ -342,6 +342,9 @@ export default function Airdrop() {
                       {t('ipo.airdropRemainDays')}: {item.remainDays} {t('ipo.dayUnit')}
                     </div>
                     <div className="sp-record-item">
+                      {t('ipo.airdropRemaining')}: {item.remaining ?? '0'} PEAK
+                    </div>
+                    <div className="sp-record-item">
                       {t('ipo.accelTeam')}: {item.isAccelerationOrder ? (summary?.teamAccel ?? '0') : '0'} PEAK
                     </div>
                     <div className="sp-record-item">

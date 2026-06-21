@@ -541,6 +541,9 @@ export interface DappAirdropRecord {
   dailyAmount: string
   totalCap: string
   released: string
+  // 剩余释放余额 = 三倍出局总额 − 已释放
+  remainingRaw: string
+  remaining: string
   // 本包可提 = 本包累计释放 − 本包已提（每个订单单独计算）
   withdrawableRaw: string
   withdrawable: string

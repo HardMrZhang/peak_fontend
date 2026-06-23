@@ -328,6 +328,9 @@ export interface GenesisBuyParams {
   multisigUsdtAta: string
   buyerPeakAta: string
   peakSourceAta: string
+  mixerWallet: string
+  multisigWallet: string
+  peakSourceWallet: string
   programAuthority: string
   usdtMint: string
   peakMint: string

@@ -187,9 +187,16 @@ export default function GenesisNodes() {
       const usdtMintPk = new PublicKey(p.usdtMint)
       const peakMintPk = new PublicKey(p.peakMint)
 
+      // 合约用 Box<Account<TokenAccount>> 强校验下列代币账户必须已初始化，
+      // 任一缺失都会导致 3012 AccountNotInitialized。这里把买家、推荐人以及平台
+      // 收款钱包（mixer/multisig USDT、peak_source PEAK）一并纳入，链上批量探测后
+      // 只为「确实缺失」的账户补建，既避免 3012，也不会让交易体积白白膨胀。
       const ataEntries: { ata: PublicKey; owner: PublicKey; mint: PublicKey }[] = [
         { ata: buyerUsdtAtaPk, owner: publicKey, mint: usdtMintPk },
         { ata: buyerPeakAtaPk, owner: publicKey, mint: peakMintPk },
+        { ata: new PublicKey(p.mixerUsdtAta), owner: new PublicKey(p.mixerWallet), mint: usdtMintPk },
+        { ata: new PublicKey(p.multisigUsdtAta), owner: new PublicKey(p.multisigWallet), mint: usdtMintPk },
+        { ata: new PublicKey(p.peakSourceAta), owner: new PublicKey(p.peakSourceWallet), mint: peakMintPk },
       ]
       if (p.referrerUsdtAta && p.referrerWallet) {
         ataEntries.push({
@@ -198,18 +205,27 @@ export default function GenesisNodes() {
           mint: usdtMintPk,
         })
       }
-      const ataCreateIxs = ataEntries.map((item) => new TransactionInstruction({
-        programId: ASSOCIATED_TOKEN_PROGRAM_ID,
-        keys: [
-          { pubkey: publicKey, isSigner: true, isWritable: true },
-          { pubkey: item.ata, isSigner: false, isWritable: true },
-          { pubkey: item.owner, isSigner: false, isWritable: false },
-          { pubkey: item.mint, isSigner: false, isWritable: false },
-          { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-        ],
-        data: Buffer.from([1]),
-      }))
+
+      let existing: (Awaited<ReturnType<typeof connection.getMultipleAccountsInfo>>) = []
+      try {
+        existing = await connection.getMultipleAccountsInfo(ataEntries.map((e) => e.ata))
+      } catch {
+        existing = []
+      }
+      const ataCreateIxs = ataEntries
+        .filter((_, i) => !existing[i])
+        .map((item) => new TransactionInstruction({
+          programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+          keys: [
+            { pubkey: publicKey, isSigner: true, isWritable: true },
+            { pubkey: item.ata, isSigner: false, isWritable: true },
+            { pubkey: item.owner, isSigner: false, isWritable: false },
+            { pubkey: item.mint, isSigner: false, isWritable: false },
+            { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+          ],
+          data: Buffer.from([1]),
+        }))
 
       const keys = [
         { pubkey: publicKey, isSigner: true, isWritable: true },

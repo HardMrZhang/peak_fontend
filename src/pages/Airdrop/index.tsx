@@ -361,16 +361,26 @@ export default function Airdrop() {
                     <span className="sp-record-item">
                       {t('ipo.withdrawable')}: {item.withdrawable ?? '0'} PEAK
                     </span>
-                    <button
-                      type="button"
-                      className="sp-withdraw-btn"
-                      onClick={() => handleWithdraw(item)}
-                      disabled={withdrawing || getPackageWithdrawableInt(item) <= 0n}
-                    >
-                      {withdrawing && withdrawingId === item.id
-                        ? t('ipo.withdrawing')
-                        : t('ipo.withdrawBtn')}
-                    </button>
+                    {(() => {
+                      // 出局且已无残留可提 → 显示「已出局」并禁用；
+                      // 出局但仍有最后一笔释放未提 → 仍允许提走，避免余额卡住。
+                      const pkgWithdrawable = getPackageWithdrawableInt(item)
+                      const fullyOut = item.isOut && pkgWithdrawable <= 0n
+                      return (
+                        <button
+                          type="button"
+                          className="sp-withdraw-btn"
+                          onClick={() => handleWithdraw(item)}
+                          disabled={fullyOut || withdrawing || pkgWithdrawable <= 0n}
+                        >
+                          {fullyOut
+                            ? t('ipo.airdropOut')
+                            : withdrawing && withdrawingId === item.id
+                              ? t('ipo.withdrawing')
+                              : t('ipo.withdrawBtn')}
+                        </button>
+                      )
+                    })()}
                   </div>
 
                   <button

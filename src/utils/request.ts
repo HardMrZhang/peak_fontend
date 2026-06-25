@@ -43,9 +43,14 @@ request.interceptors.response.use(
   },
   (error) => {
     const status = error?.response?.status
-    if (status === 401) {
+    const errorCode = error?.response?.data?.errorCode
+    if (status === 401 || errorCode === 'ACCOUNT_DISABLED') {
       localStorage.removeItem('peak_token')
       window.dispatchEvent(new CustomEvent('auth:logout'))
+      if (errorCode === 'ACCOUNT_DISABLED' && !error?.config?.skipErrorToast) {
+        const serverMsg = error?.response?.data?.message
+        message.error(serverMsg || 'Account disabled')
+      }
     } else if (!error?.config?.skipErrorToast) {
       const serverMsg = error?.response?.data?.message
       message.error(serverMsg || error.message || 'Network error')

@@ -34,6 +34,8 @@ const SALE_PDA = new PublicKey('Ahj2bbRwTMnKyyk3pNgpAe1WgvT3BUesYJTDdnJCu5mn')
 
 const NODE_PRICE = 500
 const MAX_SUPPLY = 3000
+// 影视节点已全面停售：销售卡片填满至 3000，按钮显示「已售罄」并禁用购买
+const SOLD_OUT = true
 async function hasTransactionLanded(signature: string, connection: ReturnType<typeof useConnection>['connection']) {
   for (let i = 0; i < 3; i += 1) {
     const tx = await connection.getTransaction(signature, {
@@ -355,7 +357,7 @@ export default function GenesisNodes() {
     }
   }
 
-  const soldTotal = saleData?.soldTotal ?? 0
+  const soldTotal = SOLD_OUT ? MAX_SUPPLY : (saleData?.soldTotal ?? 0)
   const remaining = MAX_SUPPLY - soldTotal
   const progress = MAX_SUPPLY > 0 ? (soldTotal / MAX_SUPPLY) * 100 : 0
   const totalCost = NODE_PRICE * quantity
@@ -404,8 +406,12 @@ export default function GenesisNodes() {
                     <span className="genesis-sale-subtitle">{t('genesis.saleSubtitle')}</span>
                   </div>
                 </div>
-                <Button className="genesis-purchase-btn" onClick={() => setPurchaseOpen(true)}>
-                  {t('genesis.purchase')}
+                <Button
+                  className="genesis-purchase-btn"
+                  onClick={() => setPurchaseOpen(true)}
+                  disabled={SOLD_OUT}
+                >
+                  {SOLD_OUT ? t('genesis.soldOut') : t('genesis.purchase')}
                 </Button>
               </div>
 

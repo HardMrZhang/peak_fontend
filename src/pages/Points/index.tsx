@@ -493,7 +493,7 @@ export default function Points() {
             className="pts-action-btn pts-exchange-btn"
             onClick={handleExchange}
             loading={exchanging}
-            disabled={!displayReady}
+            disabled
             block
           >
             {t('points.exchange')}

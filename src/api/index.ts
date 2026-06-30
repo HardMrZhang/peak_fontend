@@ -53,6 +53,9 @@ import type {
   DappConfirmResult,
 } from '@/types'
 
+// 需要在链上补记额度并等待确认的接口，确认耗时可能超过默认 15s，单独放宽超时
+const ONCHAIN_CREDIT_TIMEOUT = 60000
+
 // ==================== Auth ====================
 export function getNonce(walletAddress: string) {
   return post<{ nonce: string }>('/auth/nonce', { walletAddress })
@@ -302,7 +305,8 @@ export function getStakeRewards(params?: { page?: number; pageSize?: number }) {
 }
 
 export function getClaimStakeRewardParams(positionId: string | number, periodDays: number) {
-  return get<DappClaimStakeRewardParams>('/dapp/stake/claim-reward-params', { params: { positionId, periodDays } })
+  // 该接口返回前需在链上补记分红额度并等待确认，主网确认可能 >15s，单独放宽超时
+  return get<DappClaimStakeRewardParams>('/dapp/stake/claim-reward-params', { params: { positionId, periodDays }, timeout: ONCHAIN_CREDIT_TIMEOUT })
 }
 
 export function confirmClaimStakeReward(data: { txHash: string; intentId: string }) {
@@ -315,7 +319,8 @@ export function getPromoSummary(params?: { page?: number; pageSize?: number }) {
 }
 
 export function getPromoClaimParams() {
-  return get<DappDividendClaimParams>('/dapp/promo/claim-params')
+  // 同上：返回前链上补记分红额度并等待确认，放宽超时
+  return get<DappDividendClaimParams>('/dapp/promo/claim-params', { timeout: ONCHAIN_CREDIT_TIMEOUT })
 }
 
 export function confirmPromoClaim(data: { txHash: string; intentId: string }) {
@@ -328,7 +333,8 @@ export function getT7Summary(params?: { page?: number; pageSize?: number }) {
 }
 
 export function getT7ClaimParams() {
-  return get<DappDividendClaimParams>('/dapp/t7/claim-params')
+  // 同上：返回前链上补记分红额度并等待确认，放宽超时
+  return get<DappDividendClaimParams>('/dapp/t7/claim-params', { timeout: ONCHAIN_CREDIT_TIMEOUT })
 }
 
 export function confirmT7Claim(data: { txHash: string; intentId: string }) {
@@ -374,7 +380,8 @@ export function getAirdropSummary() {
 
 // ==================== DApp: 空投收益提现（扣 20% 手续费，用户单签付 GAS） ====================
 export function getDappWithdrawParams(amount: string | number, packageId: string) {
-  return get<DappWithdrawParams>('/dapp/withdraw/params', { params: { amount, packageId }, skipErrorToast: true })
+  // 返回前可能触发链上额度自愈补单并等待确认，放宽超时
+  return get<DappWithdrawParams>('/dapp/withdraw/params', { params: { amount, packageId }, skipErrorToast: true, timeout: ONCHAIN_CREDIT_TIMEOUT })
 }
 
 export function confirmDappWithdraw(data: { txHash: string; intentId: string }) {

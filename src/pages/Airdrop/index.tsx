@@ -154,12 +154,12 @@ export default function Airdrop() {
       message.warning(t('ipo.minJoinUsd', { min: minUsd }))
       return
     }
-    // TODO 测试期临时去掉 100U 门槛校验，测完恢复：
-    // if (payCurrency === 'USDT') {
-    //   if (amt < minUsd) { message.warning(t('ipo.minJoinUsd', { min: minUsd })); return }
-    // } else if (price > 0 && amt * price < minUsd) {
-    //   message.warning(t('ipo.minJoinUsd', { min: minUsd })); return
-    // }
+    // 最低参与门槛 100U：U 下单直接比金额；PEAK 下单按实时价折算 USD 后比
+    if (payCurrency === 'USDT') {
+      if (amt < minUsd) { message.warning(t('ipo.minJoinUsd', { min: minUsd })); return }
+    } else if (price > 0 && amt * price < minUsd) {
+      message.warning(t('ipo.minJoinUsd', { min: minUsd })); return
+    }
     setJoining(true)
     try {
       const paramsRes = await getAirdropParams(quantity, payCurrency)
@@ -263,7 +263,7 @@ export default function Airdrop() {
               <input
                 type="number"
                 className="sp-qty-input"
-                min={0}
+                min={payCurrency === 'USDT' ? (airdropConfig?.minUsd ?? 100) : 0}
                 step="0.01"
                 value={quantity}
                 placeholder={payCurrency === 'USDT' ? t('ipo.quantityPlaceholder') : t('ipo.quantityPlaceholderPeak')}

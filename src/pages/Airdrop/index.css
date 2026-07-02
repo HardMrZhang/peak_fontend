@@ -72,7 +72,7 @@
   background: var(--bg-secondary);
   border: 1.5px solid var(--border-color);
   border-radius: 10px;
-  padding: 14px 70px 14px 16px;
+  padding: 14px 100px 14px 16px;
   color: var(--text-primary);
   font-size: 17px;
   outline: none;
@@ -95,20 +95,67 @@
   pointer-events: none;
 }
 
-.sp-input-unit-select {
+/* 自定义币种下拉（替代原生 <select>，兼容 TP 等钱包 webview） */
+.sp-cur-select {
   position: absolute;
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.sp-cur-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 70px;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--accent-orange);
   font-size: 14px;
   font-weight: 600;
-  padding: 4px 8px;
+  padding: 6px 10px;
   outline: none;
   cursor: pointer;
+}
+
+.sp-cur-caret {
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.sp-cur-caret.open {
+  transform: rotate(180deg);
+}
+
+.sp-cur-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 84px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 30;
+}
+
+.sp-cur-option {
+  padding: 11px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: center;
+}
+
+.sp-cur-option.active,
+.sp-cur-option:hover {
+  background: rgba(245, 166, 35, 0.15);
+  color: var(--accent-orange);
 }
 
 .sp-info-box {

@@ -45,6 +45,9 @@ export default function Airdrop() {
 
   const [airdropConfig, setAirdropConfig] = useState<DappAirdropConfig | null>(null)
   const [payCurrency, setPayCurrency] = useState<'USDT' | 'PEAK'>('USDT')
+  // 自定义币种下拉（原生 <select> 在 TP/部分钱包 webview 里弹不出，改用受控 div 下拉）
+  const [currencyOpen, setCurrencyOpen] = useState(false)
+  const currencyRef = useRef<HTMLDivElement | null>(null)
   const [quantity, setQuantity] = useState('100')
   const [airdropRecords, setAirdropRecords] = useState<DappAirdropRecord[]>([])
   const [summary, setSummary] = useState<DappAirdropSummary | null>(null)
@@ -62,6 +65,22 @@ export default function Airdrop() {
     () => toSafeBigInt(summary?.withdrawableInt),
     [summary?.withdrawableInt],
   )
+
+  // 点击/触摸下拉之外区域时收起币种下拉
+  useEffect(() => {
+    if (!currencyOpen) return undefined
+    const onOutside = (e: Event) => {
+      if (currencyRef.current && !currencyRef.current.contains(e.target as Node)) {
+        setCurrencyOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onOutside)
+    document.addEventListener('touchstart', onOutside)
+    return () => {
+      document.removeEventListener('mousedown', onOutside)
+      document.removeEventListener('touchstart', onOutside)
+    }
+  }, [currencyOpen])
 
   const toggleReleaseRecords = useCallback(async (packageId: string) => {
     if (expandedId === packageId) {
@@ -269,14 +288,29 @@ export default function Airdrop() {
                 placeholder={payCurrency === 'USDT' ? t('ipo.quantityPlaceholder') : t('ipo.quantityPlaceholderPeak')}
                 onChange={(e) => setQuantity(e.target.value)}
               />
-              <select
-                className="sp-input-unit-select"
-                value={payCurrency}
-                onChange={(e) => setPayCurrency(e.target.value as 'USDT' | 'PEAK')}
-              >
-                <option value="USDT">USDT</option>
-                <option value="PEAK">PEAK</option>
-              </select>
+              <div className="sp-cur-select" ref={currencyRef}>
+                <button
+                  type="button"
+                  className="sp-cur-trigger"
+                  onClick={() => setCurrencyOpen((v) => !v)}
+                >
+                  <span>{payCurrency}</span>
+                  <span className={`sp-cur-caret${currencyOpen ? ' open' : ''}`}>▾</span>
+                </button>
+                {currencyOpen && (
+                  <div className="sp-cur-menu">
+                    {(['USDT', 'PEAK'] as const).map((c) => (
+                      <div
+                        key={c}
+                        className={`sp-cur-option${payCurrency === c ? ' active' : ''}`}
+                        onClick={() => { setPayCurrency(c); setCurrencyOpen(false) }}
+                      >
+                        {c}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

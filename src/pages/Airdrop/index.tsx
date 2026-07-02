@@ -44,7 +44,8 @@ export default function Airdrop() {
   const { sendDappIx, connected } = useDappTx()
 
   const [airdropConfig, setAirdropConfig] = useState<DappAirdropConfig | null>(null)
-  const [quantity, setQuantity] = useState('1000')
+  const [payCurrency, setPayCurrency] = useState<'USDT' | 'PEAK'>('USDT')
+  const [quantity, setQuantity] = useState('100')
   const [airdropRecords, setAirdropRecords] = useState<DappAirdropRecord[]>([])
   const [summary, setSummary] = useState<DappAirdropSummary | null>(null)
   const [joining, setJoining] = useState(false)
@@ -121,24 +122,25 @@ export default function Airdrop() {
   const price = livePrice ?? (airdropConfig?.priceUsdt ? parseFloat(airdropConfig.priceUsdt) : 0)
 
   const airdropCalc = useMemo(() => {
-    let qty = parseFloat(quantity) || 0
-    if (qty < 1) qty = 1
-    const totalValue = qty * price
+    const amt = parseFloat(quantity) || 0
+    // 下拉选择的币种决定输入含义：USDT → 折算 PEAK；PEAK → 折算 USDT
+    const usdAmount = payCurrency === 'USDT' ? amt : amt * price
+    const peakQty = payCurrency === 'USDT' ? (price > 0 ? amt / price : 0) : amt
     const threshold = airdropConfig?.tierThresholdUsd ?? 500
     const rateLow = airdropConfig ? parseFloat(airdropConfig.dailyRateLow) : 1.4
     const rateHigh = airdropConfig ? parseFloat(airdropConfig.dailyRateHigh) : 1.5
-    const dailyRatePct = totalValue < threshold ? rateLow : rateHigh
+    const dailyRatePct = usdAmount < threshold ? rateLow : rateHigh
     const rateText = `${dailyRatePct}%`
-    const totalAirdrop = qty * AIRDROP_MULTIPLE
-    const dailyAirdrop = (qty * dailyRatePct) / 100
+    const totalAirdrop = peakQty * AIRDROP_MULTIPLE
+    const dailyAirdrop = (peakQty * dailyRatePct) / 100
     // 真实加速数据：直推静态收益 = 直推静态实时累加 ×10%；团队加速与平级加速分开展示
     const referAccel = summary ? parseFloat(summary.directAccel) || 0 : 0
     const teamAccel = summary ? parseFloat(summary.teamAccel) || 0 : 0
     const peerAccel = summary ? parseFloat(summary.peerAccel) || 0 : 0
     const dailyTotal = dailyAirdrop + referAccel + teamAccel + peerAccel
     const totalDays = dailyTotal > 0 ? Math.ceil(totalAirdrop / dailyTotal) : 0
-    return { qty, totalValue, rateText, totalAirdrop, dailyAirdrop, referAccel, teamAccel, peerAccel, totalDays }
-  }, [quantity, price, airdropConfig, summary])
+    return { usdAmount, peakQty, rateText, totalAirdrop, dailyAirdrop, referAccel, teamAccel, peerAccel, totalDays }
+  }, [quantity, price, payCurrency, airdropConfig, summary])
 
   const handleJoin = async () => {
     if (joining) return
@@ -146,21 +148,35 @@ export default function Airdrop() {
       message.warning(t('account.walletRequired'))
       return
     }
-    const qty = parseFloat(quantity) || 0
-    if (qty < 1) {
-      message.warning(t('ipo.quantityPlaceholder'))
-      return
-    }
+    const amt = parseFloat(quantity) || 0
     const minUsd = airdropConfig?.minUsd ?? 100
-    if (price > 0 && qty * price < minUsd) {
+    if (amt <= 0) {
       message.warning(t('ipo.minJoinUsd', { min: minUsd }))
       return
     }
+    // TODO 测试期临时去掉 100U 门槛校验，测完恢复：
+    // if (payCurrency === 'USDT') {
+    //   if (amt < minUsd) { message.warning(t('ipo.minJoinUsd', { min: minUsd })); return }
+    // } else if (price > 0 && amt * price < minUsd) {
+    //   message.warning(t('ipo.minJoinUsd', { min: minUsd })); return
+    // }
     setJoining(true)
     try {
-      const paramsRes = await getAirdropParams(Math.floor(qty))
+      const paramsRes = await getAirdropParams(quantity, payCurrency)
       const sig = await sendDappIx(paramsRes.data)
-      await confirmAirdrop({ txHash: sig, intentId: paramsRes.data.intentId })
+      // 链上已付 USDT 后 confirm 幂等；网络波动时自动重试，避免刷新导致丢单
+      let confirmErr: unknown = null
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          await confirmAirdrop({ txHash: sig, intentId: paramsRes.data.intentId })
+          confirmErr = null
+          break
+        } catch (err) {
+          confirmErr = err
+          if (attempt < 2) await new Promise((r) => setTimeout(r, 2000))
+        }
+      }
+      if (confirmErr) throw confirmErr
       setJoinTip(t('ipo.joinSuccess'))
       if (joinTipTimer.current) clearTimeout(joinTipTimer.current)
       joinTipTimer.current = setTimeout(() => setJoinTip(''), 2500)
@@ -247,12 +263,20 @@ export default function Airdrop() {
               <input
                 type="number"
                 className="sp-qty-input"
-                min={1}
+                min={0}
+                step="0.01"
                 value={quantity}
-                placeholder={t('ipo.quantityPlaceholder')}
+                placeholder={payCurrency === 'USDT' ? t('ipo.quantityPlaceholder') : t('ipo.quantityPlaceholderPeak')}
                 onChange={(e) => setQuantity(e.target.value)}
               />
-              <span className="sp-input-unit">PEAK</span>
+              <select
+                className="sp-input-unit-select"
+                value={payCurrency}
+                onChange={(e) => setPayCurrency(e.target.value as 'USDT' | 'PEAK')}
+              >
+                <option value="USDT">USDT</option>
+                <option value="PEAK">PEAK</option>
+              </select>
             </div>
           </div>
 
@@ -261,9 +285,20 @@ export default function Airdrop() {
               <span>{t('ipo.realTimePrice')}</span>
               <span className="sp-highlight">{price > 0 ? price.toFixed(4) : '--'} USDT</span>
             </div>
+            {payCurrency === 'USDT' ? (
+              <div className="sp-info-line">
+                <span>{t('ipo.peakEquivalent')}</span>
+                <span className="sp-highlight">{airdropCalc.peakQty > 0 ? airdropCalc.peakQty.toFixed(4) : '--'} PEAK</span>
+              </div>
+            ) : (
+              <div className="sp-info-line">
+                <span>{t('ipo.usdEquivalent')}</span>
+                <span className="sp-highlight">{airdropCalc.usdAmount > 0 ? airdropCalc.usdAmount.toFixed(2) : '--'} USDT</span>
+              </div>
+            )}
             <div className="sp-info-line">
               <span>{t('ipo.totalValue')}</span>
-              <span className="sp-highlight">{airdropCalc.totalValue.toFixed(2)} USDT</span>
+              <span className="sp-highlight">{airdropCalc.usdAmount.toFixed(2)} USDT</span>
             </div>
             <div className="sp-info-line">
               <span>{t('ipo.todayRate')}</span>
@@ -345,16 +380,16 @@ export default function Airdrop() {
                       {t('ipo.airdropRemaining')}: {item.remaining ?? '0'} PEAK
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.accelTeam')}: {item.isAccelerationOrder ? (summary?.teamAccel ?? '0') : '0'} PEAK 
+                      {t('ipo.accelTeam')}: {item.isAccelerationOrder ? (summary?.teamAccel ?? '0') : '0'} PEAK
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.accelPeer')}: {item.isAccelerationOrder ? (summary?.peerAccel ?? '0') : '0'} PEAK           
+                      {t('ipo.accelPeer')}: {item.isAccelerationOrder ? (summary?.peerAccel ?? '0') : '0'} PEAK
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.accelDirect')}: {item.isAccelerationOrder ? (summary?.directAccel ?? '0') : '0'} PEAK             
-                    </div>                                                                                                                                                                                                                                                                                                                                                                                        
+                      {t('ipo.accelDirect')}: {item.isAccelerationOrder ? (summary?.directAccel ?? '0') : '0'} PEAK
+                    </div>
                     <div className="sp-record-item">
-                      {t('ipo.accelDirectOnce')}: {item.isAccelerationOrder ? (summary?.directOnce ?? '0') : '0'} PEAK                
+                      {t('ipo.accelDirectOnce')}: {item.isAccelerationOrder ? (summary?.directOnce ?? '0') : '0'} PEAK
                     </div>
                   </div>
                   <div className="sp-record-footer">

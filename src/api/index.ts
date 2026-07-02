@@ -351,9 +351,15 @@ export function getAirdropConfig() {
   return get<DappAirdropConfig>('/dapp/airdrop/config')
 }
 
-export function getAirdropParams(amount: string | number) {
+export function getAirdropParams(
+  amount: string | number,
+  payCurrency: 'USDT' | 'PEAK' = 'USDT',
+) {
   // 错误由空投页自行提示（如最低参与门槛），跳过全局错误弹窗
-  return get<DappAirdropParams>('/dapp/airdrop/params', { params: { amount }, skipErrorToast: true })
+  // 兼容后端旧参数名 usdAmount：U 下单时同时传 amount 与 usdAmount
+  const params: Record<string, string | number> = { amount, payCurrency }
+  if (payCurrency === 'USDT') params.usdAmount = amount
+  return get<DappAirdropParams>('/dapp/airdrop/params', { params, skipErrorToast: true })
 }
 
 export function confirmAirdrop(data: { txHash: string; intentId: string }) {

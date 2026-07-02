@@ -527,12 +527,19 @@ export interface DappAirdropConfig {
 
 export interface DappAirdropParams extends DappIxParams {
   grantId: string
+  payCurrency?: 'USDT' | 'PEAK'
   amountRaw: string
+  peakAmount: string
   usdValueRaw: string
   usdValue: string
   dailyRate: string
   dailyAmount: string
   totalCap: string
+  usdtMint?: string
+  userUsdtAta?: string
+  receiverUsdtAta?: string
+  receiverWallet?: string
+  peakSourceWallet?: string
 }
 
 export interface DappAirdropRecord {

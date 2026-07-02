@@ -249,7 +249,19 @@ export default function Airdrop() {
     try {
       const paramsRes = await getDappWithdrawParams(withdrawableInt.toString(), record.id)
       const sig = await sendDappIx(paramsRes.data)
-      await confirmDappWithdraw({ txHash: sig, intentId: paramsRes.data.intentId })
+      // 链上已扣额度后 confirm 幂等；网络波动时自动重试，避免刷新/断网导致后端漏记已提量、可提余额虚高
+      let confirmErr: unknown = null
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          await confirmDappWithdraw({ txHash: sig, intentId: paramsRes.data.intentId })
+          confirmErr = null
+          break
+        } catch (err) {
+          confirmErr = err
+          if (attempt < 2) await new Promise((r) => setTimeout(r, 2000))
+        }
+      }
+      if (confirmErr) throw confirmErr
       message.success(t('ipo.withdrawSuccess'))
       refreshAirdrop()
     } catch (err: unknown) {

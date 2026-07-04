@@ -61,6 +61,8 @@ export default function Airdrop() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [releaseMap, setReleaseMap] = useState<Record<string, DappAirdropReleaseRecord[]>>({})
   const [releaseLoadingId, setReleaseLoadingId] = useState<string | null>(null)
+  // 出局记录（已出局且无残留可提）：默认隐藏，点击下拉框统一展开查看
+  const [outExpanded, setOutExpanded] = useState(false)
   const summaryWithdrawableInt = useMemo(
     () => toSafeBigInt(summary?.withdrawableInt),
     [summary?.withdrawableInt],
@@ -220,6 +222,21 @@ export default function Airdrop() {
     [],
   )
 
+  // 出局判定：已出局(isOut) 且本包已无残留可提。这类订单归入「出局记录」下拉，
+  // 主列表不再逐条展开展示，点击下拉框统一查看。
+  const isFullyOut = useCallback(
+    (record: DappAirdropRecord) => !!record.isOut && getPackageWithdrawableInt(record) <= 0n,
+    [getPackageWithdrawableInt],
+  )
+  const activeRecords = useMemo(
+    () => airdropRecords.filter((r) => !isFullyOut(r)),
+    [airdropRecords, isFullyOut],
+  )
+  const outRecords = useMemo(
+    () => airdropRecords.filter((r) => isFullyOut(r)),
+    [airdropRecords, isFullyOut],
+  )
+
   // 发送到后端的提币数量优先受链上余额约束；若链上暂时为 0 但包内有额度，仍发起请求触发后端自愈。
   const getWithdrawRequestInt = useCallback((record: DappAirdropRecord) => {
     const packageWithdrawable = getPackageWithdrawableInt(record)
@@ -280,6 +297,44 @@ export default function Airdrop() {
   useEffect(() => {
     refreshAirdrop()
   }, [refreshAirdrop, connected])
+
+  // 「查看每日释放记录」下拉：主列表卡片与出局记录卡片共用
+  const renderReleaseSection = (item: DappAirdropRecord) => (
+    <>
+      <button
+        type="button"
+        className="sp-release-toggle"
+        onClick={() => toggleReleaseRecords(item.id)}
+      >
+        {expandedId === item.id
+          ? t('ipo.releaseRecordsHide')
+          : t('ipo.releaseRecordsShow')}
+      </button>
+
+      {expandedId === item.id && (
+        <div className="sp-release-list">
+          {releaseLoadingId === item.id ? (
+            <div className="sp-release-empty">{t('ipo.loading')}</div>
+          ) : (releaseMap[item.id]?.length ?? 0) === 0 ? (
+            <div className="sp-release-empty">{t('ipo.noReleaseRecord')}</div>
+          ) : (
+            <>
+              <div className="sp-release-row sp-release-head">
+                <span>{t('ipo.releaseDate')}</span>
+                <span>{t('ipo.releaseAmount')}</span>
+              </div>
+              {releaseMap[item.id].map((r) => (
+                <div key={r.id} className="sp-release-row">
+                  <span>{r.bizDate}</span>
+                  <span>{r.amount} PEAK</span>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      )}
+    </>
+  )
 
   return (
     <div className="airdrop-page">
@@ -398,7 +453,8 @@ export default function Airdrop() {
             {airdropRecords.length === 0 ? (
               <div className="sp-record-empty">{t('ipo.noAirdropRecord')}</div>
             ) : (
-              airdropRecords.map((item) => (
+              <>
+                {activeRecords.map((item) => (
                 <div key={item.id} className="sp-record-card">
                   <div className="sp-record-header">
                     <span className="sp-record-id">
@@ -464,40 +520,51 @@ export default function Airdrop() {
                     })()}
                   </div>
 
-                  <button
-                    type="button"
-                    className="sp-release-toggle"
-                    onClick={() => toggleReleaseRecords(item.id)}
-                  >
-                    {expandedId === item.id
-                      ? t('ipo.releaseRecordsHide')
-                      : t('ipo.releaseRecordsShow')}
-                  </button>
-
-                  {expandedId === item.id && (
-                    <div className="sp-release-list">
-                      {releaseLoadingId === item.id ? (
-                        <div className="sp-release-empty">{t('ipo.loading')}</div>
-                      ) : (releaseMap[item.id]?.length ?? 0) === 0 ? (
-                        <div className="sp-release-empty">{t('ipo.noReleaseRecord')}</div>
-                      ) : (
-                        <>
-                          <div className="sp-release-row sp-release-head">
-                            <span>{t('ipo.releaseDate')}</span>
-                            <span>{t('ipo.releaseAmount')}</span>
-                          </div>
-                          {releaseMap[item.id].map((r) => (
-                            <div key={r.id} className="sp-release-row">
-                              <span>{r.bizDate}</span>
-                              <span>{r.amount} PEAK</span>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                    </div>
-                  )}
+                  {renderReleaseSection(item)}
                 </div>
-              ))
+                ))}
+
+                {outRecords.length > 0 && (
+                  <div className="sp-out-section">
+                    <button
+                      type="button"
+                      className="sp-out-toggle"
+                      onClick={() => setOutExpanded((v) => !v)}
+                    >
+                      {outExpanded
+                        ? t('ipo.outRecordsHide', { n: outRecords.length })
+                        : t('ipo.outRecordsShow', { n: outRecords.length })}
+                    </button>
+
+                    {outExpanded && (
+                      <div className="sp-out-list">
+                        {outRecords.map((item) => (
+                          <div key={item.id} className="sp-record-card sp-record-card--out">
+                            <div className="sp-record-header">
+                              <span className="sp-record-id">
+                                {t('ipo.airdropRecordId')}: {formatRecordNo(item.grantId)}
+                              </span>
+                              <span className="sp-record-time">{item.createdAt.slice(0, 19).replace('T', ' ')}</span>
+                            </div>
+                            <div className="sp-record-grid">
+                              <div className="sp-record-item">
+                                {t('ipo.airdropQuantity')}: {item.principal} PEAK
+                              </div>
+                              <div className="sp-record-item">
+                                {t('ipo.airdropTriple')}: {item.totalCap} PEAK
+                              </div>
+                              <div className="sp-record-item">
+                                <span className="sp-out-badge">{t('ipo.airdropOut')}</span>
+                              </div>
+                            </div>
+                            {renderReleaseSection(item)}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>

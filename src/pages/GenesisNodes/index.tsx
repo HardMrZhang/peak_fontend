@@ -1,84 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Modal, Table, Pagination, message, Spin, Tooltip } from 'antd'
+import { Table, Pagination, Spin, Tooltip } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { PublicKey, TransactionInstruction, Transaction, SystemProgram, Connection, ComputeBudgetProgram } from '@solana/web3.js'
 import {
-  getGenesisSaleInfo,
-  getGenesisBuyParams,
-  cancelGenesisBuyIntent,
-  confirmGenesisBuy,
   getGenesisVipLevel,
   getGenesisVipTeamDetail,
+  getGenesisRecentPerformance,
   getGenesisOrders,
 } from '@/api'
-import type { GenesisVipTeamDetail } from '@/api'
+import type { GenesisVipTeamDetail, GenesisRecentPerformance } from '@/api'
 import type { GenesisOrder, PageResult } from '@/types'
 import './index.css'
 
-const GENESIS_PROGRAM_ID = new PublicKey('Fm8qxJKKZPGQyMezF7NkAQT5wHkDyDTp1KVDeRDKmzVg')
-const MPL_CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d')
-const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
-const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
-const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr')
-
-const FAST_RPC = new Connection('https://mainnet.helius-rpc.com/?api-key=fc56707a-a30e-4676-9895-b5c37cbba6a2', 'confirmed')
-
-const BUY_GENESIS_DISCRIMINATOR = new Uint8Array([
-  0x59, 0xb4, 0x33, 0x97, 0x8d, 0x10, 0xd4, 0xb8,
-])
-
-const SALE_PDA = new PublicKey('Ahj2bbRwTMnKyyk3pNgpAe1WgvT3BUesYJTDdnJCu5mn')
-
-const NODE_PRICE = 500
-const MAX_SUPPLY = 3000
-// 影视节点已全面停售：销售卡片填满至 3000，按钮显示「已售罄」并禁用购买
-const SOLD_OUT = true
-async function hasTransactionLanded(signature: string, connection: ReturnType<typeof useConnection>['connection']) {
-  for (let i = 0; i < 3; i += 1) {
-    const tx = await connection.getTransaction(signature, {
-      commitment: 'confirmed',
-      maxSupportedTransactionVersion: 0,
-    })
-    if (tx) {
-      if (tx.meta?.err) {
-        throw new Error('Transaction failed on chain')
-      }
-      return true
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1200))
-  }
-  return false
-}
-
-interface GenesisSaleData {
-  premintedTotal: number
-  soldTotal: number
-}
-
-function parseGenesisSaleState(data: Buffer): GenesisSaleData | null {
-  if (data.length < 17) return null
-  return {
-    premintedTotal: data.readUInt32LE(8),
-    soldTotal: data.readUInt32LE(12),
-  }
-}
-
 export default function GenesisNodes() {
   const { t } = useTranslation()
-  const { connection } = useConnection()
-  const { publicKey, sendTransaction, connected } = useWallet()
 
-  const [purchaseOpen, setPurchaseOpen] = useState(false)
-  const [infoOpen, setInfoOpen] = useState(false)
-  const [quantity, setQuantity] = useState(1)
-  const [purchasing, setPurchasing] = useState(false)
-  const purchasingLock = useRef(false)
-
-  const [saleData, setSaleData] = useState<GenesisSaleData | null>(null)
-  const [loading, setLoading] = useState(true)
   const [vipLevel, setVipLevel] = useState(0)
   const [vipLabel, setVipLabel] = useState('T0')
   const [orderData, setOrderData] = useState<PageResult<GenesisOrder> | null>(null)
@@ -89,6 +26,9 @@ export default function GenesisNodes() {
   const [teamDetail, setTeamDetail] = useState<GenesisVipTeamDetail | null>(null)
   const [teamDetailLoading, setTeamDetailLoading] = useState(false)
   const teamDetailLoaded = useRef(false)
+
+  const [recentPerf, setRecentPerf] = useState<GenesisRecentPerformance | null>(null)
+  const [recentPerfLoading, setRecentPerfLoading] = useState(false)
 
   const loadTeamDetail = useCallback(async () => {
     if (teamDetailLoaded.current || !localStorage.getItem('peak_token')) return
@@ -104,52 +44,34 @@ export default function GenesisNodes() {
     }
   }, [])
 
-  const readChainSaleState = useCallback(async () => {
+  const refreshVip = useCallback(async () => {
+    const token = localStorage.getItem('peak_token')
+    if (!token) return
     try {
-      const accountInfo = await connection.getAccountInfo(SALE_PDA)
-      if (accountInfo?.data) {
-        const parsed = parseGenesisSaleState(accountInfo.data as Buffer)
-        if (parsed) setSaleData(parsed)
+      const vipRes = await getGenesisVipLevel()
+      if (vipRes.data) {
+        setVipLevel(vipRes.data.vipLevel)
+        const label = vipRes.data.vipLabel || 'T0'
+        setVipLabel(label.replace(/^V/i, 'T'))
       }
     } catch {
-      /* chain read failed, try API fallback */
+      /* VIP not available yet */
     }
-  }, [connection])
+  }, [])
 
-  const refreshData = useCallback(async () => {
-    setLoading(true)
+  const fetchRecentPerf = useCallback(async () => {
+    const token = localStorage.getItem('peak_token')
+    if (!token) return
+    setRecentPerfLoading(true)
     try {
-      await readChainSaleState()
-
-      try {
-        const res = await getGenesisSaleInfo()
-        if (res.data) {
-          setSaleData({
-            premintedTotal: res.data.premintedTotal,
-            soldTotal: res.data.soldTotal,
-          })
-        }
-      } catch {
-        /* API not ready, use chain data */
-      }
-
-      const token = localStorage.getItem('peak_token')
-      if (token) {
-        try {
-          const vipRes = await getGenesisVipLevel()
-          if (vipRes.data) {
-            setVipLevel(vipRes.data.vipLevel)
-            const label = vipRes.data.vipLabel || 'T0'
-            setVipLabel(label.replace(/^V/i, 'T'))
-          }
-        } catch {
-          /* VIP not available yet */
-        }
-      }
+      const res = await getGenesisRecentPerformance()
+      if (res.data) setRecentPerf(res.data)
+    } catch {
+      /* recent performance not available yet */
     } finally {
-      setLoading(false)
+      setRecentPerfLoading(false)
     }
-  }, [readChainSaleState])
+  }, [])
 
   const fetchOrders = useCallback(() => {
     const token = localStorage.getItem('peak_token')
@@ -162,205 +84,24 @@ export default function GenesisNodes() {
   }, [orderPage, orderPageSize])
 
   useEffect(() => {
-    refreshData()
-  }, [refreshData, connected])
+    refreshVip()
+  }, [refreshVip])
+
+  useEffect(() => {
+    fetchRecentPerf()
+  }, [fetchRecentPerf])
 
   useEffect(() => {
     fetchOrders()
   }, [fetchOrders])
 
-
-  const handlePurchase = async () => {
-    if (purchasingLock.current) return
-    if (!publicKey || !sendTransaction || !connected) {
-      message.warning(t('account.walletRequired'))
-      return
-    }
-    purchasingLock.current = true
-    setPurchasing(true)
-    let intentId: string | null = null
-    let txSig: string | null = null
-    try {
-      const paramsRes = await getGenesisBuyParams(quantity)
-      const p = paramsRes.data
-      intentId = p.intentId
-      const buyerUsdtAtaPk = new PublicKey(p.buyerUsdtAta)
-      const buyerPeakAtaPk = new PublicKey(p.buyerPeakAta)
-      const usdtMintPk = new PublicKey(p.usdtMint)
-      const peakMintPk = new PublicKey(p.peakMint)
-
-      // 合约用 Box<Account<TokenAccount>> 强校验下列代币账户必须已初始化，
-      // 任一缺失都会导致 3012 AccountNotInitialized。这里把买家、推荐人以及平台
-      // 收款钱包（mixer/multisig USDT、peak_source PEAK）一并纳入，链上批量探测后
-      // 只为「确实缺失」的账户补建，既避免 3012，也不会让交易体积白白膨胀。
-      const ataEntries: { ata: PublicKey; owner: PublicKey; mint: PublicKey }[] = [
-        { ata: buyerUsdtAtaPk, owner: publicKey, mint: usdtMintPk },
-        { ata: buyerPeakAtaPk, owner: publicKey, mint: peakMintPk },
-        { ata: new PublicKey(p.mixerUsdtAta), owner: new PublicKey(p.mixerWallet), mint: usdtMintPk },
-        { ata: new PublicKey(p.multisigUsdtAta), owner: new PublicKey(p.multisigWallet), mint: usdtMintPk },
-        { ata: new PublicKey(p.peakSourceAta), owner: new PublicKey(p.peakSourceWallet), mint: peakMintPk },
-      ]
-      if (p.referrerUsdtAta && p.referrerWallet) {
-        ataEntries.push({
-          ata: new PublicKey(p.referrerUsdtAta),
-          owner: new PublicKey(p.referrerWallet),
-          mint: usdtMintPk,
-        })
-      }
-
-      let existing: (Awaited<ReturnType<typeof connection.getMultipleAccountsInfo>>) = []
-      try {
-        existing = await connection.getMultipleAccountsInfo(ataEntries.map((e) => e.ata))
-      } catch {
-        existing = []
-      }
-      const ataCreateIxs = ataEntries
-        .filter((_, i) => !existing[i])
-        .map((item) => new TransactionInstruction({
-          programId: ASSOCIATED_TOKEN_PROGRAM_ID,
-          keys: [
-            { pubkey: publicKey, isSigner: true, isWritable: true },
-            { pubkey: item.ata, isSigner: false, isWritable: true },
-            { pubkey: item.owner, isSigner: false, isWritable: false },
-            { pubkey: item.mint, isSigner: false, isWritable: false },
-            { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-          ],
-          data: Buffer.from([1]),
-        }))
-
-      const keys = [
-        { pubkey: publicKey, isSigner: true, isWritable: true },
-        { pubkey: new PublicKey(p.configPda), isSigner: false, isWritable: false },
-        { pubkey: new PublicKey(p.salePda), isSigner: false, isWritable: true },
-        { pubkey: new PublicKey(p.collection), isSigner: false, isWritable: true },
-        { pubkey: new PublicKey(p.inventoryPda), isSigner: false, isWritable: true },
-        { pubkey: buyerUsdtAtaPk, isSigner: false, isWritable: true },
-        { pubkey: new PublicKey(p.mixerUsdtAta), isSigner: false, isWritable: true },
-        { pubkey: new PublicKey(p.multisigUsdtAta), isSigner: false, isWritable: true },
-        { pubkey: buyerPeakAtaPk, isSigner: false, isWritable: true },
-        { pubkey: new PublicKey(p.peakSourceAta), isSigner: false, isWritable: true },
-        { pubkey: new PublicKey(p.programAuthority), isSigner: false, isWritable: false },
-        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-        { pubkey: MPL_CORE_PROGRAM_ID, isSigner: false, isWritable: false },
-        { pubkey: new PublicKey('11111111111111111111111111111111'), isSigner: false, isWritable: false },
-      ]
-
-      // remaining_accounts layout must match on-chain exactly:
-      // [assets...][nftInfoPdas...][referrerUsdtAta?]
-      const assetKeys = p.nfts.map((nft) => ({
-        pubkey: new PublicKey(nft.asset),
-        isSigner: false,
-        isWritable: true,
-      }))
-      const nftInfoKeys = p.nfts.map((nft) => ({
-        pubkey: new PublicKey(nft.nftInfoPda),
-        isSigner: false,
-        isWritable: true,
-      }))
-      keys.push(...assetKeys, ...nftInfoKeys)
-      if (p.referrerUsdtAta) {
-        keys.push({ pubkey: new PublicKey(p.referrerUsdtAta), isSigner: false, isWritable: true })
-      }
-
-      const dataBuffer = new Uint8Array(10)
-      dataBuffer.set(BUY_GENESIS_DISCRIMINATOR, 0)
-      dataBuffer[8] = quantity
-      dataBuffer[9] = p.referrerUsdtAta ? 1 : 0
-
-      const ix = new TransactionInstruction({
-        programId: GENESIS_PROGRAM_ID,
-        keys,
-        data: Buffer.from(dataBuffer),
-      })
-
-      const memoIx = new TransactionInstruction({
-        programId: MEMO_PROGRAM_ID,
-        keys: [{ pubkey: publicKey, isSigner: true, isWritable: false }],
-        data: Buffer.from(`PEAK Genesis NFT x${quantity}`, 'utf-8'),
-      })
-
-      const tx = new Transaction().add(
-        ComputeBudgetProgram.setComputeUnitLimit({ units: 500_000 }),
-        ...ataCreateIxs,
-        memoIx,
-        ix,
-      )
-
-      const sig = await sendTransaction(tx, connection, {
-        skipPreflight: true,
-      })
-      txSig = sig
-
-      const startMs = Date.now()
-      const TIMEOUT_MS = 60_000
-      let confirmed = false
-      while (Date.now() - startMs < TIMEOUT_MS) {
-        const resp = await FAST_RPC.getSignatureStatuses([sig])
-        const status = resp?.value?.[0]
-        if (status?.err) throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`)
-        if (status?.confirmationStatus === 'confirmed' || status?.confirmationStatus === 'finalized') {
-          confirmed = true
-          break
-        }
-        await new Promise((r) => setTimeout(r, 2000))
-      }
-      if (!confirmed) {
-        const landed = await hasTransactionLanded(sig, FAST_RPC)
-        if (!landed) throw new Error('Transaction confirmation timeout')
-      }
-
-      const confirmedSig = sig
-
-      try {
-        await confirmGenesisBuy(confirmedSig, p.intentId)
-      } catch { /* backend confirm optional */ }
-
-      message.success(t('genesis.purchaseSuccess'))
-      setPurchaseOpen(false)
-      setQuantity(1)
-      refreshData()
-      fetchOrders()
-    } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : String(err)
-      if (intentId && txSig) {
-        try {
-          await confirmGenesisBuy(txSig, intentId)
-          message.success(t('genesis.purchaseSuccess'))
-          setPurchaseOpen(false)
-          setQuantity(1)
-          refreshData()
-          fetchOrders()
-          return
-        } catch {
-          // fallback to regular error path below
-        }
-      }
-
-      if (intentId) {
-        try {
-          await cancelGenesisBuyIntent(intentId)
-        } catch {
-          // best-effort rollback
-        }
-      }
-      if (!errMsg.includes('User rejected')) {
-        console.error('[Genesis Purchase Error]', err)
-        const displayMsg = errMsg.length > 120 ? errMsg.slice(0, 120) + '...' : errMsg
-        message.error(`${t('genesis.purchaseFailed')}: ${displayMsg}`)
-      }
-      refreshData()
-      fetchOrders()
-    } finally {
-      purchasingLock.current = false
-      setPurchasing(false)
-    }
+  const periodLabels: Record<string, string> = {
+    today: t('genesis.periodToday'),
+    d3: t('genesis.periodD3'),
+    d7: t('genesis.periodD7'),
+    d15: t('genesis.periodD15'),
+    d30: t('genesis.periodD30'),
   }
-
-  const soldTotal = SOLD_OUT ? MAX_SUPPLY : (saleData?.soldTotal ?? 0)
-  const remaining = MAX_SUPPLY - soldTotal
-  const progress = MAX_SUPPLY > 0 ? (soldTotal / MAX_SUPPLY) * 100 : 0
-  const totalCost = NODE_PRICE * quantity
 
   const statusLabelMap: Record<string, string> = {
     PENDING: t('account.status.PENDING'),
@@ -395,55 +136,6 @@ export default function GenesisNodes() {
         <div className="genesis-hero-bg" />
         <div className="genesis-inner">
           <h1 className="page-title">{t('genesis.title')}</h1>
-
-          <Spin spinning={loading}>
-            <div className="genesis-sale-card">
-              <div className="genesis-sale-header">
-                <div className="genesis-sale-left">
-                  <div className="genesis-sale-icon">G</div>
-                  <div className="genesis-sale-title-group">
-                    <span className="genesis-sale-title">{t('genesis.saleTitle')}</span>
-                    <span className="genesis-sale-subtitle">{t('genesis.saleSubtitle')}</span>
-                  </div>
-                </div>
-                <Button
-                  className="genesis-purchase-btn"
-                  onClick={() => setPurchaseOpen(true)}
-                  disabled={SOLD_OUT}
-                >
-                  {SOLD_OUT ? t('genesis.soldOut') : t('genesis.purchase')}
-                </Button>
-              </div>
-
-              <div className="genesis-stats">
-                <div className="genesis-stat">
-                  <span className="genesis-stat-label">{t('genesis.price')}</span>
-                  <span className="genesis-stat-value orange">{NODE_PRICE} USDT</span>
-                </div>
-                <div className="genesis-stat">
-                  <span className="genesis-stat-label">{t('genesis.totalSupply')}</span>
-                  <span className="genesis-stat-value">{MAX_SUPPLY.toLocaleString()}</span>
-                </div>
-                <div className="genesis-stat">
-                  <span className="genesis-stat-label">{t('genesis.sold')}</span>
-                  <span className="genesis-stat-value orange">{soldTotal.toLocaleString()}</span>
-                </div>
-                <div className="genesis-stat">
-                  <span className="genesis-stat-label">{t('genesis.remaining')}</span>
-                  <span className="genesis-stat-value">{remaining.toLocaleString()}</span>
-                </div>
-              </div>
-
-              <div className="genesis-progress-wrapper">
-                <div className="genesis-progress-bar">
-                  <div className="genesis-progress-fill" style={{ width: `${Math.max(progress, 2)}%` }}>
-                    <span className="genesis-progress-text">{soldTotal}</span>
-                  </div>
-                </div>
-                <span className="genesis-progress-total">/{MAX_SUPPLY.toLocaleString()}</span>
-              </div>
-            </div>
-          </Spin>
         </div>
       </div>
 
@@ -460,26 +152,6 @@ export default function GenesisNodes() {
               <div className="genesis-right-title">{t('genesis.rightNftTitle')}</div>
               <div className="genesis-right-desc">{t('genesis.rightNftDesc')}</div>
               <span className="genesis-right-badge active">{t('genesis.badgeActive')}</span>
-            </div>
-            <div className="genesis-right-card">
-              <div className="genesis-right-icon airdrop">&#x2728;</div>
-              <div className="genesis-right-title">{t('genesis.rightAirdropTitle')}</div>
-              <div className="genesis-right-desc">{t('genesis.rightAirdropDesc')}</div>
-              <span className="genesis-right-badge active">{t('genesis.badgeActive')}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Fund Usage */}
-        <div className="genesis-distribution">
-          <h2 className="genesis-section-title">
-            <span className="accent-dot" />
-            {t('genesis.distributionTitle')}
-          </h2>
-          <div className="genesis-dist-card">
-            <div className="genesis-fund-usage">
-              <span className="genesis-fund-usage-icon">ⓘ</span>
-              <span className="genesis-fund-usage-text">{t('genesis.fundUsageDesc')}</span>
             </div>
           </div>
         </div>
@@ -534,11 +206,16 @@ export default function GenesisNodes() {
                             <div className="vip-tooltip-empty">{t('genesis.vipTooltipEmpty')}</div>
                           ) : (
                             teamDetail.directs.map((d, i) => (
-                              <div className="vip-tooltip-row" key={d.address || i}>
-                                <span className="vip-tooltip-addr">
-                                  {d.address ? `${d.address.slice(0, 6)}...${d.address.slice(-6)}` : '--'}
-                                </span>
-                                <span className="vip-tooltip-amount">{d.totalAmountUsdt} USDT</span>
+                              <div className="vip-tooltip-branch" key={d.address || i}>
+                                <div className="vip-tooltip-row">
+                                  <span className="vip-tooltip-addr">
+                                    {d.address ? `${d.address.slice(0, 6)}...${d.address.slice(-6)}` : '--'}
+                                  </span>
+                                  <span className="vip-tooltip-amount">{d.totalAmountUsdt} USDT</span>
+                                </div>
+                                <div className="vip-tooltip-breakdown">
+                                  ( {d.usdtAmount} USDT / {d.peakAmount} PEAK )
+                                </div>
                               </div>
                             ))
                           )}
@@ -559,6 +236,38 @@ export default function GenesisNodes() {
                 )
               })}
             </div>
+          </div>
+        </div>
+
+        {/* Recent Performance */}
+        <div className="genesis-perf-section">
+          <h2 className="genesis-section-title">
+            <span className="accent-dot" />
+            {t('genesis.recentPerfTitle')}
+          </h2>
+          <div className="genesis-perf-card">
+            <div className="genesis-perf-head">
+              <span className="genesis-perf-c1">{t('genesis.recentPerfPeriod')}</span>
+              <span className="genesis-perf-c2">{t('genesis.recentPerfUsdt')}</span>
+              <span className="genesis-perf-c3">{t('genesis.recentPerfPeak')}</span>
+            </div>
+            {recentPerfLoading && !recentPerf ? (
+              <div className="genesis-perf-loading">
+                <Spin size="small" />
+              </div>
+            ) : (
+              (recentPerf?.windows ?? []).map((w) => (
+                <div className="genesis-perf-row" key={w.key}>
+                  <span className="genesis-perf-period">{periodLabels[w.key] ?? w.key}</span>
+                  <span className="genesis-perf-val usdt">
+                    {w.usdt} <em>USDT</em>
+                  </span>
+                  <span className="genesis-perf-val peak">
+                    {w.peak} <em>PEAK</em>
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -592,89 +301,6 @@ export default function GenesisNodes() {
           )}
         </div>
       </div>
-
-      {/* Purchase Modal */}
-      <Modal
-        open={purchaseOpen}
-        onCancel={() => {
-          setPurchaseOpen(false)
-          setQuantity(1)
-        }}
-        footer={null}
-        centered
-        className="genesis-modal"
-        width={680}
-      >
-        <h2 className="genesis-modal-title">{t('genesis.purchaseTitle')}</h2>
-        <div className="genesis-modal-content">
-          <div className="genesis-nft-preview">
-            <div className="genesis-nft-card">
-              <img src="https://gateway.irys.xyz/MLn_mnm3dZc56zIEMd296vzh16UoJacvBCy5xsKZbyg" alt="GenesisNodes NFT" className="genesis-nft-card-img" />
-              <div className="genesis-nft-card-label">{t('genesis.saleTitle')}</div>
-            </div>
-            <span className="genesis-nft-qty">x{quantity}</span>
-          </div>
-          <div className="genesis-modal-body">
-            <div className="genesis-qty-row">
-              <span className="genesis-modal-label">{t('genesis.qty')}</span>
-              <div className="genesis-qty-controls">
-                <button
-                  className="genesis-qty-btn"
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  disabled={quantity <= 1}
-                >
-                  -
-                </button>
-                <span className="genesis-qty-display">{quantity}</span>
-                <button
-                  className="genesis-qty-btn"
-                  onClick={() => setQuantity((q) => Math.min(10, q + 1))}
-                  disabled={quantity >= 10}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            <div className="genesis-modal-row">
-              <span className="genesis-modal-label">{t('genesis.unitPrice')}</span>
-              <span className="genesis-modal-value orange">{NODE_PRICE} USDT</span>
-            </div>
-
-            <div className="genesis-modal-highlight">
-              <span className="genesis-modal-highlight-label">{t('genesis.totalCost')}</span>
-              <span className="genesis-modal-highlight-value">{totalCost.toLocaleString()} USDT</span>
-            </div>
-
-            <Button
-              className="genesis-confirm-btn"
-              block
-              onClick={handlePurchase}
-              loading={purchasing}
-            >
-              {t('genesis.confirmPurchase')}
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Info Modal */}
-      <Modal
-        open={infoOpen}
-        onCancel={() => setInfoOpen(false)}
-        footer={null}
-        centered
-        className="dark-modal"
-        width={560}
-      >
-        <div className="info-modal">
-          <h2>{t('genesis.infoTitle')}</h2>
-          <p>{t('genesis.infoDesc1')}</p>
-          <p>{t('genesis.infoDesc2')}</p>
-          <h3>{t('genesis.infoBenefitTitle')}</h3>
-          <p>{t('genesis.infoBenefitDesc')}</p>
-        </div>
-      </Modal>
     </div>
   )
 }

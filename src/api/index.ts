@@ -248,13 +248,30 @@ export function getGenesisVipLevel() {
 }
 
 export interface GenesisVipTeamDetail {
-  directs: { address: string; totalAmountUsdt: string }[]
+  directs: {
+    address: string
+    totalAmountUsdt: string
+    usdtAmount: string
+    peakAmount: string
+  }[]
   directReferralIncomeUsdt: string | null
   referralFeeBps: number | null
 }
 
 export function getGenesisVipTeamDetail() {
   return get<GenesisVipTeamDetail>('/genesis-vip/team-detail')
+}
+
+export interface GenesisRecentPerformance {
+  windows: {
+    key: string
+    usdt: string
+    peak: string
+  }[]
+}
+
+export function getGenesisRecentPerformance() {
+  return get<GenesisRecentPerformance>('/genesis-vip/recent-performance')
 }
 
 export function getMyGenesisNfts(params?: { page?: number; pageSize?: number }) {

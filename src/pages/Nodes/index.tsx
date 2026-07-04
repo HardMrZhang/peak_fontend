@@ -37,7 +37,6 @@ import type {
   TeamLevelInfo,
 } from '@/types'
 import { useAuthStore } from '@/store/useAuthStore'
-import { PEAK_YEAR1_ALLOC } from '@/constants'
 import nftPreviewVideo from '@/assets/nft-preview.mp4'
 import './index.css'
 import '../TeamLevel/index.css'
@@ -262,14 +261,10 @@ export default function Nodes() {
     }
   }
 
-  const soldNodes = saleConfig?.soldNodes ?? 0
-  const totalNodes = saleConfig?.totalNodes ?? 10000
   const nodePrice = saleConfig?.nodePriceUsdt ?? '500'
   const estimatedCost = Number(nodePrice) || 0
   const availableUsdt = parseFloat(balances.find(b => b.asset === 'USDT')?.availableAmount ?? '0')
   const insufficientBalance = availableUsdt < estimatedCost
-  const progress = totalNodes > 0 ? (soldNodes / totalNodes) * 100 : 0
-  const isSoldOut = saleConfig?.status === 'SOLD_OUT' || (totalNodes > 0 && soldNodes >= totalNodes)
 
   const revenueColumns: ColumnsType<DailyEarning> = [
     { title: t('nodes.colDate'), dataIndex: 'bizDate', width: 120 },
@@ -312,60 +307,8 @@ export default function Nodes() {
 
   return (
     <div className="nodes-page">
-      <div className="nodes-hero">
-        <div className="nodes-hero-bg" />
-        <div className="nodes-inner">
-          <h1 className="page-title">{t('nodes.title')}</h1>
-
-          <div className="sale-section">
-            <div className="sale-header">
-              <span className="sale-icon">✦</span>
-              <span className="sale-title">{t('nodes.nodeSales')}</span>
-            </div>
-            <div className="sale-info">
-              <Button
-                className="purchase-btn"
-                onClick={() => setPurchaseOpen(true)}
-                disabled={isSoldOut}
-              >
-                {isSoldOut ? t('nodes.soldOut') : t('nodes.purchaseNodes')}
-              </Button>
-            </div>
-            {/* 销毁倒计时文字已隐藏，对应销毁程序不执行 */}
-            <div className="sale-benefit">
-              ✦ {t('nodes.benefitText')}
-            </div>
-            <div className="progress-bar-wrapper">
-              <div className="progress-bar">
-                <div className="progress-fill" style={{ width: `${progress}%` }}>
-                  <span className="progress-text">{soldNodes}</span>
-                </div>
-              </div>
-              <span className="progress-total">/{totalNodes}</span>
-            </div>
-            
-          </div>
-        </div>
-      </div>
-
       <Spin spinning={infoLoading}>
         <div className="nodes-inner">
-          <div className="info-section">
-            <h2 className="section-title">
-              {t('nodes.nodeInfo')}
-            </h2>
-            <div className="info-cards">
-              <div className="info-card">
-                <span className="info-label">{t('nodes.peakAllocLabel')}</span>
-                <span className="info-value">{PEAK_YEAR1_ALLOC.toLocaleString()}</span>
-              </div>
-              <div className="info-card">
-                <span className="info-label">{t('nodes.nodesSoldLabel')}</span>
-                <span className="info-value">{infoLoading ? '--' : soldNodes.toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-
           <div className="my-section">
             <h2 className="section-title">{t('nodes.myInfo')}</h2>
             <div className="info-cards">

@@ -430,3 +430,48 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------------- 出局记录：默认折叠，下拉统一查看 ---------------- */
+.sp-out-section {
+  margin-top: 4px;
+}
+
+.sp-out-toggle {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  color: var(--text-muted);
+  padding: 10px 0;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.sp-out-toggle:hover {
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.sp-out-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sp-record-card--out {
+  padding: 12px 14px;
+  background: var(--bg-primary);
+  opacity: 0.85;
+}
+
+.sp-out-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 2px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}

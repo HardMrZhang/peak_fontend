@@ -803,6 +803,26 @@
   color: rgba(255, 255, 255, 0.85);
 }
 
+.vip-tooltip-branch {
+  padding: 5px 0;
+}
+
+.vip-tooltip-branch + .vip-tooltip-branch {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.vip-tooltip-branch .vip-tooltip-row {
+  padding: 0;
+}
+
+.vip-tooltip-breakdown {
+  text-align: right;
+  font-size: 11px;
+  color: #4db8ff;
+  margin-top: 2px;
+  letter-spacing: 0.2px;
+}
+
 .vip-tooltip-addr {
   font-family: monospace;
   color: rgba(255, 255, 255, 0.65);
@@ -823,6 +843,89 @@
   padding-top: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.85);
+}
+
+/* Recent Performance Section */
+.genesis-perf-section {
+  margin-top: 48px;
+}
+
+.genesis-perf-card {
+  background: var(--bg-card);
+  background-image: var(--gradient-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 4px 6px;
+  overflow: hidden;
+}
+
+.genesis-perf-head,
+.genesis-perf-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+}
+
+.genesis-perf-head {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.genesis-perf-head .genesis-perf-c2,
+.genesis-perf-head .genesis-perf-c3 {
+  text-align: right;
+}
+
+.genesis-perf-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.2s;
+}
+
+.genesis-perf-row:last-child {
+  border-bottom: none;
+}
+
+.genesis-perf-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.genesis-perf-period {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.genesis-perf-val {
+  text-align: right;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.genesis-perf-val em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.6;
+  margin-left: 3px;
+}
+
+.genesis-perf-val.usdt {
+  color: var(--accent-orange);
+}
+
+.genesis-perf-val.peak {
+  color: #4db8ff;
+}
+
+.genesis-perf-loading {
+  display: flex;
+  justify-content: center;
+  padding: 28px 0;
 }
 
 /* Purchase Records Section */
@@ -875,6 +978,12 @@
   .genesis-modal-title { font-size: 18px; padding: 12px 16px 2px; }
   .genesis-records-section .ant-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .genesis-records-section .ant-table { min-width: 480px; }
+  .genesis-perf-head,
+  .genesis-perf-row { padding: 12px 12px; gap: 8px; }
+  .genesis-perf-head { font-size: 12px; }
+  .genesis-perf-period { font-size: 13px; }
+  .genesis-perf-val { font-size: 14px; }
+  .genesis-perf-val em { font-size: 10px; }
 
   /* VIP team detail tooltip: fit small screens */
   .genesis-vip-tooltip { max-width: calc(100vw - 24px); }
@@ -886,6 +995,7 @@
   .vip-tooltip-title { font-size: 11px; }
   .vip-tooltip-row,
   .vip-tooltip-total { font-size: 11px; gap: 10px; }
+  .vip-tooltip-breakdown { font-size: 10px; }
   .vip-tooltip-addr {
     overflow: hidden;
     text-overflow: ellipsis;

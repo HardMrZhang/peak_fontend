@@ -262,6 +262,10 @@ export default function GenesisNodes() {
                         <div className="vip-tooltip-loading"><Spin size="small" /></div>
                       ) : (
                         <div className="vip-tooltip-body">
+                          <div className="vip-tooltip-teamtotal">
+                            <span className="vip-tooltip-teamtotal-label">{t('genesis.vipTooltipTeamTotal')}</span>
+                            <span className="vip-tooltip-teamtotal-value">{teamDetail.teamTotalUsdt} USDT</span>
+                          </div>
                           <div className="vip-tooltip-title">{t('genesis.vipTooltipDirects')}</div>
                           {teamDetail.directs.length === 0 ? (
                             <div className="vip-tooltip-empty">{t('genesis.vipTooltipEmpty')}</div>
@@ -337,9 +341,6 @@ export default function GenesisNodes() {
                 <Spin size="small" />
               ) : (
                 <span className="genesis-perf-custom-vals">
-                  <span className="genesis-perf-val usdt">
-                    {customPerf?.usdt ?? '0.00'} <em>USDT</em>
-                  </span>
                   <span className="genesis-perf-val peak">
                     {customPerf?.peak ?? '0.00'} <em>PEAK</em>
                   </span>
@@ -350,7 +351,6 @@ export default function GenesisNodes() {
           <div className="genesis-perf-card">
             <div className="genesis-perf-head">
               <span className="genesis-perf-c1">{t('genesis.recentPerfPeriod')}</span>
-              <span className="genesis-perf-c2">{t('genesis.recentPerfUsdt')}</span>
               <span className="genesis-perf-c3">{t('genesis.recentPerfPeak')}</span>
             </div>
             {recentPerfLoading && !recentPerf ? (
@@ -361,9 +361,6 @@ export default function GenesisNodes() {
               (recentPerf?.windows ?? []).map((w) => (
                 <div className="genesis-perf-row" key={w.key}>
                   <span className="genesis-perf-period">{periodLabels[w.key] ?? w.key}</span>
-                  <span className="genesis-perf-val usdt">
-                    {w.usdt} <em>USDT</em>
-                  </span>
                   <span className="genesis-perf-val peak">
                     {w.peak} <em>PEAK</em>
                   </span>

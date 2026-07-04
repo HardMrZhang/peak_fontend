@@ -254,6 +254,7 @@ export interface GenesisVipTeamDetail {
     usdtAmount: string
     peakAmount: string
   }[]
+  teamTotalUsdt: string
   directReferralIncomeUsdt: string | null
   referralFeeBps: number | null
 }

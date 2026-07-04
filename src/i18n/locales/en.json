@@ -373,6 +373,7 @@
     "vipTitle": "My Level",
     "vipDesc": "Your level is determined by the effective Film Node purchases from your direct referrals and their teams. Higher levels unlock greater benefits.",
     "vipTooltipDirects": "Direct Branches: Address / Branch Total (USDT+PEAK)",
+    "vipTooltipTeamTotal": "Team Total",
     "vipTooltipEmpty": "No direct referrals yet",
     "vipTooltipIncome": "Total Direct Referral Income",
     "addrCopied": "Address copied!",

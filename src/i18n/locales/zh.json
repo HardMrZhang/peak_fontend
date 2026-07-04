@@ -373,6 +373,7 @@
     "vipTitle": "我的等级",
     "vipDesc": "VIP 等级由您的直推下级及其团队购买影视节点的有效数量决定，等级越高权益越丰富。",
     "vipTooltipDirects": "直推分支：地址/分支总业绩 (USDT+PEAK)",
+    "vipTooltipTeamTotal": "团队总业绩",
     "vipTooltipEmpty": "暂无直推",
     "vipTooltipIncome": "直推收益总和",
     "addrCopied": "地址已复制！",

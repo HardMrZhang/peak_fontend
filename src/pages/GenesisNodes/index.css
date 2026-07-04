@@ -781,6 +781,30 @@
   padding: 8px 0;
 }
 
+.vip-tooltip-teamtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.vip-tooltip-teamtotal-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.vip-tooltip-teamtotal-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffd700;
+  white-space: nowrap;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.25);
+}
+
 .vip-tooltip-title {
   font-size: 12px;
   font-weight: 600;
@@ -956,7 +980,7 @@
 .genesis-perf-head,
 .genesis-perf-row {
   display: grid;
-  grid-template-columns: 1.1fr 1fr 1fr;
+  grid-template-columns: 1.2fr 1fr;
   align-items: center;
   gap: 12px;
   padding: 14px 18px;
@@ -969,7 +993,6 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-.genesis-perf-head .genesis-perf-c2,
 .genesis-perf-head .genesis-perf-c3 {
   text-align: right;
 }

@@ -794,6 +794,34 @@
   padding: 4px 0;
 }
 
+.vip-tooltip-list {
+  max-height: min(300px, 50vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -4px;
+  padding: 0 6px 0 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 215, 0, 0.3) transparent;
+}
+
+.vip-tooltip-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.vip-tooltip-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.vip-tooltip-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.25);
+  border-radius: 3px;
+}
+
+.vip-tooltip-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 215, 0, 0.45);
+}
+
 .vip-tooltip-row {
   display: flex;
   justify-content: space-between;
@@ -826,6 +854,32 @@
 .vip-tooltip-addr {
   font-family: monospace;
   color: rgba(255, 255, 255, 0.65);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.vip-tooltip-addr[role='button'] {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.vip-tooltip-addr[role='button']:hover {
+  color: #ffd700;
+}
+
+.vip-tooltip-addr[role='button']:active {
+  opacity: 0.7;
+}
+
+.vip-tooltip-copy {
+  font-size: 11px;
+  color: rgba(255, 215, 0, 0.55);
+  flex-shrink: 0;
+}
+
+.vip-tooltip-addr[role='button']:hover .vip-tooltip-copy {
+  color: #ffd700;
 }
 
 .vip-tooltip-amount {
@@ -848,6 +902,46 @@
 /* Recent Performance Section */
 .genesis-perf-section {
   margin-top: 48px;
+}
+
+.genesis-perf-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.genesis-perf-toolbar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.genesis-perf-custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(245, 166, 35, 0.28);
+  background: rgba(245, 166, 35, 0.06);
+}
+
+.genesis-perf-custom-range {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.genesis-perf-custom-vals {
+  display: flex;
+  align-items: center;
+  gap: 24px;
 }
 
 .genesis-perf-card {
@@ -984,6 +1078,9 @@
   .genesis-perf-period { font-size: 13px; }
   .genesis-perf-val { font-size: 14px; }
   .genesis-perf-val em { font-size: 10px; }
+  .genesis-perf-rangepicker { width: 100%; }
+  .genesis-perf-custom { padding: 12px 12px; }
+  .genesis-perf-custom-vals { gap: 14px; }
 
   /* VIP team detail tooltip: fit small screens */
   .genesis-vip-tooltip { max-width: calc(100vw - 24px); }

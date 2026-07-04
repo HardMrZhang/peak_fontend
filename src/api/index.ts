@@ -268,10 +268,16 @@ export interface GenesisRecentPerformance {
     usdt: string
     peak: string
   }[]
+  custom?: {
+    start: string
+    end: string
+    usdt: string
+    peak: string
+  } | null
 }
 
-export function getGenesisRecentPerformance() {
-  return get<GenesisRecentPerformance>('/genesis-vip/recent-performance')
+export function getGenesisRecentPerformance(params?: { start?: string; end?: string }) {
+  return get<GenesisRecentPerformance>('/genesis-vip/recent-performance', { params })
 }
 
 export function getMyGenesisNfts(params?: { page?: number; pageSize?: number }) {

@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Table, Pagination, Spin, Tooltip } from 'antd'
-import { InboxOutlined } from '@ant-design/icons'
+import { Table, Pagination, Spin, Tooltip, DatePicker, message } from 'antd'
+import { InboxOutlined, CopyOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
+import dayjs, { type Dayjs } from 'dayjs'
 import {
   getGenesisVipLevel,
   getGenesisVipTeamDetail,
@@ -29,6 +30,10 @@ export default function GenesisNodes() {
 
   const [recentPerf, setRecentPerf] = useState<GenesisRecentPerformance | null>(null)
   const [recentPerfLoading, setRecentPerfLoading] = useState(false)
+
+  const [customRange, setCustomRange] = useState<[string, string] | null>(null)
+  const [customPerf, setCustomPerf] = useState<{ usdt: string; peak: string } | null>(null)
+  const [customLoading, setCustomLoading] = useState(false)
 
   const loadTeamDetail = useCallback(async () => {
     if (teamDetailLoaded.current || !localStorage.getItem('peak_token')) return
@@ -72,6 +77,62 @@ export default function GenesisNodes() {
       setRecentPerfLoading(false)
     }
   }, [])
+
+  // 只允许查询最近 30 天（数据可查范围），该窗口天然把任意区间限制在最长 30 天内
+  const disabledDate = useCallback((current: Dayjs) => {
+    if (!current) return false
+    const earliest = dayjs().subtract(30, 'day').startOf('day')
+    return current.isAfter(dayjs().endOf('day')) || current.isBefore(earliest)
+  }, [])
+
+  const handleRangeChange = useCallback((vals: (Dayjs | null)[] | null) => {
+    const start = vals?.[0]
+    const end = vals?.[1]
+    if (!start || !end) {
+      setCustomRange(null)
+      setCustomPerf(null)
+      return
+    }
+    const startStr = start.format('YYYY-MM-DD')
+    const endStr = end.format('YYYY-MM-DD')
+    setCustomRange([startStr, endStr])
+    setCustomLoading(true)
+    getGenesisRecentPerformance({ start: startStr, end: endStr })
+      .then((r) => {
+        if (r.data?.custom) {
+          setCustomPerf({ usdt: r.data.custom.usdt, peak: r.data.custom.peak })
+        }
+      })
+      .catch(() => {})
+      .finally(() => setCustomLoading(false))
+  }, [])
+
+  const copyAddress = useCallback(async (addr?: string) => {
+    if (!addr) return
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(addr)
+        message.success(t('genesis.addrCopied'))
+        return
+      }
+    } catch {
+      // clipboard API failed, fall through to legacy
+    }
+    try {
+      const textarea = document.createElement('textarea')
+      textarea.value = addr
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.focus()
+      textarea.setSelectionRange(0, addr.length)
+      const ok = document.execCommand('copy')
+      document.body.removeChild(textarea)
+      message[ok ? 'success' : 'error'](t(ok ? 'genesis.addrCopied' : 'genesis.addrCopyFail'))
+    } catch {
+      message.error(t('genesis.addrCopyFail'))
+    }
+  }, [t])
 
   const fetchOrders = useCallback(() => {
     const token = localStorage.getItem('peak_token')
@@ -205,19 +266,31 @@ export default function GenesisNodes() {
                           {teamDetail.directs.length === 0 ? (
                             <div className="vip-tooltip-empty">{t('genesis.vipTooltipEmpty')}</div>
                           ) : (
-                            teamDetail.directs.map((d, i) => (
-                              <div className="vip-tooltip-branch" key={d.address || i}>
-                                <div className="vip-tooltip-row">
-                                  <span className="vip-tooltip-addr">
-                                    {d.address ? `${d.address.slice(0, 6)}...${d.address.slice(-6)}` : '--'}
-                                  </span>
-                                  <span className="vip-tooltip-amount">{d.totalAmountUsdt} USDT</span>
+                            <div className="vip-tooltip-list">
+                              {teamDetail.directs.map((d, i) => (
+                                <div className="vip-tooltip-branch" key={d.address || i}>
+                                  <div className="vip-tooltip-row">
+                                    {d.address ? (
+                                      <span
+                                        className="vip-tooltip-addr"
+                                        role="button"
+                                        title={d.address}
+                                        onClick={() => copyAddress(d.address)}
+                                      >
+                                        {`${d.address.slice(0, 6)}...${d.address.slice(-6)}`}
+                                        <CopyOutlined className="vip-tooltip-copy" />
+                                      </span>
+                                    ) : (
+                                      <span className="vip-tooltip-addr">--</span>
+                                    )}
+                                    <span className="vip-tooltip-amount">{d.totalAmountUsdt} USDT</span>
+                                  </div>
+                                  <div className="vip-tooltip-breakdown">
+                                    ( {d.usdtAmount} USDT / {d.peakAmount} PEAK )
+                                  </div>
                                 </div>
-                                <div className="vip-tooltip-breakdown">
-                                  ( {d.usdtAmount} USDT / {d.peakAmount} PEAK )
-                                </div>
-                              </div>
-                            ))
+                              ))}
+                            </div>
                           )}
                           <div className="vip-tooltip-total">
                             <span>{t('genesis.vipTooltipIncome')}</span>
@@ -245,6 +318,35 @@ export default function GenesisNodes() {
             <span className="accent-dot" />
             {t('genesis.recentPerfTitle')}
           </h2>
+          <div className="genesis-perf-toolbar">
+            <span className="genesis-perf-toolbar-label">{t('genesis.recentPerfSearch')}</span>
+            <DatePicker.RangePicker
+              className="genesis-perf-rangepicker"
+              disabledDate={disabledDate}
+              onChange={handleRangeChange}
+              allowClear
+              placeholder={[t('genesis.perfStartDate'), t('genesis.perfEndDate')]}
+            />
+          </div>
+          {customRange && (
+            <div className="genesis-perf-custom">
+              <span className="genesis-perf-custom-range">
+                {customRange[0]} ~ {customRange[1]}
+              </span>
+              {customLoading ? (
+                <Spin size="small" />
+              ) : (
+                <span className="genesis-perf-custom-vals">
+                  <span className="genesis-perf-val usdt">
+                    {customPerf?.usdt ?? '0.00'} <em>USDT</em>
+                  </span>
+                  <span className="genesis-perf-val peak">
+                    {customPerf?.peak ?? '0.00'} <em>PEAK</em>
+                  </span>
+                </span>
+              )}
+            </div>
+          )}
           <div className="genesis-perf-card">
             <div className="genesis-perf-head">
               <span className="genesis-perf-c1">{t('genesis.recentPerfPeriod')}</span>

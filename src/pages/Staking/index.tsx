@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { message } from 'antd'
 import {
@@ -39,6 +39,9 @@ export default function Staking() {
   const [stakeRecords, setStakeRecords] = useState<DappStakeRecord[]>([])
   const [stakeRewards, setStakeRewards] = useState<DappStakeRewardsInfo | null>(null)
   const [claimingPeriod, setClaimingPeriod] = useState<number | null>(null)
+  // 同步锁：state 更新是异步的，快速连点会在 re-render 前重复通过校验而发起多笔领取交易；
+  // 用 ref 在事件回调里同步加锁，确保同一时刻只处理一笔领取（防抖 / 防重复提交）。
+  const claimingRef = useRef(false)
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000)
@@ -182,13 +185,15 @@ export default function Staking() {
 
   // 领取质押分红（按周期一键结清）：用户钱包单签到对应周期分红合约 claim，自付 GAS
   const handleClaimPeriod = async (periodDays: number) => {
-    if (claimingPeriod !== null) return
+    // 同步加锁：连点时后续调用会立即被拦截（ref 立刻生效，不等 re-render）
+    if (claimingRef.current || claimingPeriod !== null) return
     if (!hasToken() || !connected) {
       message.warning(t('account.walletRequired'))
       return
     }
     const pending = pendingByPeriod.get(periodDays)
     if (!pending || pending.raw <= 0n) return
+    claimingRef.current = true
     setClaimingPeriod(periodDays)
     setStakeTip({ text: t('ipo.claiming'), type: '' })
     try {
@@ -205,6 +210,7 @@ export default function Staking() {
         setStakeTip({ text: '', type: '' })
       }
     } finally {
+      claimingRef.current = false
       setClaimingPeriod(null)
     }
   }

@@ -78,10 +78,10 @@ export default function GenesisNodes() {
     }
   }, [])
 
-  // 只允许查询最近 30 天（数据可查范围），该窗口天然把任意区间限制在最长 30 天内
+  // 只允许查询最近 30 个自然日（含当天），与服务端的 CST 00:00 日界保持一致
   const disabledDate = useCallback((current: Dayjs) => {
     if (!current) return false
-    const earliest = dayjs().subtract(30, 'day').startOf('day')
+    const earliest = dayjs().subtract(29, 'day').startOf('day')
     return current.isAfter(dayjs().endOf('day')) || current.isBefore(earliest)
   }, [])
 

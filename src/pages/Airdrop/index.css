@@ -262,7 +262,9 @@
 }
 
 .sp-withdraw-btn:disabled {
-  opacity: 0.5;
+  background: #4b4f58;
+  color: #9aa0aa;
+  opacity: 1;
   cursor: not-allowed;
 }
 

@@ -280,7 +280,9 @@ export default function Airdrop() {
       }
       if (confirmErr) throw confirmErr
       message.success(t('ipo.withdrawSuccess'))
-      refreshAirdrop()
+      // 等刷新完成再解禁按钮：确保「可提金额」已更新为 0，
+      // 按钮从点击 → 链上确认成功整个过程持续置灰、不回弹可点。
+      await refreshAirdrop()
     } catch (err: unknown) {
       const serverMsg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? ''
@@ -288,6 +290,9 @@ export default function Airdrop() {
       if (!msg.includes('User rejected')) {
         message.error(`${t('ipo.withdrawFail')}: ${(serverMsg || msg).slice(0, 80)}`)
       }
+      // 链上可能已扣额度但 confirm 失败：刷新触发后端按链上已提量自愈对账，把可提余额纠正为 0；
+      // 同样等刷新完成再解禁，避免余额虚高时按钮回弹可点。
+      await refreshAirdrop()
     } finally {
       setWithdrawing(false)
       setWithdrawingId(null)

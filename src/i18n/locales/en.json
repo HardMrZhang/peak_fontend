@@ -581,6 +581,7 @@
     "withdrawable": "Withdrawable",
     "withdrawBtn": "Withdraw",
     "airdropOut": "Exited",
+    "withdrawnToday": "Withdrawn today",
     "withdrawing": "Withdrawing...",
     "withdrawSuccess": "Withdraw successful",
     "withdrawFail": "Withdraw failed",

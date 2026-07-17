@@ -513,13 +513,15 @@ export default function Airdrop() {
                           type="button"
                           className="sp-withdraw-btn"
                           onClick={() => handleWithdraw(item)}
-                          disabled={fullyOut || withdrawing || pkgWithdrawable <= 0n}
+                          disabled={fullyOut || withdrawing || item.withdrawnToday || pkgWithdrawable <= 0n}
                         >
                           {fullyOut
                             ? t('ipo.airdropOut')
                             : withdrawing && withdrawingId === item.id
                               ? t('ipo.withdrawing')
-                              : t('ipo.withdrawBtn')}
+                              : item.withdrawnToday
+                                ? t('ipo.withdrawnToday')
+                                : t('ipo.withdrawBtn')}
                         </button>
                       )
                     })()}

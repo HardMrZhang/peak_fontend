@@ -558,6 +558,8 @@ export interface DappAirdropRecord {
   withdrawableRaw: string
   withdrawable: string
   withdrawableInt: string
+  // 当天(北京时间)已提过 → 可提展示为 0、按钮置灰，次日恢复（每个加速包每天限提一次）
+  withdrawnToday?: boolean
   remainDays: number
   isOut: boolean
   // 只有用户历史第一笔三倍空投订单承接各种加速；其他订单仅静态释放

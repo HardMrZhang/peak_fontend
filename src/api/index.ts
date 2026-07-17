@@ -329,8 +329,9 @@ export function getStakeRewards(params?: { page?: number; pageSize?: number }) {
 }
 
 export function getClaimStakeRewardParams(positionId: string | number, periodDays: number) {
-  // 该接口返回前需在链上补记分红额度并等待确认，主网确认可能 >15s，单独放宽超时
-  return get<DappClaimStakeRewardParams>('/dapp/stake/claim-reward-params', { params: { positionId, periodDays }, timeout: ONCHAIN_CREDIT_TIMEOUT })
+  // 该接口返回前需在链上补记分红额度并等待确认，主网确认可能 >15s，单独放宽超时。
+  // 领取相关错误（已到账自愈 / 串行锁占用）由页面内联提示，跳过全局红色弹窗。
+  return get<DappClaimStakeRewardParams>('/dapp/stake/claim-reward-params', { params: { positionId, periodDays }, timeout: ONCHAIN_CREDIT_TIMEOUT, skipErrorToast: true })
 }
 
 export function confirmClaimStakeReward(data: { txHash: string; intentId: string }) {

@@ -203,11 +203,20 @@ export default function Staking() {
       setStakeTip({ text: `${t('ipo.claimSuccess')} +${paramsRes.data.reward} PEAK`, type: 'success' })
       refreshStake()
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
-      if (!msg.includes('User rejected')) {
-        setStakeTip({ text: `${t('ipo.claimFail')}: ${msg.slice(0, 80)}`, type: 'fail' })
+      const errorCode = (err as { response?: { data?: { errorCode?: string } } })?.response?.data?.errorCode
+      if (errorCode === 'ALREADY_CLAIMED') {
+        // 收益此前已到账、confirm 未回写：服务端已自愈对账，这里刷新让待领归零。
+        setStakeTip({ text: t('ipo.claimAlready'), type: 'success' })
+        refreshStake()
+      } else if (errorCode === 'CLAIM_IN_PROGRESS') {
+        setStakeTip({ text: t('ipo.claimBusy'), type: '' })
       } else {
-        setStakeTip({ text: '', type: '' })
+        const msg = err instanceof Error ? err.message : String(err)
+        if (!msg.includes('User rejected')) {
+          setStakeTip({ text: `${t('ipo.claimFail')}: ${msg.slice(0, 80)}`, type: 'fail' })
+        } else {
+          setStakeTip({ text: '', type: '' })
+        }
       }
     } finally {
       claimingRef.current = false

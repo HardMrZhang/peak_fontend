@@ -527,6 +527,8 @@
     "claiming": "Claiming...",
     "claimSuccess": "Claimed successfully",
     "claimFail": "Claim failed",
+    "claimAlready": "Reward already credited, refreshed",
+    "claimBusy": "A claim is in progress, please retry shortly",
     "recordStatus": "Status",
     "recordTxHash": "Tx Hash",
     "statusRedeemable": "Redeemable",

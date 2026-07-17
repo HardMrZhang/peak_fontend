@@ -527,6 +527,8 @@
     "claiming": "领取中...",
     "claimSuccess": "领取成功",
     "claimFail": "领取失败",
+    "claimAlready": "收益已到账，已为你刷新",
+    "claimBusy": "领取处理中，请稍后再试",
     "recordStatus": "状态",
     "recordTxHash": "交易哈希",
     "statusRedeemable": "可赎回",

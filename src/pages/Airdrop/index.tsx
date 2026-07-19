@@ -63,10 +63,6 @@ export default function Airdrop() {
   const [releaseLoadingId, setReleaseLoadingId] = useState<string | null>(null)
   // 出局记录（已出局且无残留可提）：默认隐藏，点击下拉框统一展开查看
   const [outExpanded, setOutExpanded] = useState(false)
-  const summaryWithdrawableInt = useMemo(
-    () => toSafeBigInt(summary?.withdrawableInt),
-    [summary?.withdrawableInt],
-  )
 
   // 点击/触摸下拉之外区域时收起币种下拉
   useEffect(() => {
@@ -239,11 +235,11 @@ export default function Airdrop() {
 
   // 发送到后端的提币数量优先受链上余额约束；若链上暂时为 0 但包内有额度，仍发起请求触发后端自愈。
   const getWithdrawRequestInt = useCallback((record: DappAirdropRecord) => {
-    const packageWithdrawable = getPackageWithdrawableInt(record)
-    if (packageWithdrawable <= 0n) return 0n
-    if (summaryWithdrawableInt <= 0n) return packageWithdrawable
-    return packageWithdrawable < summaryWithdrawableInt ? packageWithdrawable : summaryWithdrawableInt
-  }, [getPackageWithdrawableInt, summaryWithdrawableInt])
+    // 提现额以「本包 DB 可提（已释放 − 已提）」为准，不再用可能滞后的链上 credit 压小额度。
+    // 加速/释放刚记账、链上 credit 还没被每日对账补上时，旧逻辑会把额度压成极小值（曾导致只提到 0.8）；
+    // 链上 credit 不足时由后端 getWithdrawParams 的自愈补差顶到本次额度。
+    return getPackageWithdrawableInt(record)
+  }, [getPackageWithdrawableInt])
 
   const handleWithdraw = async (record: DappAirdropRecord) => {
     if (withdrawing) return

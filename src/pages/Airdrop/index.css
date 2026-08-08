@@ -384,6 +384,11 @@
   gap: 10px;
 }
 
+.sp-record-today {
+  color: var(--primary, #f5a623);
+  margin-left: 2px;
+}
+
 .sp-record-item {
   font-size: 13px;
   color: var(--text-secondary);

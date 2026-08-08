@@ -492,7 +492,10 @@ export default function Airdrop() {
                       {t('ipo.accelDirect')}: {item.isAccelerationOrder ? (summary?.directAccel ?? '0') : '0'} PEAK
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.accelDirectOnce')}: {item.isAccelerationOrder ? (summary?.directOnce ?? '0') : '0'} PEAK
+                      {t('ipo.accelDirectOnce')}: {item.isAccelerationOrder ? (summary?.directOnceTotal ?? '0') : '0'} PEAK
+                      {item.isAccelerationOrder && Number(summary?.directOnce ?? 0) > 0 && (
+                        <span className="sp-record-today">（{t('ipo.accelDirectOnceToday')} +{summary?.directOnce}）</span>
+                      )}
                     </div>
                   </div>
                   <div className="sp-record-footer">

@@ -590,6 +590,9 @@ export interface DappAirdropSummary {
   // 直推一次性加速（当日触发、次日归零）
   directOnceRaw: string
   directOnce: string
+  // 直推一次性加速（累计，不限日期/归属包）—— 页面长期展示用
+  directOnceTotalRaw: string
+  directOnceTotal: string
   // 团队级差加速（不含平级）
   teamAccelRaw: string
   teamAccel: string

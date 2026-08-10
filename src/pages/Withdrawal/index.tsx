@@ -12,6 +12,16 @@ import './index.css'
 
 type TokenType = 'USDT' | 'PEAK'
 
+/**
+ * 向下截断到两位小数（按字符串截断，避开浮点误差）。
+ * 余额本身可能带浮点尾差（如 548.8099999999999），四舍五入会让「全部」超过可用余额被后端打回。
+ */
+const floor2 = (v: unknown) => {
+  const m = /^(-?)(\d+)(?:\.(\d*))?$/.exec(String(v ?? '').trim())
+  if (!m) return '0.00'
+  return `${m[1]}${m[2]}.${(m[3] ?? '').padEnd(2, '0').slice(0, 2)}`
+}
+
 export default function Withdrawal() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -45,8 +55,8 @@ export default function Withdrawal() {
   }, [connected, token])
 
   const currentBalance = balances.find((b) => b.asset === tokenType)
-  const availableStr = currentBalance ? Number(currentBalance.availableAmount).toFixed(2) : '0.00'
-  const lockedStr = currentBalance ? Number(currentBalance.lockedAmount).toFixed(2) : '0.00'
+  const availableStr = currentBalance ? floor2(currentBalance.availableAmount) : '0.00'
+  const lockedStr = currentBalance ? floor2(currentBalance.lockedAmount) : '0.00'
   const balanceStr = availableStr
 
   useEffect(() => {

@@ -90,17 +90,51 @@
   padding-left: 24px;
 }
 
-/* 剧目横向选择条 */
-.di-tabs {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 8px;
+/* 剧目选择器：桌面端为下拉菜单，手机端平铺竖排列表 */
+.di-picker {
+  position: relative;
   margin-bottom: 20px;
 }
 
-.di-tabs::-webkit-scrollbar { height: 4px; }
-.di-tabs::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 2px; }
+.di-picker-trigger {
+  width: 100%;
+  min-width: 0;
+}
+
+.di-picker-caret {
+  flex-shrink: 0;
+  margin-left: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.di-picker.open .di-picker-caret { transform: rotate(180deg); }
+
+.di-tabs {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.di-picker.open .di-picker-menu {
+  display: flex;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 10px;
+  background: #16161f;
+  border: 1px solid var(--border-glow);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.di-picker-menu::-webkit-scrollbar { width: 4px; }
+.di-picker-menu::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 2px; }
 
 .di-tab {
   display: flex;
@@ -819,11 +853,18 @@
   .di-hero-poster { width: 120px; height: 160px; }
   .di-hero-name { font-size: 19px; }
 
-  /* 手机端：剧目列表改为竖排，逐条展示序号 + 剧目 + 打新状态 */
-  .di-tabs {
-    flex-direction: column;
-    overflow-x: visible;
-    gap: 8px;
+  /* 手机端：不用下拉，直接竖排平铺全部剧目（序号 + 剧目 + 打新状态） */
+  .di-picker-trigger { display: none; }
+  .di-tabs,
+  .di-picker.open .di-picker-menu {
+    display: flex;
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
   }
   .di-tab {
     width: 100%;

@@ -63,6 +63,9 @@ export default function DramaIpo() {
   const [nowTick, setNowTick] = useState(Date.now())
   const openBaseRef = useRef<{ serialNo: string; readyAt: number } | null>(null)
 
+  // 桌面端剧目选择器（下拉菜单）的展开状态；手机端始终平铺不受影响
+  const [pickerOpen, setPickerOpen] = useState(false)
+
   useEffect(() => () => { if (tipTimer.current) clearTimeout(tipTimer.current) }, [])
 
   const loadProjects = useCallback(async () => {
@@ -291,27 +294,61 @@ export default function DramaIpo() {
           </div>
         ) : (
           <>
-            <div className="di-tabs">
-              {projects.map((p, i) => (
-                <button
-                  key={p.serialNo}
-                  type="button"
-                  className={`di-tab${p.serialNo === activeSerial ? ' active' : ''}`}
-                  onClick={() => { setActiveSerial(p.serialNo); setShares('1'); setAgreed(false) }}
-                >
-                  <span className="di-tab-index">{i + 1}</span>
-                  {p.posterUrl
-                    ? <img className="di-tab-poster" src={p.posterUrl} alt="" />
-                    : <span className="di-tab-poster" />}
-                  <span className="di-tab-info">
-                    <span className="di-tab-name">{p.name}</span>
-                    <span className="di-tab-meta">{p.serialNo}</span>
-                  </span>
-                  <span className={`di-tab-status${p.status === 'OPEN' ? ' open' : ''}`}>
-                    {t(`dramaIpo.status.${p.status}`)}
-                  </span>
-                </button>
-              ))}
+            <div className={`di-picker${pickerOpen ? ' open' : ''}`}>
+              {(() => {
+                const activeIdx = Math.max(0, projects.findIndex((p) => p.serialNo === activeSerial))
+                const active = projects[activeIdx]
+                return (
+                  <button
+                    type="button"
+                    className="di-picker-trigger di-tab"
+                    onClick={() => setPickerOpen((v) => !v)}
+                  >
+                    <span className="di-tab-index">{activeIdx + 1}</span>
+                    {active?.posterUrl
+                      ? <img className="di-tab-poster" src={active.posterUrl} alt="" />
+                      : <span className="di-tab-poster" />}
+                    <span className="di-tab-info">
+                      <span className="di-tab-name">{active?.name ?? '--'}</span>
+                      <span className="di-tab-meta">{active?.serialNo ?? '--'}</span>
+                    </span>
+                    {active ? (
+                      <span className={`di-tab-status${active.status === 'OPEN' ? ' open' : ''}`}>
+                        {t(`dramaIpo.status.${active.status}`)}
+                      </span>
+                    ) : null}
+                    <span className="di-picker-caret" aria-hidden>▾</span>
+                  </button>
+                )
+              })()}
+
+              <div className="di-tabs di-picker-menu">
+                {projects.map((p, i) => (
+                  <button
+                    key={p.serialNo}
+                    type="button"
+                    className={`di-tab${p.serialNo === activeSerial ? ' active' : ''}`}
+                    onClick={() => {
+                      setActiveSerial(p.serialNo)
+                      setShares('1')
+                      setAgreed(false)
+                      setPickerOpen(false)
+                    }}
+                  >
+                    <span className="di-tab-index">{i + 1}</span>
+                    {p.posterUrl
+                      ? <img className="di-tab-poster" src={p.posterUrl} alt="" />
+                      : <span className="di-tab-poster" />}
+                    <span className="di-tab-info">
+                      <span className="di-tab-name">{p.name}</span>
+                      <span className="di-tab-meta">{p.serialNo}</span>
+                    </span>
+                    <span className={`di-tab-status${p.status === 'OPEN' ? ' open' : ''}`}>
+                      {t(`dramaIpo.status.${p.status}`)}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="di-grid">

@@ -32,10 +32,12 @@ export default function DramaIpoHistory() {
     }
     setLoading(true)
     try {
-      // 纯数字视为剧目编号（如 000001），其余按钱包地址查
-      const isSerial = /^\d+$/.test(q)
+      // 纯数字或 CGSX 开头视为剧目编号（如 CGSX00001），其余按钱包地址查
+      const isDigits = /^\d+$/.test(q)
+      const isSerial = isDigits || /^CGSX\d+$/i.test(q)
+      const serialNo = isDigits ? `CGSX${q.padStart(5, '0')}` : q.toUpperCase()
       const res = await getDramaHistory({
-        ...(isSerial ? { serialNo: q.padStart(6, '0') } : { wallet: q }),
+        ...(isSerial ? { serialNo } : { wallet: q }),
         page: targetPage,
         pageSize: PAGE_SIZE,
       })

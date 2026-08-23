@@ -302,6 +302,7 @@ export default function DramaIpo() {
                   <button
                     type="button"
                     className="di-picker-trigger di-tab"
+                    disabled={projects.length < 2}
                     onClick={() => setPickerOpen((v) => !v)}
                   >
                     <span className="di-tab-index">{activeIdx + 1}</span>
@@ -317,19 +318,22 @@ export default function DramaIpo() {
                         {t(`dramaIpo.status.${active.status}`)}
                       </span>
                     ) : null}
-                    <svg className="di-picker-caret" aria-hidden viewBox="0 0 24 24" fill="none">
-                      <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    {projects.length > 1 ? (
+                      <svg className="di-picker-caret" aria-hidden viewBox="0 0 24 24" fill="none">
+                        <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    ) : null}
                   </button>
                 )
               })()}
 
+              {/* 展开列表里不重复展示当前选中的剧目，序号保持原始位次 */}
               <div className="di-tabs di-picker-menu">
-                {projects.map((p, i) => (
+                {projects.map((p, i) => (p.serialNo === activeSerial ? null : (
                   <button
                     key={p.serialNo}
                     type="button"
-                    className={`di-tab${p.serialNo === activeSerial ? ' active' : ''}`}
+                    className="di-tab"
                     onClick={() => {
                       setActiveSerial(p.serialNo)
                       setShares('1')
@@ -349,7 +353,7 @@ export default function DramaIpo() {
                       {t(`dramaIpo.status.${p.status}`)}
                     </span>
                   </button>
-                ))}
+                )))}
               </div>
             </div>
 

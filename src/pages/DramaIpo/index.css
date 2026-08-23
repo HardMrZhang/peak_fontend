@@ -169,8 +169,9 @@
 
 .di-tab-label {
   flex-shrink: 0;
-  color: var(--text-muted);
-  font-size: 13px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .di-tab-info {

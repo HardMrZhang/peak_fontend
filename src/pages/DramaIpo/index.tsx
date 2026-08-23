@@ -667,16 +667,7 @@ export default function DramaIpo() {
                           </span>
                           <b className="di-pr-amount">{Number(p.amountUsdt).toFixed(2)} USDT</b>
                           {isPaid ? (
-                            <>
-                              <span className="di-pr-tag paid">{t('dramaIpo.principalPaid')}</span>
-                              <button
-                                type="button"
-                                className="di-withdraw-btn"
-                                onClick={() => navigate('/account/withdrawal')}
-                              >
-                                {t('dramaIpo.goWithdraw')}
-                              </button>
-                            </>
+                            <span className="di-pr-tag paid">{t('dramaIpo.principalPaid')}</span>
                           ) : isDue ? (
                             <span className="di-pr-tag crediting">{t('dramaIpo.principalCrediting')}</span>
                           ) : (
@@ -684,6 +675,15 @@ export default function DramaIpo() {
                               {t('dramaIpo.principalDueOn', { date: String(p.dueDate).slice(0, 10) })}
                             </span>
                           )}
+                          {/* 提现按钮常驻：未到期置灰，到期（或已入账）可点 */}
+                          <button
+                            type="button"
+                            className="di-withdraw-btn"
+                            disabled={!isPaid && !isDue}
+                            onClick={() => navigate('/account/withdrawal')}
+                          >
+                            {t('dramaIpo.goWithdraw')}
+                          </button>
                         </div>
                       )
                     })}

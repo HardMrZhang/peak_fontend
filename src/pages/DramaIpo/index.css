@@ -811,6 +811,14 @@
 
 .di-withdraw-btn:hover { opacity: 0.85; }
 
+.di-withdraw-btn:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.di-withdraw-btn:disabled:hover { opacity: 1; }
+
 .di-pager {
   display: flex;
   align-items: center;

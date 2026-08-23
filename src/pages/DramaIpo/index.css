@@ -140,6 +140,7 @@
 .di-tab {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   flex-shrink: 0;
   min-width: 200px;
@@ -212,6 +213,43 @@
   color: #34c77a;
 }
 
+/* 剧目行底部的迷你认购进度条，占满整行 */
+.di-tab-progress {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.di-tab-progress-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.di-tab-progress-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.di-tab-progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--gradient-orange);
+  transition: width 0.4s ease;
+}
+
+.di-tab-progress-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
 /* 两栏：左侧标的详情，右侧参与表单 */
 .di-grid {
   display: grid;
@@ -267,13 +305,6 @@
   object-fit: cover;
   border-radius: 12px;
   border: 1px solid var(--border-color);
-}
-
-.di-hero-media .di-progress-wrap { margin-top: 0; }
-
-.di-hero-media .di-progress-head {
-  flex-wrap: wrap;
-  gap: 2px 8px;
 }
 
 .di-hero-poster.placeholder {

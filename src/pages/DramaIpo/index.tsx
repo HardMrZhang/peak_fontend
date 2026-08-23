@@ -278,6 +278,22 @@ export default function DramaIpo() {
     ? Math.min(100, (detail.soldShares / detail.totalShares) * 100)
     : 0
 
+  // 剧目选择行底部的迷你认购进度条
+  const renderTabProgress = (p: DramaProject) => {
+    const pct = p.totalShares > 0 ? Math.min(100, (p.soldShares / p.totalShares) * 100) : 0
+    return (
+      <span className="di-tab-progress">
+        <span className="di-tab-progress-label">{t('dramaIpo.soldProgress')}</span>
+        <span className="di-tab-progress-bar">
+          <span className="di-tab-progress-fill" style={{ width: `${pct}%` }} />
+        </span>
+        <span className="di-tab-progress-text">
+          {p.soldShares}/{p.totalShares} {t('dramaIpo.shareUnit')}
+        </span>
+      </span>
+    )
+  }
+
   return (
     <div className="drama-page">
       <div className="di-wrap">
@@ -337,6 +353,7 @@ export default function DramaIpo() {
                         <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     ) : null}
+                    {active ? renderTabProgress(active) : null}
                   </button>
                 )
               })()}
@@ -366,6 +383,7 @@ export default function DramaIpo() {
                     <span className={`di-tab-status${p.status === 'OPEN' ? ' open' : ''}`}>
                       {t(`dramaIpo.status.${p.status}`)}
                     </span>
+                    {renderTabProgress(p)}
                   </button>
                 )))}
               </div>
@@ -376,23 +394,10 @@ export default function DramaIpo() {
               <div>
                 <section className="di-card">
                   <div className="di-hero">
-                    {/* 海报 + 认购进度条组成一栏，进度条紧贴海报底部 */}
                     <div className="di-hero-media">
                       {detail?.posterUrl
                         ? <img className="di-hero-poster" src={detail.posterUrl} alt={detail.name} />
                         : <div className="di-hero-poster placeholder">{t('dramaIpo.noPoster')}</div>}
-                      <div className="di-progress-wrap">
-                        <div className="di-progress-head">
-                          <span>{t('dramaIpo.soldProgress')}</span>
-                          <span>
-                            {detail?.soldShares ?? 0} / {detail?.totalShares ?? 0} {t('dramaIpo.shareUnit')}
-                            <span className="di-hl">　{t('dramaIpo.remaining')} {remaining}</span>
-                          </span>
-                        </div>
-                        <div className="di-progress-bar">
-                          <div className="di-progress-fill" style={{ width: `${soldPercent}%` }} />
-                        </div>
-                      </div>
                     </div>
 
                     <div className="di-hero-body">
@@ -465,6 +470,19 @@ export default function DramaIpo() {
                           ))}
                         </div>
                       ) : null}
+
+                      <div className="di-progress-wrap">
+                        <div className="di-progress-head">
+                          <span>{t('dramaIpo.soldProgress')}</span>
+                          <span>
+                            {detail?.soldShares ?? 0} / {detail?.totalShares ?? 0} {t('dramaIpo.shareUnit')}
+                            <span className="di-hl">　{t('dramaIpo.remaining')} {remaining}</span>
+                          </span>
+                        </div>
+                        <div className="di-progress-bar">
+                          <div className="di-progress-fill" style={{ width: `${soldPercent}%` }} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </section>

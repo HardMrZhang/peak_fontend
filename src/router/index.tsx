@@ -20,7 +20,7 @@ const router = createBrowserRouter([
     path: '/',
     element: <MainLayout />,
     children: [
-      { index: true, element: <Navigate to="/account" replace /> },
+      { index: true, element: <Navigate to="/drama-ipo" replace /> },
       { path: 'account', element: <Account /> },
       { path: 'account/topup', element: <TopUp /> },
       { path: 'account/withdrawal', element: <Withdrawal /> },

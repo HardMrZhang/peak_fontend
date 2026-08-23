@@ -363,9 +363,11 @@ export default function DramaIpo() {
                 )
               })()}
 
-              {/* 展开列表里不重复展示当前选中的剧目 */}
+              {/* 展开列表里不重复展示当前选中的剧目；认购满（售罄）的排到最底部 */}
               <div className="di-tabs di-picker-menu">
-                {projects.map((p) => (p.serialNo === activeSerial ? null : (
+                {[...projects]
+                  .sort((a, b) => Number(a.status === 'SOLD_OUT') - Number(b.status === 'SOLD_OUT'))
+                  .map((p) => (p.serialNo === activeSerial ? null : (
                   <button
                     key={p.serialNo}
                     type="button"

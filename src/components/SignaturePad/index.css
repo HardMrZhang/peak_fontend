@@ -1,0 +1,84 @@
+.sig-pad {
+  width: 100%;
+}
+
+.sig-canvas-wrap {
+  position: relative;
+  border: 1.5px dashed var(--border-color);
+  border-radius: 12px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0.015)),
+    var(--bg-secondary);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.sig-canvas-wrap:hover {
+  border-color: var(--accent-orange);
+}
+
+.sig-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  /* 关掉浏览器的滚动/缩放手势，否则触屏上按住画布会滚页面而不是写字 */
+  touch-action: none;
+}
+
+.sig-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+/* 签名基准线，模拟纸质合同的签名栏 */
+.sig-baseline {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 28%;
+  height: 1px;
+  background: var(--border-color);
+  pointer-events: none;
+}
+
+.sig-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.sig-tip {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.sig-clear {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  padding: 5px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.sig-clear:hover:not(:disabled) {
+  color: var(--accent-orange);
+  border-color: var(--accent-orange);
+}
+
+.sig-clear:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

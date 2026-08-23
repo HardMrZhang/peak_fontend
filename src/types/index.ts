@@ -385,7 +385,8 @@ export interface DappIxParams {
   recentBlockhash?: string
   lastValidBlockHeight?: number
   feePayer?: string
-  userPeakAta: string
+  // 只有 PEAK 相关指令会回传；短剧打新走 USDT，不带此字段
+  userPeakAta?: string
 }
 
 export interface DappStakePool {
@@ -642,4 +643,243 @@ export interface DappConfirmResult {
   txHash?: string
   message?: string
   [key: string]: unknown
+}
+
+// ==================== AI 短剧打新 ====================
+
+export type DramaProjectStatus = 'PENDING' | 'OPEN' | 'SOLD_OUT' | 'CLOSED'
+
+export interface DramaPlatform {
+  id: string
+  name: string
+  logoUrl: string | null
+}
+
+export interface DramaProject {
+  id: string
+  serialNo: string
+  name: string
+  grade: string | null
+  genre: string | null
+  seriesNo: number
+  synopsisHtml: string | null
+  posterUrl: string | null
+  totalInvestUsdt: string
+  sharePriceUsdt: string
+  totalShares: number
+  soldShares: number
+  remainingShares: number
+  crew: {
+    screenwriter: string | null
+    director: string | null
+    artDirector: string | null
+    producer: string | null
+  }
+  totalEpisodes: number | null
+  runtimeMinutes: number | null
+  premiereAt: string | null
+  status: DramaProjectStatus
+  openAt: string | null
+  closeAt: string | null
+  /** 距离开盘剩余毫秒，已开盘为 0 */
+  openInMs: number | null
+  platforms: DramaPlatform[]
+  chainSaleAddr?: string
+}
+
+export interface DramaIpoConfig {
+  priceUsdt: string | null
+  sharePriceUsdt: number
+  minShares: number
+  airdropBaseRate: number
+  multiplier: number
+  releaseDays: number
+  dailyRate: string
+  principalReturnMonths: number[]
+  principalReturnRate: number
+  dividendFirstMonth: number
+  dividendPeriods: number
+  dividendRate: number
+  agreementVersion: string
+}
+
+/** 付款前的《认购须知》 */
+export interface DramaAgreementPreview {
+  templateVersion: string
+  contentHtml: string
+}
+
+/** 付款成功但尚未签署正式协议的认购 */
+export interface DramaPendingAgreement {
+  subscriptionId: string
+  subNo: string
+  serialNo: string
+  projectName: string
+  shares: number
+  amountUsdt: string
+  createdAt: string
+}
+
+/** 签署前的合同定稿预览 */
+export interface DramaSignPreview {
+  subscriptionId: string
+  contractNo: string
+  templateVersion: string
+  contentHtml: string
+}
+
+/** 「我的合同」列表项 */
+export interface DramaMyContract {
+  id: string
+  subscriptionId: string
+  contractNo: string | null
+  serialNo: string
+  projectName: string
+  subNo: string
+  sharesSigned: number
+  amountUsdt: string
+  investRatioBps: number | null
+  signerName: string | null
+  contentHash: string | null
+  templateVersion: string
+  signedAt: string
+}
+
+/** 已签署的正式协议 */
+export interface DramaSignedAgreement {
+  id: string
+  subscriptionId: string
+  contractNo: string | null
+  templateVersion: string
+  sharesSigned: number
+  amountUsdt: string
+  contentHtml: string | null
+  contentHash: string | null
+  signerName: string | null
+  signedAt: string
+}
+
+export interface DramaSubscribeParams extends DappIxParams {
+  serialNo: string
+  shares: number
+  amountUsdt: string
+  primaryAmountUsdt: string
+  secondaryAmountUsdt: string
+  peakPriceUsdt: string
+  airdropTotal: string
+  airdropDaily: string
+  releaseDays: number
+  remainingShares: number
+}
+
+export interface DramaPrincipalReturnItem {
+  monthNo: number
+  amountUsdt: string
+  dueDate: string
+  status: string
+  paidAt: string | null
+  proofUrl: string | null
+}
+
+export interface DramaDividendItem {
+  periodNo: number
+  amountUsdt: string
+  status: string
+  paidAt: string | null
+}
+
+export interface DramaSubscriptionRecord {
+  id: string
+  subNo: string
+  serialNo: string
+  projectName: string
+  posterUrl: string | null
+  grade: string | null
+  shares: number
+  amountUsdt: string
+  peakPriceUsdt: string
+  airdropTotal: string
+  airdropReleased: string
+  airdropRemaining: string
+  airdropDaily: string
+  releaseDays: number
+  releasedDays: number
+  isOut: boolean
+  principalPaidUsdt: string
+  dividendPaidUsdt: string
+  principalReturns: DramaPrincipalReturnItem[]
+  dividendPayouts: DramaDividendItem[]
+  txHash: string | null
+  startDate: string
+  createdAt: string
+}
+
+/** 收益明细：type=AIRDROP 时是 PEAK 释放，PRINCIPAL/DIVIDEND 时是 USDT */
+export interface DramaEarningRecord {
+  id: string
+  type: 'AIRDROP' | 'PRINCIPAL' | 'DIVIDEND'
+  asset: 'PEAK' | 'USDT'
+  serialNo: string | null
+  projectName: string | null
+  subNo?: string | null
+  dayNo?: number
+  periodNo?: number
+  amount: string
+  status: string
+  bizDate?: string
+  dueDate?: string
+  paidAt?: string | null
+  proofUrl?: string | null
+  txHash?: string | null
+}
+
+export interface DramaIpoSummary {
+  subscriptionCount: number
+  totalShares: number
+  totalAmountUsdt: string
+  airdropTotal: string
+  airdropReleased: string
+  dividendPaidUsdt: string
+  principalPaidUsdt: string
+}
+
+export interface DramaHistoryRecord {
+  subNo: string
+  serialNo: string
+  projectName: string
+  posterUrl: string | null
+  projectStatus: string
+  /** 中间打码后的地址，用于列表展示 */
+  walletAddress: string
+  walletFull: string
+  shares: number
+  amountUsdt: string
+  peakPriceUsdt: string
+  airdropTotal: string
+  airdropReleased: string
+  dividendTotalUsdt: string
+  dividends: DramaDividendItem[]
+  createdAt: string
+}
+
+export interface DramaRevenuePeriod {
+  periodNo: number
+  totalRevenueUsdt: string
+  dividendPoolUsdt: string
+  status: string
+  settledAt: string | null
+  proofUrl: string | null
+  platforms: {
+    platformId: string
+    platformName: string
+    revenueUsdt: string
+    proofUrl: string | null
+  }[]
+}
+
+export interface DramaProjectRevenue {
+  serialNo: string
+  name: string
+  dividendRatio: number
+  periods: DramaRevenuePeriod[]
 }

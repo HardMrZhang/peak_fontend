@@ -59,6 +59,32 @@ request.interceptors.response.use(
   },
 )
 
+/**
+ * 取原始响应体（不走 {code,data} 信封）。
+ *
+ * 合同下载接口直接返回一整篇 HTML，套不进统一信封，而主实例的响应拦截器
+ * 会把 code !== 0 判成失败，所以这里用一个只加鉴权头的独立实例。
+ */
+const rawRequest = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  timeout: 30000,
+})
+
+rawRequest.interceptors.request.use((config) => {
+  const token = localStorage.getItem('peak_token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+export function getText(url: string, config?: AxiosRequestConfig) {
+  return rawRequest.get<string>(url, {
+    responseType: 'text',
+    // 关掉 axios 的自动 JSON 解析，保证拿到的是原样字符串
+    transformResponse: [(data) => data],
+    ...config,
+  })
+}
+
 export function get<T>(url: string, config?: AxiosRequestConfig) {
   return request.get<unknown, ApiResponse<T>>(url, config)
 }

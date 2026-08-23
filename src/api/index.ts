@@ -1,4 +1,4 @@
-import { get, post } from '@/utils/request'
+import { get, post, getText } from '@/utils/request'
 import type {
   WalletUser,
   AssetBalance,
@@ -51,6 +51,19 @@ import type {
   DappZeroCardParams,
   DappZeroCardRecord,
   DappConfirmResult,
+  DramaProject,
+  DramaIpoConfig,
+  DramaAgreementPreview,
+  DramaPendingAgreement,
+  DramaSignPreview,
+  DramaSignedAgreement,
+  DramaMyContract,
+  DramaSubscribeParams,
+  DramaSubscriptionRecord,
+  DramaEarningRecord,
+  DramaIpoSummary,
+  DramaHistoryRecord,
+  DramaProjectRevenue,
 } from '@/types'
 
 // 需要在链上补记额度并等待确认的接口，确认耗时可能超过默认 15s，单独放宽超时
@@ -434,4 +447,111 @@ export function confirmZeroCard(data: { txHash: string; intentId: string }) {
 
 export function getZeroCardRecords(params?: { page?: number; pageSize?: number }) {
   return get<PageResult<DappZeroCardRecord>>('/dapp/zero-card/records', { params })
+}
+
+// ==================== AI 短剧打新 ====================
+export function getDramaIpoConfig() {
+  return get<DramaIpoConfig>('/drama-ipo/config')
+}
+
+export function getDramaProjects(params?: { page?: number; pageSize?: number; status?: string; keyword?: string }) {
+  return get<PageResult<DramaProject>>('/drama-ipo/projects', { params })
+}
+
+export function getDramaProject(serialNo: string) {
+  return get<DramaProject>(`/drama-ipo/projects/${serialNo}`)
+}
+
+export function getDramaProjectRevenue(serialNo: string) {
+  return get<DramaProjectRevenue>(`/drama-ipo/projects/${serialNo}/revenue`)
+}
+
+// 付款前的《认购须知》：轻量风险提示，勾选即可下单
+export function previewDramaAgreement(serialNo: string, shares: number) {
+  return get<DramaAgreementPreview>('/drama-ipo/agreement/preview', { params: { serialNo, shares } })
+}
+
+// 付款成功但还没签正式协议的认购，用于自动弹窗与账户页提醒
+export function getDramaPendingAgreements() {
+  return get<DramaPendingAgreement[]>('/drama-ipo/agreement/pending')
+}
+
+// 签署前的合同定稿预览：把已填的实名信息回填进正文
+export function previewSignDramaAgreement(
+  subscriptionId: string,
+  draft: { signerName?: string; signerIdNo?: string; signerPhone?: string },
+) {
+  return post<DramaSignPreview>(`/drama-ipo/agreement/${subscriptionId}/preview`, draft)
+}
+
+// 签署《本金返还及收益分配电子协议》
+export function signDramaAgreement(data: {
+  subscriptionId: string
+  signerName: string
+  signerIdNo: string
+  signerPhone: string
+  /** 手写签名画布导出的 PNG data URL */
+  signatureImage: string
+}) {
+  return post<{ id: string; contractNo: string; contentHash: string; signedAt: string }>(
+    '/drama-ipo/agreement/sign',
+    data,
+    { skipErrorToast: true },
+  )
+}
+
+// 已签署合同快照（站内查看，深色主题）
+export function getDramaAgreement(subscriptionId: string) {
+  return get<DramaSignedAgreement>(`/drama-ipo/agreement/${subscriptionId}`)
+}
+
+// 「我的合同」列表
+export function getDramaMyContracts(params?: { page?: number; pageSize?: number }) {
+  return get<PageResult<DramaMyContract>>('/drama-ipo/agreements', { params })
+}
+
+/**
+ * 拉取下载/打印用的单文件 HTML（白底纸质样式 + 内联签名图）。
+ * 走 axios 而不是直接开新窗口，因为下载接口要带 JWT 鉴权头。
+ */
+export function fetchDramaContractDocument(subscriptionId: string) {
+  return getText(`/drama-ipo/agreement/${subscriptionId}/download`)
+}
+
+export function getDramaSubscribeParams(serialNo: string, shares: number) {
+  // 份额不足等错误由打新页自行提示，跳过全局错误弹窗
+  return get<DramaSubscribeParams>('/drama-ipo/params', {
+    params: { serialNo, shares, agreementAccepted: true },
+    skipErrorToast: true,
+  })
+}
+
+export function confirmDramaSubscribe(data: { txHash: string; intentId: string }) {
+  return post<DappConfirmResult>('/drama-ipo/confirm', data)
+}
+
+export function getDramaSubscriptions(params?: { page?: number; pageSize?: number }) {
+  return get<PageResult<DramaSubscriptionRecord>>('/drama-ipo/subscriptions', { params })
+}
+
+export function getDramaEarningRecords(params: {
+  type: 'AIRDROP' | 'USDT'
+  page?: number
+  pageSize?: number
+}) {
+  return get<PageResult<DramaEarningRecord>>('/drama-ipo/records', { params })
+}
+
+export function getDramaSummary() {
+  return get<DramaIpoSummary>('/drama-ipo/summary')
+}
+
+// 历史查询（公开）：按钱包地址或剧目编号查认购记录与各期分红
+export function getDramaHistory(params: {
+  wallet?: string
+  serialNo?: string
+  page?: number
+  pageSize?: number
+}) {
+  return get<PageResult<DramaHistoryRecord>>('/drama-ipo/history', { params, skipErrorToast: true })
 }

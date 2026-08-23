@@ -23,6 +23,7 @@ export default function Header() {
     { key: '/genesis-nodes', label: t('nav.genesisNodes') },
     { key: '/points', label: t('nav.points') },
     { key: '/airdrop', label: t('nav.airdrop') },
+    { key: '/drama-ipo', label: t('nav.dramaIpo') },
     { key: '/staking', label: t('nav.staking') },
     { key: '/dividend', label: t('nav.dividend') },
     { key: '/download', label: t('nav.download') },

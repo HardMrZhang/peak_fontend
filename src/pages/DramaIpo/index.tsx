@@ -1,0 +1,629 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { message } from 'antd'
+import {
+  getDramaIpoConfig,
+  getDramaProjects,
+  getDramaProject,
+  getDramaSubscribeParams,
+  confirmDramaSubscribe,
+  previewDramaAgreement,
+  getDramaPendingAgreements,
+} from '@/api'
+import type { DramaIpoConfig, DramaProject, DramaPendingAgreement } from '@/types'
+import { useDappTx, hasToken } from '@/hooks/useDappTx'
+import ContractSignModal from '@/components/ContractSignModal'
+import './index.css'
+
+const STATUS_CLASS: Record<string, string> = {
+  OPEN: 'open',
+  PENDING: 'pending',
+  SOLD_OUT: 'soldout',
+  CLOSED: 'closed',
+}
+
+function formatCountdown(ms: number) {
+  const total = Math.max(0, Math.floor(ms / 1000))
+  const h = String(Math.floor(total / 3600)).padStart(2, '0')
+  const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0')
+  const s = String(total % 60).padStart(2, '0')
+  return `${h}:${m}:${s}`
+}
+
+export default function DramaIpo() {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { sendDappIx, connected } = useDappTx()
+
+  const [config, setConfig] = useState<DramaIpoConfig | null>(null)
+  const [projects, setProjects] = useState<DramaProject[]>([])
+  const [activeSerial, setActiveSerial] = useState<string | null>(null)
+  const [detail, setDetail] = useState<DramaProject | null>(null)
+
+  const [shares, setShares] = useState('1')
+  const [agreed, setAgreed] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [tip, setTip] = useState('')
+  const tipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const [agreementOpen, setAgreementOpen] = useState(false)
+  const [agreementHtml, setAgreementHtml] = useState('')
+  const [agreementLoading, setAgreementLoading] = useState(false)
+
+  // 正式协议在付款成功后签署：T 日与实际投资额要等链上到账才能定稿
+  const [pending, setPending] = useState<DramaPendingAgreement[]>([])
+  const [signTarget, setSignTarget] = useState<DramaPendingAgreement | null>(null)
+
+  // 待开盘剧目的倒计时基准：openInMs 是服务端算好的剩余毫秒，本地按秒递减
+  const [nowTick, setNowTick] = useState(Date.now())
+  const openBaseRef = useRef<{ serialNo: string; readyAt: number } | null>(null)
+
+  useEffect(() => () => { if (tipTimer.current) clearTimeout(tipTimer.current) }, [])
+
+  const loadProjects = useCallback(async () => {
+    try {
+      const res = await getDramaProjects({ page: 1, pageSize: 50 })
+      const list = res.data?.list ?? []
+      setProjects(list)
+      setActiveSerial((prev) => {
+        if (prev && list.some((p) => p.serialNo === prev)) return prev
+        // 默认选中第一个可认购的剧目，全都不可认购时退回第一条
+        return (list.find((p) => p.status === 'OPEN') ?? list[0])?.serialNo ?? null
+      })
+    } catch { /* ignore */ }
+  }, [])
+
+  const loadDetail = useCallback(async (serialNo: string) => {
+    try {
+      const res = await getDramaProject(serialNo)
+      setDetail(res.data)
+      openBaseRef.current = res.data.openInMs != null && res.data.openInMs > 0
+        ? { serialNo, readyAt: Date.now() + res.data.openInMs }
+        : null
+    } catch { /* ignore */ }
+  }, [])
+
+  const loadPending = useCallback(async () => {
+    if (!hasToken()) return []
+    try {
+      const res = await getDramaPendingAgreements()
+      const list = res.data ?? []
+      setPending(list)
+      return list
+    } catch {
+      return []
+    }
+  }, [])
+
+  useEffect(() => {
+    getDramaIpoConfig().then((res) => setConfig(res.data)).catch(() => {})
+    loadProjects()
+    loadPending()
+  }, [loadProjects, loadPending])
+
+  useEffect(() => {
+    if (activeSerial) loadDetail(activeSerial)
+  }, [activeSerial, loadDetail])
+
+  // 剩余份数与开盘倒计时都需要秒级刷新
+  useEffect(() => {
+    const timer = setInterval(() => setNowTick(Date.now()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // 开盘时间一到自动拉取最新状态，用户无需手动刷新
+  const countdownMs = useMemo(() => {
+    const base = openBaseRef.current
+    if (!base || base.serialNo !== activeSerial) return 0
+    return Math.max(0, base.readyAt - nowTick)
+  }, [nowTick, activeSerial])
+
+  useEffect(() => {
+    if (openBaseRef.current && countdownMs === 0 && activeSerial) {
+      openBaseRef.current = null
+      loadDetail(activeSerial)
+      loadProjects()
+    }
+  }, [countdownMs, activeSerial, loadDetail, loadProjects])
+
+  const shareCount = Math.max(0, parseInt(shares, 10) || 0)
+  const sharePrice = detail ? Number(detail.sharePriceUsdt) : (config?.sharePriceUsdt ?? 100)
+  const peakPrice = config?.priceUsdt ? parseFloat(config.priceUsdt) : 0
+  const remaining = detail?.remainingShares ?? 0
+  const canSubscribe = detail?.status === 'OPEN' && remaining > 0
+
+  /**
+   * 预计收益，与链上 subscribe 指令同一套算法：
+   *   空投 = 认购额 × 33% ÷ PEAK 现价 × 3，300 天线性释放
+   *   本金 = 第 2、3 个月各返 50%
+   *   分红 = 第 4 个月起 10 期，每期按份数分摊该月票房的 40%
+   */
+  const calc = useMemo(() => {
+    const amount = shareCount * sharePrice
+    const baseRate = config?.airdropBaseRate ?? 0.33
+    const multiplier = config?.multiplier ?? 3
+    const releaseDays = config?.releaseDays ?? 300
+    const airdropBaseUsdt = amount * baseRate
+    const airdropTotal = peakPrice > 0 ? (airdropBaseUsdt / peakPrice) * multiplier : 0
+    const principalPerMonth = amount * (config?.principalReturnRate ?? 0.5)
+    return {
+      amount,
+      airdropBaseUsdt,
+      airdropTotal,
+      airdropDaily: releaseDays > 0 ? airdropTotal / releaseDays : 0,
+      releaseDays,
+      principalPerMonth,
+      principalMonths: config?.principalReturnMonths ?? [2, 3],
+      dividendFirstMonth: config?.dividendFirstMonth ?? 4,
+      dividendPeriods: config?.dividendPeriods ?? 10,
+      dividendRate: config?.dividendRate ?? 0.4,
+    }
+  }, [shareCount, sharePrice, peakPrice, config])
+
+  const adjustShares = (delta: number) => {
+    const next = Math.max(1, Math.min(remaining || 1, shareCount + delta))
+    setShares(String(next))
+  }
+
+  const openAgreement = async () => {
+    if (!detail) return
+    if (!hasToken()) {
+      message.warning(t('account.walletRequired'))
+      return
+    }
+    setAgreementOpen(true)
+    setAgreementLoading(true)
+    try {
+      const res = await previewDramaAgreement(detail.serialNo, Math.max(1, shareCount))
+      setAgreementHtml(res.data?.contentHtml ?? '')
+    } catch {
+      setAgreementHtml('')
+    } finally {
+      setAgreementLoading(false)
+    }
+  }
+
+  const handleSubscribe = async () => {
+    if (submitting || !detail) return
+    if (!hasToken() || !connected) {
+      message.warning(t('account.walletRequired'))
+      return
+    }
+    if (!agreed) {
+      message.warning(t('dramaIpo.agreeRequired'))
+      return
+    }
+    if (shareCount <= 0) {
+      message.warning(t('dramaIpo.sharesRequired'))
+      return
+    }
+    if (shareCount > remaining) {
+      message.warning(t('dramaIpo.remainingOnly', { n: remaining }))
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const paramsRes = await getDramaSubscribeParams(detail.serialNo, shareCount)
+      const sig = await sendDappIx(paramsRes.data)
+      // 链上已付 USDT 后 confirm 幂等；网络波动时重试，避免刷新导致丢单
+      let confirmErr: unknown = null
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          await confirmDramaSubscribe({ txHash: sig, intentId: paramsRes.data.intentId })
+          confirmErr = null
+          break
+        } catch (err) {
+          confirmErr = err
+          if (attempt < 2) await new Promise((r) => setTimeout(r, 2000))
+        }
+      }
+      if (confirmErr) throw confirmErr
+
+      setTip(t('dramaIpo.subscribeSuccess'))
+      if (tipTimer.current) clearTimeout(tipTimer.current)
+      tipTimer.current = setTimeout(() => setTip(''), 3000)
+      setAgreed(false)
+      await Promise.all([loadDetail(detail.serialNo), loadProjects()])
+
+      // 付款到账后正式协议才能定稿，这里立刻拉起签署弹窗
+      const list = await loadPending()
+      const justNow = list.find((p) => p.serialNo === detail.serialNo) ?? list[0]
+      if (justNow) setSignTarget(justNow)
+    } catch (err: unknown) {
+      const serverMsg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? ''
+      const msg = err instanceof Error ? err.message : String(err)
+      if (!msg.includes('User rejected')) {
+        message.error(`${t('dramaIpo.subscribeFail')}: ${(serverMsg || msg).slice(0, 80)}`)
+      }
+      if (detail) loadDetail(detail.serialNo)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const soldPercent = detail && detail.totalShares > 0
+    ? Math.min(100, (detail.soldShares / detail.totalShares) * 100)
+    : 0
+
+  return (
+    <div className="drama-page">
+      <div className="di-wrap">
+        <div className="di-topbar">
+          <div>
+            <div className="di-page-title">{t('dramaIpo.title')}</div>
+            <div className="di-page-sub">{t('dramaIpo.subtitle')}</div>
+          </div>
+          <button type="button" className="di-link-btn" onClick={() => navigate('/drama-ipo/history')}>
+            {t('dramaIpo.historyEntry')}
+          </button>
+        </div>
+
+        {pending.length > 0 && (
+          <div className="di-pending-bar">
+            <span className="di-pending-text">
+              {t('dramaIpo.pendingSignTip', { n: pending.length })}
+            </span>
+            <button type="button" className="di-pending-btn" onClick={() => setSignTarget(pending[0])}>
+              {t('dramaIpo.goSign')}
+            </button>
+          </div>
+        )}
+
+        {projects.length === 0 ? (
+          <div className="di-card">
+            <div className="di-empty">{t('dramaIpo.noProjects')}</div>
+          </div>
+        ) : (
+          <>
+            <div className="di-tabs">
+              {projects.map((p) => (
+                <button
+                  key={p.serialNo}
+                  type="button"
+                  className={`di-tab${p.serialNo === activeSerial ? ' active' : ''}`}
+                  onClick={() => { setActiveSerial(p.serialNo); setShares('1'); setAgreed(false) }}
+                >
+                  {p.posterUrl
+                    ? <img className="di-tab-poster" src={p.posterUrl} alt="" />
+                    : <span className="di-tab-poster" />}
+                  <span>
+                    <span className="di-tab-name">{p.name}</span>
+                    <span className="di-tab-meta">
+                      {p.serialNo} · {t(`dramaIpo.status.${p.status}`)}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="di-grid">
+              {/* ---------------- 左侧：标的信息 ---------------- */}
+              <div>
+                <section className="di-card">
+                  <div className="di-hero">
+                    {detail?.posterUrl
+                      ? <img className="di-hero-poster" src={detail.posterUrl} alt={detail.name} />
+                      : <div className="di-hero-poster placeholder">{t('dramaIpo.noPoster')}</div>}
+
+                    <div className="di-hero-body">
+                      <div className="di-hero-name">
+                        {detail?.name ?? '--'}
+                        {detail?.grade ? <span className="di-badge">{detail.grade}</span> : null}
+                        {detail ? (
+                          <span className={`di-status ${STATUS_CLASS[detail.status] ?? ''}`}>
+                            {t(`dramaIpo.status.${detail.status}`)}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className="di-meta-grid">
+                        <div>
+                          <div className="di-meta-label">{t('dramaIpo.serialNo')}</div>
+                          <div className="di-meta-value">{detail?.serialNo ?? '--'}</div>
+                        </div>
+                        <div>
+                          <div className="di-meta-label">{t('dramaIpo.seriesNo')}</div>
+                          <div className="di-meta-value">{detail ? `${t('dramaIpo.seriesPrefix')}-${detail.seriesNo}` : '--'}</div>
+                        </div>
+                        <div>
+                          <div className="di-meta-label">{t('dramaIpo.genre')}</div>
+                          <div className="di-meta-value">{detail?.genre || '--'}</div>
+                        </div>
+                        <div>
+                          <div className="di-meta-label">{t('dramaIpo.totalInvest')}</div>
+                          <div className="di-meta-value">
+                            {detail ? `${Number(detail.totalInvestUsdt).toLocaleString()} USDT` : '--'}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="di-meta-label">{t('dramaIpo.episodes')}</div>
+                          <div className="di-meta-value">
+                            {detail?.totalEpisodes
+                              ? `${detail.totalEpisodes} ${t('dramaIpo.episodeUnit')}${detail.runtimeMinutes ? ` × ${detail.runtimeMinutes}${t('dramaIpo.minuteUnit')}` : ''}`
+                              : '--'}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="di-meta-label">{t('dramaIpo.premiere')}</div>
+                          <div className="di-meta-value">{detail?.premiereAt?.slice(0, 10) ?? '--'}</div>
+                        </div>
+                        <div>
+                          <div className="di-meta-label">{t('dramaIpo.screenwriter')}</div>
+                          <div className="di-meta-value">{detail?.crew.screenwriter || '--'}</div>
+                        </div>
+                        <div>
+                          <div className="di-meta-label">{t('dramaIpo.director')}</div>
+                          <div className="di-meta-value">{detail?.crew.director || '--'}</div>
+                        </div>
+                        <div>
+                          <div className="di-meta-label">{t('dramaIpo.artDirector')}</div>
+                          <div className="di-meta-value">{detail?.crew.artDirector || '--'}</div>
+                        </div>
+                        <div>
+                          <div className="di-meta-label">{t('dramaIpo.producer')}</div>
+                          <div className="di-meta-value">{detail?.crew.producer || '--'}</div>
+                        </div>
+                      </div>
+
+                      {detail && detail.platforms.length > 0 ? (
+                        <div className="di-platforms">
+                          {detail.platforms.map((pf) => (
+                            <span key={pf.id} className="di-platform">
+                              {pf.logoUrl ? <img src={pf.logoUrl} alt="" /> : null}
+                              {pf.name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
+
+                      <div className="di-progress-wrap">
+                        <div className="di-progress-head">
+                          <span>{t('dramaIpo.soldProgress')}</span>
+                          <span>
+                            {detail?.soldShares ?? 0} / {detail?.totalShares ?? 0} {t('dramaIpo.shareUnit')}
+                            <span className="di-hl">　{t('dramaIpo.remaining')} {remaining}</span>
+                          </span>
+                        </div>
+                        <div className="di-progress-bar">
+                          <div className="di-progress-fill" style={{ width: `${soldPercent}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {detail?.synopsisHtml ? (
+                  <section className="di-card">
+                    <h3 className="di-card-title">{t('dramaIpo.synopsis')}</h3>
+                    <div className="di-synopsis" dangerouslySetInnerHTML={{ __html: detail.synopsisHtml }} />
+                  </section>
+                ) : null}
+
+                <section className="di-card">
+                  <h3 className="di-card-title">{t('dramaIpo.rulesTitle')}</h3>
+                  <div className="di-synopsis">
+                    <p>{t('dramaIpo.rule1', { price: sharePrice })}</p>
+                    <p>{t('dramaIpo.rule2', {
+                      rate: Math.round((config?.airdropBaseRate ?? 0.33) * 100),
+                      multiplier: config?.multiplier ?? 3,
+                      days: config?.releaseDays ?? 300,
+                    })}</p>
+                    <p>{t('dramaIpo.rule3', {
+                      months: (config?.principalReturnMonths ?? [2, 3]).join('、'),
+                      rate: Math.round((config?.principalReturnRate ?? 0.5) * 100),
+                    })}</p>
+                    <p>{t('dramaIpo.rule4', {
+                      month: config?.dividendFirstMonth ?? 4,
+                      periods: config?.dividendPeriods ?? 10,
+                      rate: Math.round((config?.dividendRate ?? 0.4) * 100),
+                    })}</p>
+                    <p>{t('dramaIpo.rule5')}</p>
+                  </div>
+                </section>
+              </div>
+
+              {/* ---------------- 右侧：参与表单 ---------------- */}
+              <section className="di-card">
+                <h3 className="di-card-title">{t('dramaIpo.formTitle')}</h3>
+
+                {detail?.status === 'PENDING' && countdownMs > 0 ? (
+                  <div className="di-countdown">
+                    {t('dramaIpo.opensIn')} {formatCountdown(countdownMs)}
+                  </div>
+                ) : null}
+
+                <div className="di-field">
+                  <label className="di-field-label">{t('dramaIpo.sharesLabel')}</label>
+                  <div className="di-share-input">
+                    <button
+                      type="button"
+                      className="di-step-btn"
+                      onClick={() => adjustShares(-1)}
+                      disabled={shareCount <= 1}
+                    >
+                      −
+                    </button>
+                    <input
+                      className="di-share-field"
+                      type="number"
+                      min={1}
+                      max={remaining || undefined}
+                      value={shares}
+                      onChange={(e) => setShares(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="di-step-btn"
+                      onClick={() => adjustShares(1)}
+                      disabled={shareCount >= remaining}
+                    >
+                      +
+                    </button>
+                    <span className="di-share-unit">{t('dramaIpo.shareUnit')}</span>
+                  </div>
+                  <div className="di-quick">
+                    {[1, 5, 10].map((n) => (
+                      <button key={n} type="button" onClick={() => setShares(String(Math.min(n, remaining || n)))}>
+                        {n} {t('dramaIpo.shareUnit')}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setShares(String(Math.max(1, remaining)))}
+                      disabled={remaining <= 0}
+                    >
+                      {t('dramaIpo.maxShares')}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="di-info-box">
+                  <div className="di-line">
+                    <span>{t('dramaIpo.sharePrice')}</span>
+                    <span className="di-hl">{sharePrice} USDT</span>
+                  </div>
+                  <div className="di-line">
+                    <span>{t('dramaIpo.payAmount')}</span>
+                    <span className="di-hl">{calc.amount.toFixed(2)} USDT</span>
+                  </div>
+                  <div className="di-line">
+                    <span>{t('dramaIpo.peakPrice')}</span>
+                    <span className="di-hl">{peakPrice > 0 ? peakPrice.toFixed(4) : '--'} USDT</span>
+                  </div>
+                  <div className="di-line">
+                    <span>{t('dramaIpo.remaining')}</span>
+                    <span className="di-hl">{remaining} {t('dramaIpo.shareUnit')}</span>
+                  </div>
+                </div>
+
+                <div className="di-earn-card">
+                  <h4 className="di-earn-title">{t('dramaIpo.estimateTitle')}</h4>
+                  <div className="di-line">
+                    <span className="di-line-strong">{t('dramaIpo.airdropTotal')}</span>
+                    <span className="di-hl">{calc.airdropTotal.toFixed(2)} PEAK</span>
+                  </div>
+                  <div className="di-sub-note">
+                    {t('dramaIpo.airdropFormula', {
+                      base: calc.airdropBaseUsdt.toFixed(2),
+                      rate: Math.round((config?.airdropBaseRate ?? 0.33) * 100),
+                      multiplier: config?.multiplier ?? 3,
+                    })}
+                  </div>
+                  <div className="di-line">
+                    <span>{t('dramaIpo.airdropDaily')}</span>
+                    <span className="di-hl">{calc.airdropDaily.toFixed(4)} PEAK × {calc.releaseDays} {t('dramaIpo.dayUnit')}</span>
+                  </div>
+
+                  <hr className="di-divider" />
+
+                  <div className="di-line">
+                    <span className="di-line-strong">{t('dramaIpo.principalReturn')}</span>
+                    <span className="di-hl">{calc.amount.toFixed(2)} USDT</span>
+                  </div>
+                  <div className="di-sub-note">
+                    {t('dramaIpo.principalDetail', {
+                      months: calc.principalMonths.join('、'),
+                      amount: calc.principalPerMonth.toFixed(2),
+                    })}
+                  </div>
+
+                  <hr className="di-divider" />
+
+                  <div className="di-line">
+                    <span className="di-line-strong">{t('dramaIpo.dividend')}</span>
+                    <span className="di-hl">{t('dramaIpo.dividendByShares')}</span>
+                  </div>
+                  <div className="di-sub-note">
+                    {t('dramaIpo.dividendDetail', {
+                      month: calc.dividendFirstMonth,
+                      periods: calc.dividendPeriods,
+                      rate: Math.round(calc.dividendRate * 100),
+                      shares: shareCount,
+                    })}
+                  </div>
+                </div>
+
+                <label className="di-agree">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                  />
+                  <span>
+                    {t('dramaIpo.agreePrefix')}
+                    <button type="button" className="di-agree-link" onClick={openAgreement}>
+                      {t('dramaIpo.noticeName')}
+                    </button>
+                  </span>
+                </label>
+
+                <div className="di-sign-note">{t('dramaIpo.signAfterPayNote')}</div>
+
+                <button
+                  type="button"
+                  className="di-submit"
+                  onClick={handleSubscribe}
+                  disabled={!canSubscribe || submitting || !agreed || shareCount <= 0}
+                >
+                  {submitting
+                    ? t('dramaIpo.submitting')
+                    : detail?.status === 'PENDING'
+                      ? t('dramaIpo.notOpenYet')
+                      : detail?.status === 'SOLD_OUT'
+                        ? t('dramaIpo.status.SOLD_OUT')
+                        : detail?.status === 'CLOSED'
+                          ? t('dramaIpo.status.CLOSED')
+                          : t('dramaIpo.confirmSubscribe')}
+                </button>
+
+                {tip ? <div className="di-tip success">{tip}</div> : null}
+              </section>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* 一人可能同时买了多部剧：签完一份自动接上下一份，不用回到列表反复点 */}
+      <ContractSignModal
+        open={!!signTarget}
+        target={signTarget}
+        onClose={() => setSignTarget(null)}
+        onSigned={async () => {
+          const rest = await loadPending()
+          const next = rest.find((p) => p.subscriptionId !== signTarget?.subscriptionId)
+          setSignTarget(next ?? null)
+        }}
+      />
+
+      {agreementOpen ? (
+        <div className="di-modal-mask" onClick={() => setAgreementOpen(false)}>
+          <div className="di-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="di-modal-head">
+              <span className="di-modal-title">{t('dramaIpo.noticeName')}</span>
+              <button type="button" className="di-modal-close" onClick={() => setAgreementOpen(false)}>×</button>
+            </div>
+            <div className="di-modal-body">
+              {agreementLoading
+                ? t('dramaIpo.loading')
+                : agreementHtml
+                  ? <div dangerouslySetInnerHTML={{ __html: agreementHtml }} />
+                  : t('dramaIpo.agreementLoadFail')}
+            </div>
+            <div className="di-modal-foot">
+              <button
+                type="button"
+                className="di-submit"
+                onClick={() => { setAgreed(true); setAgreementOpen(false) }}
+              >
+                {t('dramaIpo.agreeAndClose')}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
+}

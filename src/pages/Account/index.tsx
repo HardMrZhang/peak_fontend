@@ -1,16 +1,21 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Button, Table, Pagination, Modal } from 'antd'
+import { Button, Table, Pagination, Modal, message } from 'antd'
 import { ExclamationCircleOutlined, InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo, getMyGenesisNfts, getNotices } from '@/api'
-import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, PageResult, Notice } from '@/types'
+import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo, getMyGenesisNfts, getNotices, getDramaEarningRecords, getDramaPendingAgreements, getDramaMyContracts, getDramaAgreement } from '@/api'
+import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, PageResult, Notice, DramaEarningRecord, DramaPendingAgreement, DramaMyContract } from '@/types'
 import { useAuthStore } from '@/store/useAuthStore'
+import ContractSignModal from '@/components/ContractSignModal'
+import { downloadContract, printContract } from '@/utils/contractFile'
 import './index.css'
 
-type TabKey = 'transaction' | 'node' | 'reward'
+type TabKey = 'transaction' | 'node' | 'reward' | 'dramaIpo'
+// AI 打新明细分三类：AIRDROP = 三倍代币（PEAK）每日释放；
+// USDT = 本金返还 + 40% 分红；CONTRACT = 我的合同（可查看/下载/打印）
+type DramaRecordType = 'AIRDROP' | 'USDT' | 'CONTRACT'
 
 export default function Account() {
   const { t, i18n } = useTranslation()
@@ -21,6 +26,7 @@ export default function Account() {
   const loginFailed = useAuthStore((s) => s.loginFailed)
   const setLoginFailed = useAuthStore((s) => s.setLoginFailed)
   const [activeTab, setActiveTab] = useState<TabKey>('transaction')
+  const [dramaType, setDramaType] = useState<DramaRecordType>('AIRDROP')
   const [page, setPage] = useState(1)
   const [walletTipOpen, setWalletTipOpen] = useState(false)
   const [noticeOpen, setNoticeOpen] = useState(true)
@@ -65,6 +71,13 @@ export default function Account() {
   const [ledgerData, setLedgerData] = useState<PageResult<LedgerEntry> | null>(null)
   const [nodeData, setNodeData] = useState<PageResult<NodeOrder> | null>(null)
   const [rewardData, setRewardData] = useState<PageResult<ReferralReward> | null>(null)
+  const [dramaData, setDramaData] = useState<PageResult<DramaEarningRecord> | null>(null)
+  // 付款成功但正式协议未签署的认购：只提醒，不阻断空投/本金/分红发放
+  const [pendingAgreements, setPendingAgreements] = useState<DramaPendingAgreement[]>([])
+  const [signTarget, setSignTarget] = useState<DramaPendingAgreement | null>(null)
+  const [contractData, setContractData] = useState<PageResult<DramaMyContract> | null>(null)
+  const [viewContract, setViewContract] = useState<{ title: string; html: string } | null>(null)
+  const [busyContract, setBusyContract] = useState('')
   const [userNodes, setUserNodes] = useState(0)
   const [genesisNftCount, setGenesisNftCount] = useState(0)
   const [balanceLoading, setBalanceLoading] = useState(true)
@@ -111,12 +124,35 @@ export default function Account() {
         const total = r.data.list.reduce((s: number, o: NodeOrder) => s + o.qty, 0)
         setUserNodes(total)
       }).catch(() => { }).finally(done)
+    } else if (activeTab === 'dramaIpo') {
+      if (dramaType === 'CONTRACT') {
+        getDramaMyContracts({ page, pageSize })
+          .then((r) => setContractData(r.data)).catch(() => { }).finally(done)
+      } else {
+        getDramaEarningRecords({ type: dramaType, page, pageSize })
+          .then((r) => setDramaData(r.data)).catch(() => { }).finally(done)
+      }
     } else {
       getReferralRewards({ page, pageSize }).then((r) => setRewardData(r.data)).catch(() => { }).finally(done)
     }
-  }, [token, activeTab, page, pageSize])
+  }, [token, activeTab, dramaType, page, pageSize])
 
   useEffect(() => { fetchTab() }, [fetchTab])
+
+  const loadPendingAgreements = useCallback(async () => {
+    if (!token) return []
+    try {
+      const r = await getDramaPendingAgreements()
+      const list = r.data ?? []
+      setPendingAgreements(list)
+      return list
+    } catch {
+      setPendingAgreements([])
+      return []
+    }
+  }, [token])
+
+  useEffect(() => { loadPendingAgreements() }, [loadPendingAgreements])
 
   const emptyText = (
     <div className="table-empty">
@@ -211,9 +247,126 @@ export default function Account() {
     { title: t('account.colTime'), dataIndex: 'createdAt', width: 170, render: (v: string) => v?.slice(0, 19).replace('T', ' ') },
   ]
 
-  const currentData = activeTab === 'transaction' ? ledgerData : activeTab === 'node' ? nodeData : rewardData
+  // 三倍代币（PEAK）每日释放：只有日期与数量有意义
+  const dramaAirdropColumns: ColumnsType<DramaEarningRecord> = [
+    { title: t('dramaIpo.colProject'), width: 180, render: (_: unknown, r: DramaEarningRecord) => `${r.serialNo ?? '-'} ${r.projectName ?? ''}` },
+    { title: t('dramaIpo.colAmount'), dataIndex: 'amount', width: 140, render: (v: string) => <span style={{ color: '#f5a623' }}>+{parseFloat(v).toFixed(4)} PEAK</span> },
+    { title: t('account.colStatus'), dataIndex: 'status', width: 100, render: (v: string) => statusLabelMap[v] || v },
+    { title: t('account.colTime'), dataIndex: 'bizDate', width: 140, render: (v?: string) => v?.slice(0, 10) ?? '-' },
+  ]
+
+  // USDT 类：本金返还与 40% 分红合并展示，用「类型 + 期次」区分
+  const dramaUsdtColumns: ColumnsType<DramaEarningRecord> = [
+    { title: t('dramaIpo.colProject'), width: 180, render: (_: unknown, r: DramaEarningRecord) => `${r.serialNo ?? '-'} ${r.projectName ?? ''}` },
+    {
+      title: t('account.colType'),
+      width: 140,
+      render: (_: unknown, r: DramaEarningRecord) => (r.type === 'PRINCIPAL'
+        ? t('dramaIpo.principalMonth', { n: r.periodNo })
+        : t('dramaIpo.dividendPeriod', { n: r.periodNo })),
+    },
+    { title: t('dramaIpo.colAmount'), dataIndex: 'amount', width: 130, render: (v: string) => <span style={{ color: '#f5a623' }}>+{parseFloat(v).toFixed(2)} USDT</span> },
+    { title: t('account.colStatus'), dataIndex: 'status', width: 100, render: (v: string) => statusLabelMap[v] || v },
+    {
+      title: t('account.colTime'),
+      width: 170,
+      render: (_: unknown, r: DramaEarningRecord) => (r.paidAt ?? r.dueDate ?? '').slice(0, 19).replace('T', ' ') || '-',
+    },
+  ]
+
+  // 站内查看用深色主题；下载/打印走服务端的白底纸质版
+  const handleViewContract = async (row: DramaMyContract) => {
+    setBusyContract(row.subscriptionId)
+    try {
+      const res = await getDramaAgreement(row.subscriptionId)
+      setViewContract({
+        title: `${row.contractNo ?? ''} ${row.projectName}`,
+        html: res.data?.contentHtml ?? '',
+      })
+    } finally {
+      setBusyContract('')
+    }
+  }
+
+  const handleDownloadContract = async (row: DramaMyContract) => {
+    setBusyContract(row.subscriptionId)
+    try {
+      await downloadContract(row.subscriptionId, row.contractNo, row.projectName)
+    } catch {
+      message.error(t('dramaIpo.downloadFail'))
+    } finally {
+      setBusyContract('')
+    }
+  }
+
+  const handlePrintContract = async (row: DramaMyContract) => {
+    setBusyContract(row.subscriptionId)
+    try {
+      await printContract(row.subscriptionId)
+    } catch {
+      message.error(t('dramaIpo.downloadFail'))
+    } finally {
+      setBusyContract('')
+    }
+  }
+
+  const contractColumns: ColumnsType<DramaMyContract> = [
+    {
+      title: t('dramaIpo.colContractNo'),
+      width: 150,
+      render: (_: unknown, r: DramaMyContract) => (
+        <span style={{ color: '#f5a623', fontWeight: 600 }}>{r.contractNo || '-'}</span>
+      ),
+    },
+    {
+      title: t('dramaIpo.colProject'),
+      width: 180,
+      render: (_: unknown, r: DramaMyContract) => `${r.serialNo} ${r.projectName}`,
+    },
+    { title: t('dramaIpo.subShares'), dataIndex: 'sharesSigned', width: 80, render: (v: number) => `${v} ${t('dramaIpo.shareUnit')}` },
+    { title: t('dramaIpo.subAmount'), dataIndex: 'amountUsdt', width: 120, render: (v: string) => `${parseFloat(v).toFixed(2)} USDT` },
+    {
+      title: t('dramaIpo.colRatio'),
+      dataIndex: 'investRatioBps',
+      width: 90,
+      render: (v: number | null) => (v == null ? '-' : `${(v / 100).toFixed(2)}%`),
+    },
+    { title: t('dramaIpo.colSignedAt'), dataIndex: 'signedAt', width: 160, render: (v: string) => v?.slice(0, 19).replace('T', ' ') },
+    {
+      title: t('dramaIpo.colAction'),
+      width: 190,
+      render: (_: unknown, r: DramaMyContract) => (
+        <span className="contract-actions">
+          <button type="button" onClick={() => handleViewContract(r)} disabled={busyContract === r.subscriptionId}>
+            {t('dramaIpo.view')}
+          </button>
+          <button type="button" onClick={() => handleDownloadContract(r)} disabled={busyContract === r.subscriptionId}>
+            {t('dramaIpo.download')}
+          </button>
+          <button type="button" onClick={() => handlePrintContract(r)} disabled={busyContract === r.subscriptionId}>
+            {t('dramaIpo.printPdf')}
+          </button>
+        </span>
+      ),
+    },
+  ]
+
+  const currentData = activeTab === 'transaction'
+    ? ledgerData
+    : activeTab === 'node'
+      ? nodeData
+      : activeTab === 'dramaIpo'
+        ? (dramaType === 'CONTRACT' ? contractData : dramaData)
+        : rewardData
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const columnsMap: Record<TabKey, ColumnsType<any>> = { transaction: transactionColumns, node: nodeColumns, reward: rewardColumns }
+  const columnsMap: Record<TabKey, ColumnsType<any>> = {
+    transaction: transactionColumns,
+    node: nodeColumns,
+    reward: rewardColumns,
+    dramaIpo: dramaType === 'AIRDROP'
+      ? dramaAirdropColumns
+      : dramaType === 'USDT' ? dramaUsdtColumns : contractColumns,
+  }
 
   return (
     <div className="account-page">
@@ -308,9 +461,47 @@ export default function Account() {
               {activeTab === 'reward' && <span className="tab-bar">|</span>}
               {t('account.reward')}
             </span>
+            <span
+              className={`account-tab ${activeTab === 'dramaIpo' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('dramaIpo'); setPage(1) }}
+            >
+              {activeTab === 'dramaIpo' && <span className="tab-bar">|</span>}
+              {t('account.dramaIpoRecord')}
+              {pendingAgreements.length > 0 && <span className="account-tab-dot" />}
+            </span>
           </div>
 
           <div className="account-table">
+            {activeTab === 'dramaIpo' && pendingAgreements.length > 0 && (
+              <div className="account-pending-bar">
+                <span>{t('dramaIpo.pendingSignTip', { n: pendingAgreements.length })}</span>
+                <button type="button" onClick={() => setSignTarget(pendingAgreements[0])}>
+                  {t('dramaIpo.goSign')}
+                </button>
+              </div>
+            )}
+            {activeTab === 'dramaIpo' && (
+              <div className="account-subtabs">
+                <span
+                  className={`account-subtab ${dramaType === 'AIRDROP' ? 'active' : ''}`}
+                  onClick={() => { setDramaType('AIRDROP'); setPage(1) }}
+                >
+                  {t('dramaIpo.tabAirdrop')}
+                </span>
+                <span
+                  className={`account-subtab ${dramaType === 'USDT' ? 'active' : ''}`}
+                  onClick={() => { setDramaType('USDT'); setPage(1) }}
+                >
+                  {t('dramaIpo.tabDividend')}
+                </span>
+                <span
+                  className={`account-subtab ${dramaType === 'CONTRACT' ? 'active' : ''}`}
+                  onClick={() => { setDramaType('CONTRACT'); setPage(1) }}
+                >
+                  {t('dramaIpo.tabContract')}
+                </span>
+              </div>
+            )}
             <Table
               columns={columnsMap[activeTab]}
               dataSource={currentData?.list ?? []}
@@ -336,6 +527,33 @@ export default function Account() {
           </div>
         </div>
       </div>
+
+      {/* 一人可能同时买了多部剧：签完一份自动接上下一份 */}
+      <ContractSignModal
+        open={!!signTarget}
+        target={signTarget}
+        onClose={() => setSignTarget(null)}
+        onSigned={async () => {
+          const rest = await loadPendingAgreements()
+          const next = rest.find((p) => p.subscriptionId !== signTarget?.subscriptionId)
+          setSignTarget(next ?? null)
+          if (dramaType === 'CONTRACT') fetchTab()
+        }}
+      />
+
+      {viewContract && (
+        <div className="contract-view-mask" onClick={() => setViewContract(null)}>
+          <div className="contract-view-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="contract-view-head">
+              <span className="contract-view-title">{viewContract.title}</span>
+              <button type="button" className="contract-view-close" onClick={() => setViewContract(null)}>×</button>
+            </div>
+            <div className="contract-view-body contract-doc">
+              <div dangerouslySetInnerHTML={{ __html: viewContract.html }} />
+            </div>
+          </div>
+        </div>
+      )}
 
       <Modal
         open={walletTipOpen}

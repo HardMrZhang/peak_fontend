@@ -15,10 +15,6 @@ interface Props {
   onSigned: () => void | Promise<void>
 }
 
-// 身份证 18 位（末位可为 X）或统一社会信用代码 18 位
-const ID_NO_RE = /^([0-9]{17}[0-9Xx]|[0-9A-Za-z]{18})$/
-const PHONE_RE = /^[0-9+\-\s()]{6,20}$/
-
 /**
  * 《本金返还及收益分配电子协议》签署弹窗。
  *
@@ -37,8 +33,7 @@ export default function ContractSignModal({ open, target, onClose, onSigned }: P
   const [signerIdNo, setSignerIdNo] = useState('')
   const [signerPhone, setSignerPhone] = useState('')
   const [sigEmpty, setSigEmpty] = useState(true)
-  const [readBottom, setReadBottom] = useState(false)
-  // 阅读读秒：弹窗打开后 10s 内不允许签署
+  // 阅读读秒：弹窗打开后 10s 内不允许签署；不强制读完合同、实名信息选填
   const [countdown, setCountdown] = useState(10)
   const docRef = useRef<HTMLDivElement>(null)
 
@@ -65,7 +60,6 @@ export default function ContractSignModal({ open, target, onClose, onSigned }: P
     setSignerName('')
     setSignerIdNo('')
     setSignerPhone('')
-    setReadBottom(false)
     padRef.current?.clear()
     loadPreview({})
 
@@ -79,9 +73,9 @@ export default function ContractSignModal({ open, target, onClose, onSigned }: P
     return () => clearInterval(timer)
   }, [open, subscriptionId, loadPreview])
 
-  // 实名信息填完后刷新一次正文，让用户看到自己的信息已填进合同
+  // 实名信息填完后刷新一次正文，让用户看到自己的信息已填进合同（选填）
   const refreshWithIdentity = () => {
-    if (!signerName.trim() || !ID_NO_RE.test(signerIdNo.trim())) return
+    if (!signerName.trim()) return
     loadPreview({
       signerName: signerName.trim(),
       signerIdNo: signerIdNo.trim().toUpperCase(),
@@ -89,23 +83,11 @@ export default function ContractSignModal({ open, target, onClose, onSigned }: P
     })
   }
 
-  // 要求滚到底再允许签署，避免「没看就签」
-  const handleScroll = () => {
-    const el = docRef.current
-    if (!el || readBottom) return
-    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 24) setReadBottom(true)
-  }
-
   const handleSubmit = async () => {
     if (submitting || !subscriptionId) return
     const name = signerName.trim()
     const idNo = signerIdNo.trim().toUpperCase()
     const phone = signerPhone.trim()
-
-    if (name.length < 2) return message.warning(t('dramaIpo.errName'))
-    if (!ID_NO_RE.test(idNo)) return message.warning(t('dramaIpo.errIdNo'))
-    if (!PHONE_RE.test(phone)) return message.warning(t('dramaIpo.errPhone'))
-    if (!readBottom) return message.warning(t('dramaIpo.errReadAll'))
 
     const signatureImage = padRef.current?.toDataURL()
     if (!signatureImage) return message.warning(t('dramaIpo.errSignature'))
@@ -145,7 +127,7 @@ export default function ContractSignModal({ open, target, onClose, onSigned }: P
         </div>
 
         <div className="csm-body">
-          <div className="csm-doc contract-doc" ref={docRef} onScroll={handleScroll}>
+          <div className="csm-doc contract-doc" ref={docRef}>
             {loading
               ? <div className="csm-loading">{t('dramaIpo.loading')}</div>
               : contentHtml
@@ -197,9 +179,6 @@ export default function ContractSignModal({ open, target, onClose, onSigned }: P
               <SignaturePad ref={padRef} height={170} onChange={setSigEmpty} />
             </div>
 
-            <div className={`csm-read-hint${readBottom ? ' done' : ''}`}>
-              {readBottom ? t('dramaIpo.readDone') : t('dramaIpo.readAllFirst')}
-            </div>
           </div>
         </div>
 
@@ -211,7 +190,7 @@ export default function ContractSignModal({ open, target, onClose, onSigned }: P
             type="button"
             className="csm-submit"
             onClick={handleSubmit}
-            disabled={submitting || sigEmpty || !readBottom || countdown > 0}
+            disabled={submitting || sigEmpty || countdown > 0}
           >
             {submitting
               ? t('dramaIpo.signing')

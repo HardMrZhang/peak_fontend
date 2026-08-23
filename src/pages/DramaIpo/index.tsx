@@ -305,7 +305,7 @@ export default function DramaIpo() {
                     disabled={projects.length < 2}
                     onClick={() => setPickerOpen((v) => !v)}
                   >
-                    <span className="di-tab-index">{activeIdx + 1}</span>
+                    <span className="di-tab-label">{t('dramaIpo.dramaLabel')}:</span>
                     {active?.posterUrl
                       ? <img className="di-tab-poster" src={active.posterUrl} alt="" />
                       : <span className="di-tab-poster" />}
@@ -327,9 +327,9 @@ export default function DramaIpo() {
                 )
               })()}
 
-              {/* 展开列表里不重复展示当前选中的剧目，序号保持原始位次 */}
+              {/* 展开列表里不重复展示当前选中的剧目 */}
               <div className="di-tabs di-picker-menu">
-                {projects.map((p, i) => (p.serialNo === activeSerial ? null : (
+                {projects.map((p) => (p.serialNo === activeSerial ? null : (
                   <button
                     key={p.serialNo}
                     type="button"
@@ -341,7 +341,7 @@ export default function DramaIpo() {
                       setPickerOpen(false)
                     }}
                   >
-                    <span className="di-tab-index">{i + 1}</span>
+                    <span className="di-tab-label">{t('dramaIpo.dramaLabel')}:</span>
                     {p.posterUrl
                       ? <img className="di-tab-poster" src={p.posterUrl} alt="" />
                       : <span className="di-tab-poster" />}

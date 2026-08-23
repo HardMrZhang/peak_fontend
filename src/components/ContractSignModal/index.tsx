@@ -38,6 +38,8 @@ export default function ContractSignModal({ open, target, onClose, onSigned }: P
   const [signerPhone, setSignerPhone] = useState('')
   const [sigEmpty, setSigEmpty] = useState(true)
   const [readBottom, setReadBottom] = useState(false)
+  // 阅读读秒：弹窗打开后 10s 内不允许签署
+  const [countdown, setCountdown] = useState(10)
   const docRef = useRef<HTMLDivElement>(null)
 
   const subscriptionId = target?.subscriptionId ?? ''
@@ -66,6 +68,15 @@ export default function ContractSignModal({ open, target, onClose, onSigned }: P
     setReadBottom(false)
     padRef.current?.clear()
     loadPreview({})
+
+    setCountdown(10)
+    const timer = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) { clearInterval(timer); return 0 }
+        return c - 1
+      })
+    }, 1000)
+    return () => clearInterval(timer)
   }, [open, subscriptionId, loadPreview])
 
   // 实名信息填完后刷新一次正文，让用户看到自己的信息已填进合同
@@ -200,9 +211,13 @@ export default function ContractSignModal({ open, target, onClose, onSigned }: P
             type="button"
             className="csm-submit"
             onClick={handleSubmit}
-            disabled={submitting || sigEmpty || !readBottom}
+            disabled={submitting || sigEmpty || !readBottom || countdown > 0}
           >
-            {submitting ? t('dramaIpo.signing') : t('dramaIpo.confirmSign')}
+            {submitting
+              ? t('dramaIpo.signing')
+              : countdown > 0
+                ? `${t('dramaIpo.confirmSign')} (${countdown}s)`
+                : t('dramaIpo.confirmSign')}
           </button>
         </div>
       </div>

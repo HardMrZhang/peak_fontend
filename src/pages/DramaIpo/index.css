@@ -125,7 +125,7 @@
   left: 0;
   right: 0;
   z-index: 30;
-  max-height: 420px;
+  max-height: min(70vh, 640px);
   overflow-y: auto;
   padding: 10px;
   background: #16161f;
@@ -920,8 +920,8 @@
   }
   .di-hero-name { font-size: 19px; }
 
-  /* 手机端同样用下拉菜单，列表高度稍收窄，箭头加大便于点按识别 */
-  .di-picker.open .di-picker-menu { max-height: 320px; }
+  /* 手机端同样用下拉菜单，箭头加大便于点按识别 */
+  .di-picker.open .di-picker-menu { max-height: 65vh; }
   .di-picker-caret { width: 24px; height: 24px; }
   .di-tab {
     width: 100%;

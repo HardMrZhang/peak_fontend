@@ -132,11 +132,37 @@
   flex-shrink: 0;
 }
 
+.di-tab-index {
+  flex-shrink: 0;
+  min-width: 22px;
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.di-tab.active .di-tab-index {
+  background: rgba(245, 166, 35, 0.18);
+  color: var(--accent-orange);
+}
+
+.di-tab-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .di-tab-name {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .di-tab-meta {
@@ -144,6 +170,22 @@
   color: var(--text-muted);
   margin-top: 2px;
   white-space: nowrap;
+}
+
+.di-tab-status {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.di-tab-status.open {
+  background: rgba(52, 199, 122, 0.14);
+  color: #34c77a;
 }
 
 /* 两栏：左侧标的详情，右侧参与表单 */
@@ -691,6 +733,60 @@
   color: var(--accent-green);
 }
 
+/* ---- 我的认购：本金返还进度 ---- */
+.di-principal-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.di-principal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.di-pr-name { color: var(--text-secondary); }
+
+.di-pr-amount { color: var(--text-primary); }
+
+.di-pr-tag {
+  font-size: 12px;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 3px 10px;
+}
+
+.di-pr-tag.paid {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.di-pr-tag.crediting {
+  border-color: var(--accent-yellow, #e6b422);
+  color: var(--accent-yellow, #e6b422);
+}
+
+.di-withdraw-btn {
+  margin-left: auto;
+  background: var(--accent-green);
+  color: #0b0e11;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.di-withdraw-btn:hover { opacity: 0.85; }
+
 .di-pager {
   display: flex;
   align-items: center;
@@ -722,6 +818,17 @@
   .di-card { padding: 22px 18px; }
   .di-hero-poster { width: 120px; height: 160px; }
   .di-hero-name { font-size: 19px; }
+
+  /* 手机端：剧目列表改为竖排，逐条展示序号 + 剧目 + 打新状态 */
+  .di-tabs {
+    flex-direction: column;
+    overflow-x: visible;
+    gap: 8px;
+  }
+  .di-tab {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 @media (max-width: 480px) {

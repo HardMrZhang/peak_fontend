@@ -10,8 +10,9 @@ import {
   confirmDramaSubscribe,
   previewDramaAgreement,
   getDramaPendingAgreements,
+  getDramaSubscriptions,
 } from '@/api'
-import type { DramaIpoConfig, DramaProject, DramaPendingAgreement } from '@/types'
+import type { DramaIpoConfig, DramaProject, DramaPendingAgreement, DramaSubscriptionRecord } from '@/types'
 import { useDappTx, hasToken } from '@/hooks/useDappTx'
 import ContractSignModal from '@/components/ContractSignModal'
 import './index.css'
@@ -55,6 +56,9 @@ export default function DramaIpo() {
   const [pending, setPending] = useState<DramaPendingAgreement[]>([])
   const [signTarget, setSignTarget] = useState<DramaPendingAgreement | null>(null)
 
+  // 我的认购：本金返还到期入账后展示「去提现」入口
+  const [mySubs, setMySubs] = useState<DramaSubscriptionRecord[]>([])
+
   // 待开盘剧目的倒计时基准：openInMs 是服务端算好的剩余毫秒，本地按秒递减
   const [nowTick, setNowTick] = useState(Date.now())
   const openBaseRef = useRef<{ serialNo: string; readyAt: number } | null>(null)
@@ -96,11 +100,20 @@ export default function DramaIpo() {
     }
   }, [])
 
+  const loadMySubs = useCallback(async () => {
+    if (!hasToken()) return
+    try {
+      const res = await getDramaSubscriptions({ page: 1, pageSize: 20 })
+      setMySubs(res.data?.list ?? [])
+    } catch { /* ignore */ }
+  }, [])
+
   useEffect(() => {
     getDramaIpoConfig().then((res) => setConfig(res.data)).catch(() => {})
     loadProjects()
     loadPending()
-  }, [loadProjects, loadPending])
+    loadMySubs()
+  }, [loadProjects, loadPending, loadMySubs])
 
   useEffect(() => {
     if (activeSerial) loadDetail(activeSerial)
@@ -225,7 +238,7 @@ export default function DramaIpo() {
       if (tipTimer.current) clearTimeout(tipTimer.current)
       tipTimer.current = setTimeout(() => setTip(''), 3000)
       setAgreed(false)
-      await Promise.all([loadDetail(detail.serialNo), loadProjects()])
+      await Promise.all([loadDetail(detail.serialNo), loadProjects(), loadMySubs()])
 
       // 付款到账后正式协议才能定稿，这里立刻拉起签署弹窗
       const list = await loadPending()
@@ -279,21 +292,23 @@ export default function DramaIpo() {
         ) : (
           <>
             <div className="di-tabs">
-              {projects.map((p) => (
+              {projects.map((p, i) => (
                 <button
                   key={p.serialNo}
                   type="button"
                   className={`di-tab${p.serialNo === activeSerial ? ' active' : ''}`}
                   onClick={() => { setActiveSerial(p.serialNo); setShares('1'); setAgreed(false) }}
                 >
+                  <span className="di-tab-index">{i + 1}</span>
                   {p.posterUrl
                     ? <img className="di-tab-poster" src={p.posterUrl} alt="" />
                     : <span className="di-tab-poster" />}
-                  <span>
+                  <span className="di-tab-info">
                     <span className="di-tab-name">{p.name}</span>
-                    <span className="di-tab-meta">
-                      {p.serialNo} · {t(`dramaIpo.status.${p.status}`)}
-                    </span>
+                    <span className="di-tab-meta">{p.serialNo}</span>
+                  </span>
+                  <span className={`di-tab-status${p.status === 'OPEN' ? ' open' : ''}`}>
+                    {t(`dramaIpo.status.${p.status}`)}
                   </span>
                 </button>
               ))}
@@ -583,6 +598,57 @@ export default function DramaIpo() {
               </section>
             </div>
           </>
+        )}
+
+        {/* ---------------- 我的认购：本金返还进度与提现入口 ---------------- */}
+        {mySubs.length > 0 && (
+          <section className="di-card">
+            <h3 className="di-card-title">{t('dramaIpo.mySubs')}</h3>
+            <div className="di-record-list">
+              {mySubs.map((s) => (
+                <div key={s.id} className="di-record-card">
+                  <div className="di-record-head">
+                    <span className="di-record-title">{s.serialNo} · {s.projectName}</span>
+                    <span className="di-record-time">
+                      {s.shares} {t('dramaIpo.shareUnit')} · {Number(s.amountUsdt).toLocaleString()} USDT
+                    </span>
+                  </div>
+                  <div className="di-principal-rows">
+                    {s.principalReturns.map((p) => {
+                      const isPaid = p.status === 'PAID'
+                      const isDue = new Date(p.dueDate).getTime() <= nowTick
+                      return (
+                        <div key={p.monthNo} className="di-principal-row">
+                          <span className="di-pr-name">
+                            {t('dramaIpo.principalOfMonth', { n: p.monthNo })}
+                          </span>
+                          <b className="di-pr-amount">{Number(p.amountUsdt).toFixed(2)} USDT</b>
+                          {isPaid ? (
+                            <>
+                              <span className="di-pr-tag paid">{t('dramaIpo.principalPaid')}</span>
+                              <button
+                                type="button"
+                                className="di-withdraw-btn"
+                                onClick={() => navigate('/account/withdrawal')}
+                              >
+                                {t('dramaIpo.goWithdraw')}
+                              </button>
+                            </>
+                          ) : isDue ? (
+                            <span className="di-pr-tag crediting">{t('dramaIpo.principalCrediting')}</span>
+                          ) : (
+                            <span className="di-pr-tag">
+                              {t('dramaIpo.principalDueOn', { date: String(p.dueDate).slice(0, 10) })}
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
       </div>
 

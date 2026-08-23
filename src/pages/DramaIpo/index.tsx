@@ -75,6 +75,9 @@ export default function DramaIpo() {
   // 桌面端剧目选择器（下拉菜单）的展开状态；手机端始终平铺不受影响
   const [pickerOpen, setPickerOpen] = useState(false)
 
+  // 刚完成购买时置位：签署弹窗关闭（签完或稍后签）后整页刷新一次
+  const reloadAfterSignRef = useRef(false)
+
   useEffect(() => () => { if (tipTimer.current) clearTimeout(tipTimer.current) }, [])
 
   const loadProjects = useCallback(async () => {
@@ -252,10 +255,16 @@ export default function DramaIpo() {
       setAgreed(false)
       await Promise.all([loadDetail(detail.serialNo), loadProjects(), loadMySubs()])
 
-      // 付款到账后正式协议才能定稿，这里立刻拉起签署弹窗
+      // 付款到账后正式协议才能定稿，这里立刻拉起签署弹窗；
+      // 没有待签合同时直接整页刷新，保证余额、进度等全部是最新状态
       const list = await loadPending()
       const justNow = list.find((p) => p.serialNo === detail.serialNo) ?? list[0]
-      if (justNow) setSignTarget(justNow)
+      if (justNow) {
+        reloadAfterSignRef.current = true
+        setSignTarget(justNow)
+      } else {
+        window.location.reload()
+      }
     } catch (err: unknown) {
       const serverMsg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? ''
@@ -708,11 +717,16 @@ export default function DramaIpo() {
       <ContractSignModal
         open={!!signTarget}
         target={signTarget}
-        onClose={() => setSignTarget(null)}
+        onClose={() => {
+          setSignTarget(null)
+          if (reloadAfterSignRef.current) window.location.reload()
+        }}
         onSigned={async () => {
           const rest = await loadPending()
           const next = rest.find((p) => p.subscriptionId !== signTarget?.subscriptionId)
           setSignTarget(next ?? null)
+          // 购买后的签署流程全部结束时整页刷新，界面数据全量更新
+          if (!next && reloadAfterSignRef.current) window.location.reload()
         }}
       />
 

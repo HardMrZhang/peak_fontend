@@ -300,12 +300,14 @@ export default function DramaIpo() {
       <div className="di-wrap">
         <div className="di-topbar">
           <div>
-            <div className="di-page-title">{t('dramaIpo.title')}</div>
+            <div className="di-page-title">
+              {t('dramaIpo.title')}
+              <button type="button" className="di-link-btn" onClick={() => navigate('/drama-ipo/history')}>
+                {t('dramaIpo.historyEntry')}
+              </button>
+            </div>
             <div className="di-page-sub">{t('dramaIpo.subtitle')}</div>
           </div>
-          <button type="button" className="di-link-btn" onClick={() => navigate('/drama-ipo/history')}>
-            {t('dramaIpo.historyEntry')}
-          </button>
         </div>
 
         {pending.length > 0 && (

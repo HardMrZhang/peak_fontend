@@ -910,7 +910,7 @@
 }
 
 @media (max-width: 768px) {
-  .di-wrap { padding: 24px 14px 0; }
+  .di-wrap { padding: 16px 14px 0; }
   .di-card { padding: 22px 18px; }
   /* 手机端：海报居中放大拉宽，进度条随海报同宽 */
   .di-hero-media {

@@ -75,9 +75,6 @@ export default function DramaIpo() {
   // 桌面端剧目选择器（下拉菜单）的展开状态；手机端始终平铺不受影响
   const [pickerOpen, setPickerOpen] = useState(false)
 
-  // 刚完成购买时置位：签署弹窗关闭（签完或稍后签）后整页刷新一次
-  const reloadAfterSignRef = useRef(false)
-
   useEffect(() => () => { if (tipTimer.current) clearTimeout(tipTimer.current) }, [])
 
   const loadProjects = useCallback(async () => {
@@ -260,7 +257,6 @@ export default function DramaIpo() {
       const list = await loadPending()
       const justNow = list.find((p) => p.serialNo === detail.serialNo) ?? list[0]
       if (justNow) {
-        reloadAfterSignRef.current = true
         setSignTarget(justNow)
       } else {
         window.location.reload()
@@ -718,15 +714,16 @@ export default function DramaIpo() {
         open={!!signTarget}
         target={signTarget}
         onClose={() => {
+          // 不签署直接关闭也整页刷新，保证界面数据全量更新
           setSignTarget(null)
-          if (reloadAfterSignRef.current) window.location.reload()
+          window.location.reload()
         }}
         onSigned={async () => {
           const rest = await loadPending()
           const next = rest.find((p) => p.subscriptionId !== signTarget?.subscriptionId)
           setSignTarget(next ?? null)
-          // 购买后的签署流程全部结束时整页刷新，界面数据全量更新
-          if (!next && reloadAfterSignRef.current) window.location.reload()
+          // 签署流程全部结束时整页刷新
+          if (!next) window.location.reload()
         }}
       />
 

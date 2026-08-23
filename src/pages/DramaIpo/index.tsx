@@ -479,7 +479,7 @@ export default function DramaIpo() {
                       days: config?.releaseDays ?? 300,
                     })}</p>
                     <p>{t('dramaIpo.rule3', {
-                      months: (config?.principalReturnMonths ?? [2, 3]).join('、'),
+                      days: (config?.principalReturnMonths ?? [2, 3]).map((m) => m * 30).join('、'),
                       rate: Math.round((config?.principalReturnRate ?? 0.5) * 100),
                     })}</p>
                     <p>{t('dramaIpo.rule4', {

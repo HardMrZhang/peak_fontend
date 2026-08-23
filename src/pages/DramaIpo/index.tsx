@@ -32,6 +32,15 @@ function formatCountdown(ms: number) {
   return `${h}:${m}:${s}`
 }
 
+// 接口返回的是 UTC 时间串，直接 slice 会差一天（北京 9/1 00:00 = UTC 8/31 16:00），
+// 统一按北京时间取日期
+function formatBeijingDate(value?: string | null) {
+  if (!value) return '--'
+  const ts = new Date(value).getTime()
+  if (Number.isNaN(ts)) return String(value).slice(0, 10)
+  return new Date(ts + 8 * 3600 * 1000).toISOString().slice(0, 10)
+}
+
 export default function DramaIpo() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -406,7 +415,7 @@ export default function DramaIpo() {
                         </div>
                         <div>
                           <div className="di-meta-label">{t('dramaIpo.premiere')}</div>
-                          <div className="di-meta-value">{detail?.premiereAt?.slice(0, 10) ?? '--'}</div>
+                          <div className="di-meta-value">{formatBeijingDate(detail?.premiereAt)}</div>
                         </div>
                         <div>
                           <div className="di-meta-label">{t('dramaIpo.screenwriter')}</div>
@@ -672,7 +681,7 @@ export default function DramaIpo() {
                             <span className="di-pr-tag crediting">{t('dramaIpo.principalCrediting')}</span>
                           ) : (
                             <span className="di-pr-tag">
-                              {t('dramaIpo.principalDueOn', { date: String(p.dueDate).slice(0, 10) })}
+                              {t('dramaIpo.principalDueOn', { date: formatBeijingDate(p.dueDate) })}
                             </span>
                           )}
                           {/* 提现按钮常驻：未到期置灰，到期（或已入账）可点 */}

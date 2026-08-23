@@ -853,19 +853,8 @@
   .di-hero-poster { width: 120px; height: 160px; }
   .di-hero-name { font-size: 19px; }
 
-  /* 手机端：不用下拉，直接竖排平铺全部剧目（序号 + 剧目 + 打新状态） */
-  .di-picker-trigger { display: none; }
-  .di-tabs,
-  .di-picker.open .di-picker-menu {
-    display: flex;
-    position: static;
-    max-height: none;
-    overflow-y: visible;
-    padding: 0;
-    background: none;
-    border: none;
-    box-shadow: none;
-  }
+  /* 手机端同样用下拉菜单，列表高度稍收窄 */
+  .di-picker.open .di-picker-menu { max-height: 320px; }
   .di-tab {
     width: 100%;
     min-width: 0;

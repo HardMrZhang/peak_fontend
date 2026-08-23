@@ -336,24 +336,26 @@ export default function DramaIpo() {
                     disabled={projects.length < 2}
                     onClick={() => setPickerOpen((v) => !v)}
                   >
-                    <span className="di-tab-label">{t('dramaIpo.dramaLabel')}:</span>
-                    {active?.posterUrl
-                      ? <img className="di-tab-poster" src={active.posterUrl} alt="" />
-                      : <span className="di-tab-poster" />}
-                    <span className="di-tab-info">
-                      <span className="di-tab-name">{active?.name ?? '--'}</span>
-                      <span className="di-tab-meta">{active?.serialNo ?? '--'}</span>
-                    </span>
-                    {active ? (
-                      <span className={`di-tab-status${active.status === 'OPEN' ? ' open' : ''}`}>
-                        {t(`dramaIpo.status.${active.status}`)}
+                    <span className="di-tab-main">
+                      <span className="di-tab-label">{t('dramaIpo.dramaLabel')}:</span>
+                      {active?.posterUrl
+                        ? <img className="di-tab-poster" src={active.posterUrl} alt="" />
+                        : <span className="di-tab-poster" />}
+                      <span className="di-tab-info">
+                        <span className="di-tab-name">{active?.name ?? '--'}</span>
+                        <span className="di-tab-meta">{active?.serialNo ?? '--'}</span>
                       </span>
-                    ) : null}
-                    {projects.length > 1 ? (
-                      <svg className="di-picker-caret" aria-hidden viewBox="0 0 24 24" fill="none">
-                        <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    ) : null}
+                      {active ? (
+                        <span className={`di-tab-status${active.status === 'OPEN' ? ' open' : ''}`}>
+                          {t(`dramaIpo.status.${active.status}`)}
+                        </span>
+                      ) : null}
+                      {projects.length > 1 ? (
+                        <svg className="di-picker-caret" aria-hidden viewBox="0 0 24 24" fill="none">
+                          <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      ) : null}
+                    </span>
                     {active ? renderTabProgress(active) : null}
                   </button>
                 )
@@ -373,16 +375,18 @@ export default function DramaIpo() {
                       setPickerOpen(false)
                     }}
                   >
-                    <span className="di-tab-label">{t('dramaIpo.dramaLabel')}:</span>
-                    {p.posterUrl
-                      ? <img className="di-tab-poster" src={p.posterUrl} alt="" />
-                      : <span className="di-tab-poster" />}
-                    <span className="di-tab-info">
-                      <span className="di-tab-name">{p.name}</span>
-                      <span className="di-tab-meta">{p.serialNo}</span>
-                    </span>
-                    <span className={`di-tab-status${p.status === 'OPEN' ? ' open' : ''}`}>
-                      {t(`dramaIpo.status.${p.status}`)}
+                    <span className="di-tab-main">
+                      <span className="di-tab-label">{t('dramaIpo.dramaLabel')}:</span>
+                      {p.posterUrl
+                        ? <img className="di-tab-poster" src={p.posterUrl} alt="" />
+                        : <span className="di-tab-poster" />}
+                      <span className="di-tab-info">
+                        <span className="di-tab-name">{p.name}</span>
+                        <span className="di-tab-meta">{p.serialNo}</span>
+                      </span>
+                      <span className={`di-tab-status${p.status === 'OPEN' ? ' open' : ''}`}>
+                        {t(`dramaIpo.status.${p.status}`)}
+                      </span>
                     </span>
                     {renderTabProgress(p)}
                   </button>

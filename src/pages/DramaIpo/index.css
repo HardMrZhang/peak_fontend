@@ -104,8 +104,9 @@
 .di-picker-caret {
   flex-shrink: 0;
   margin-left: 8px;
-  color: var(--text-muted);
-  font-size: 12px;
+  width: 18px;
+  height: 18px;
+  color: var(--text-secondary, #c9c9d4);
   transition: transform 0.2s;
 }
 
@@ -853,8 +854,9 @@
   .di-hero-poster { width: 120px; height: 160px; }
   .di-hero-name { font-size: 19px; }
 
-  /* 手机端同样用下拉菜单，列表高度稍收窄 */
+  /* 手机端同样用下拉菜单，列表高度稍收窄，箭头加大便于点按识别 */
   .di-picker.open .di-picker-menu { max-height: 320px; }
+  .di-picker-caret { width: 24px; height: 24px; }
   .di-tab {
     width: 100%;
     min-width: 0;

@@ -317,7 +317,9 @@ export default function DramaIpo() {
                         {t(`dramaIpo.status.${active.status}`)}
                       </span>
                     ) : null}
-                    <span className="di-picker-caret" aria-hidden>▾</span>
+                    <svg className="di-picker-caret" aria-hidden viewBox="0 0 24 24" fill="none">
+                      <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   </button>
                 )
               })()}

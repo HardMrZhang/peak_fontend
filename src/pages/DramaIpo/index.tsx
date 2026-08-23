@@ -84,8 +84,12 @@ export default function DramaIpo() {
       setProjects(list)
       setActiveSerial((prev) => {
         if (prev && list.some((p) => p.serialNo === prev)) return prev
-        // 默认选中第一个可认购的剧目，全都不可认购时退回第一条
-        return (list.find((p) => p.status === 'OPEN') ?? list[0])?.serialNo ?? null
+        // 默认选中第一个可认购的剧目；售罄的只在历史查询里展示
+        return (
+          list.find((p) => p.status === 'OPEN')
+          ?? list.find((p) => p.status !== 'SOLD_OUT')
+          ?? list[0]
+        )?.serialNo ?? null
       })
     } catch { /* ignore */ }
   }, [])
@@ -278,6 +282,12 @@ export default function DramaIpo() {
     ? Math.min(100, (detail.soldShares / detail.totalShares) * 100)
     : 0
 
+  // 售罄的剧目移到「历史查询」里展示，首页下拉只留可认购/待开盘的；全部售罄时回退展示原列表
+  const visibleProjects = useMemo(() => {
+    const alive = projects.filter((p) => p.status !== 'SOLD_OUT')
+    return alive.length > 0 ? alive : projects
+  }, [projects])
+
   // 剧目选择行底部的迷你认购进度条
   const renderTabProgress = (p: DramaProject) => {
     const pct = p.totalShares > 0 ? Math.min(100, (p.soldShares / p.totalShares) * 100) : 0
@@ -329,13 +339,13 @@ export default function DramaIpo() {
           <>
             <div className={`di-picker${pickerOpen ? ' open' : ''}`}>
               {(() => {
-                const activeIdx = Math.max(0, projects.findIndex((p) => p.serialNo === activeSerial))
-                const active = projects[activeIdx]
+                const activeIdx = Math.max(0, visibleProjects.findIndex((p) => p.serialNo === activeSerial))
+                const active = projects.find((p) => p.serialNo === activeSerial) ?? visibleProjects[activeIdx]
                 return (
                   <button
                     type="button"
                     className="di-picker-trigger di-tab"
-                    disabled={projects.length < 2}
+                    disabled={visibleProjects.length < 2}
                     onClick={() => setPickerOpen((v) => !v)}
                   >
                     <span className="di-tab-main">
@@ -352,22 +362,20 @@ export default function DramaIpo() {
                           {t(`dramaIpo.status.${active.status}`)}
                         </span>
                       ) : null}
-                      {projects.length > 1 ? (
-                        <svg className="di-picker-caret" aria-hidden viewBox="0 0 24 24" fill="none">
-                          <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      ) : null}
+                    {visibleProjects.length > 1 ? (
+                      <svg className="di-picker-caret" aria-hidden viewBox="0 0 24 24" fill="none">
+                        <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    ) : null}
                     </span>
                     {active ? renderTabProgress(active) : null}
                   </button>
                 )
               })()}
 
-              {/* 展开列表里不重复展示当前选中的剧目；认购满（售罄）的排到最底部 */}
+              {/* 展开列表里不重复展示当前选中的剧目；售罄的见「历史查询」 */}
               <div className="di-tabs di-picker-menu">
-                {[...projects]
-                  .sort((a, b) => Number(a.status === 'SOLD_OUT') - Number(b.status === 'SOLD_OUT'))
-                  .map((p) => (p.serialNo === activeSerial ? null : (
+                {visibleProjects.map((p) => (p.serialNo === activeSerial ? null : (
                   <button
                     key={p.serialNo}
                     type="button"

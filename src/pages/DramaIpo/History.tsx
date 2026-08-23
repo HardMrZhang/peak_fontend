@@ -2,27 +2,30 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { message } from 'antd'
-import { getDramaHistory } from '@/api'
-import type { DramaHistoryRecord } from '@/types'
+import { getDramaHistory, getDramaProjects } from '@/api'
+import type { DramaHistoryRecord, DramaProject } from '@/types'
 import './index.css'
 
 const PAGE_SIZE = 10
 
 /**
- * 历史查询：按钱包地址或剧目编号查认购记录。
- * 公开接口，未登录也能查；地址在服务端已做中间打码。
+ * 历史查询，分两档：
+ * 1. 认购记录：按钱包地址或剧目编号查认购记录（公开接口，地址服务端打码）；
+ * 2. 售罄剧目：认购满的剧目从首页下拉移到这里展示。
  */
 export default function DramaIpoHistory() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
+  const [tab, setTab] = useState<'records' | 'soldOut'>('records')
   const [keyword, setKeyword] = useState(searchParams.get('q') ?? '')
   const [list, setList] = useState<DramaHistoryRecord[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
+  const [soldOut, setSoldOut] = useState<DramaProject[]>([])
 
   const runSearch = useCallback(async (rawKeyword: string, targetPage: number) => {
     const q = rawKeyword.trim()
@@ -65,6 +68,21 @@ export default function DramaIpoHistory() {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [])
 
+  // 售罄剧目列表（公开接口）
+  useEffect(() => {
+    getDramaProjects({ page: 1, pageSize: 50 })
+      .then((res) => setSoldOut((res.data?.list ?? []).filter((p) => p.status === 'SOLD_OUT')))
+      .catch(() => {})
+  }, [])
+
+  // 点击售罄剧目直接切到认购记录档并按编号查询
+  const searchBySerial = (serialNo: string) => {
+    setTab('records')
+    setKeyword(serialNo)
+    setSearchParams({ q: serialNo })
+    runSearch(serialNo, 1)
+  }
+
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
@@ -80,6 +98,64 @@ export default function DramaIpoHistory() {
           </button>
         </div>
 
+        <div className="di-htabs">
+          <button
+            type="button"
+            className={`di-htab${tab === 'records' ? ' active' : ''}`}
+            onClick={() => setTab('records')}
+          >
+            {t('dramaIpo.historyTabRecords')}
+          </button>
+          <button
+            type="button"
+            className={`di-htab${tab === 'soldOut' ? ' active' : ''}`}
+            onClick={() => setTab('soldOut')}
+          >
+            {t('dramaIpo.historyTabSoldOut')}
+            {soldOut.length > 0 ? ` (${soldOut.length})` : ''}
+          </button>
+        </div>
+
+        {tab === 'soldOut' ? (
+          <section className="di-card">
+            {soldOut.length === 0 ? (
+              <div className="di-empty">{t('dramaIpo.noSoldOut')}</div>
+            ) : (
+              <div className="di-soldout-list">
+                {soldOut.map((p) => (
+                  <button
+                    key={p.serialNo}
+                    type="button"
+                    className="di-tab"
+                    onClick={() => searchBySerial(p.serialNo)}
+                  >
+                    <span className="di-tab-main">
+                      <span className="di-tab-label">{t('dramaIpo.dramaLabel')}:</span>
+                      {p.posterUrl
+                        ? <img className="di-tab-poster" src={p.posterUrl} alt="" />
+                        : <span className="di-tab-poster" />}
+                      <span className="di-tab-info">
+                        <span className="di-tab-name">{p.name}</span>
+                        <span className="di-tab-meta">{p.serialNo}</span>
+                      </span>
+                      <span className="di-tab-status">{t('dramaIpo.status.SOLD_OUT')}</span>
+                    </span>
+                    <span className="di-tab-progress">
+                      <span className="di-tab-progress-label">{t('dramaIpo.soldProgress')}</span>
+                      <span className="di-tab-progress-bar">
+                        <span className="di-tab-progress-fill" style={{ width: '100%' }} />
+                      </span>
+                      <span className="di-tab-progress-text">
+                        {p.soldShares}/{p.totalShares} {t('dramaIpo.shareUnit')}
+                        <span className="di-tab-progress-pct">100%</span>
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+        ) : (
         <section className="di-card">
           <div className="di-search-bar">
             <input
@@ -171,6 +247,7 @@ export default function DramaIpoHistory() {
             </>
           )}
         </section>
+        )}
       </div>
     </div>
   )

@@ -270,6 +270,37 @@
   font-weight: 700;
 }
 
+/* 历史查询页两档页签 */
+.di-htabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.di-htab {
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.di-htab.active {
+  border-color: var(--accent-orange, #f5a623);
+  color: var(--accent-orange, #f5a623);
+  background: rgba(245, 166, 35, 0.1);
+}
+
+.di-soldout-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 /* 两栏：左侧标的详情，右侧参与表单 */
 .di-grid {
   display: grid;

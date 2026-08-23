@@ -213,41 +213,51 @@
   color: #34c77a;
 }
 
-/* 剧目行底部的迷你认购进度条，占满整行 */
+/* 剧目行底部的认购进度条，占满整行，做醒目处理 */
 .di-tab-progress {
   flex-basis: 100%;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 2px;
+  gap: 10px;
+  margin-top: 4px;
 }
 
 .di-tab-progress-label {
-  font-size: 11px;
-  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
 .di-tab-progress-bar {
   flex: 1;
-  height: 6px;
-  border-radius: 4px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(245, 166, 35, 0.35);
   overflow: hidden;
 }
 
 .di-tab-progress-fill {
   display: block;
   height: 100%;
+  border-radius: 999px;
   background: var(--gradient-orange);
+  box-shadow: 0 0 8px rgba(245, 166, 35, 0.7);
   transition: width 0.4s ease;
 }
 
 .di-tab-progress-text {
-  font-size: 11px;
-  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
   white-space: nowrap;
+}
+
+.di-tab-progress-pct {
+  margin-left: 6px;
+  color: var(--accent-orange, #f5a623);
+  font-weight: 700;
 }
 
 /* 两栏：左侧标的详情，右侧参与表单 */

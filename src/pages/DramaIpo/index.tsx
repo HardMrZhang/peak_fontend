@@ -289,6 +289,7 @@ export default function DramaIpo() {
         </span>
         <span className="di-tab-progress-text">
           {p.soldShares}/{p.totalShares} {t('dramaIpo.shareUnit')}
+          <span className="di-tab-progress-pct">{Math.floor(pct)}%</span>
         </span>
       </span>
     )

@@ -376,9 +376,24 @@ export default function DramaIpo() {
               <div>
                 <section className="di-card">
                   <div className="di-hero">
-                    {detail?.posterUrl
-                      ? <img className="di-hero-poster" src={detail.posterUrl} alt={detail.name} />
-                      : <div className="di-hero-poster placeholder">{t('dramaIpo.noPoster')}</div>}
+                    {/* 海报 + 认购进度条组成一栏，进度条紧贴海报底部 */}
+                    <div className="di-hero-media">
+                      {detail?.posterUrl
+                        ? <img className="di-hero-poster" src={detail.posterUrl} alt={detail.name} />
+                        : <div className="di-hero-poster placeholder">{t('dramaIpo.noPoster')}</div>}
+                      <div className="di-progress-wrap">
+                        <div className="di-progress-head">
+                          <span>{t('dramaIpo.soldProgress')}</span>
+                          <span>
+                            {detail?.soldShares ?? 0} / {detail?.totalShares ?? 0} {t('dramaIpo.shareUnit')}
+                            <span className="di-hl">　{t('dramaIpo.remaining')} {remaining}</span>
+                          </span>
+                        </div>
+                        <div className="di-progress-bar">
+                          <div className="di-progress-fill" style={{ width: `${soldPercent}%` }} />
+                        </div>
+                      </div>
+                    </div>
 
                     <div className="di-hero-body">
                       <div className="di-hero-name">
@@ -450,19 +465,6 @@ export default function DramaIpo() {
                           ))}
                         </div>
                       ) : null}
-
-                      <div className="di-progress-wrap">
-                        <div className="di-progress-head">
-                          <span>{t('dramaIpo.soldProgress')}</span>
-                          <span>
-                            {detail?.soldShares ?? 0} / {detail?.totalShares ?? 0} {t('dramaIpo.shareUnit')}
-                            <span className="di-hl">　{t('dramaIpo.remaining')} {remaining}</span>
-                          </span>
-                        </div>
-                        <div className="di-progress-bar">
-                          <div className="di-progress-fill" style={{ width: `${soldPercent}%` }} />
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </section>

@@ -251,13 +251,29 @@
   flex-wrap: wrap;
 }
 
+/* 海报 + 认购进度条一栏 */
+.di-hero-media {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 240px;
+  flex-shrink: 0;
+}
+
 .di-hero-poster {
-  width: 168px;
-  height: 224px;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  height: auto;
   object-fit: cover;
   border-radius: 12px;
   border: 1px solid var(--border-color);
-  flex-shrink: 0;
+}
+
+.di-hero-media .di-progress-wrap { margin-top: 0; }
+
+.di-hero-media .di-progress-head {
+  flex-wrap: wrap;
+  gap: 2px 8px;
 }
 
 .di-hero-poster.placeholder {
@@ -848,7 +864,12 @@
 @media (max-width: 768px) {
   .di-wrap { padding: 24px 14px 0; }
   .di-card { padding: 22px 18px; }
-  .di-hero-poster { width: 120px; height: 160px; }
+  /* 手机端：海报居中放大拉宽，进度条随海报同宽 */
+  .di-hero-media {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+  }
   .di-hero-name { font-size: 19px; }
 
   /* 手机端同样用下拉菜单，列表高度稍收窄，箭头加大便于点按识别 */

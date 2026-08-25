@@ -85,6 +85,11 @@ export function getText(url: string, config?: AxiosRequestConfig) {
   })
 }
 
+/** 二进制下载（PDF 等），带 JWT 鉴权头 */
+export function getBlob(url: string, config?: AxiosRequestConfig) {
+  return rawRequest.get<Blob>(url, { responseType: 'blob', ...config })
+}
+
 export function get<T>(url: string, config?: AxiosRequestConfig) {
   return request.get<unknown, ApiResponse<T>>(url, config)
 }

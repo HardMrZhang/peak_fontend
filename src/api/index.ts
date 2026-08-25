@@ -1,4 +1,4 @@
-import { get, post, getText } from '@/utils/request'
+import { get, post, getText, getBlob } from '@/utils/request'
 import type {
   WalletUser,
   AssetBalance,
@@ -516,6 +516,11 @@ export function getDramaMyContracts(params?: { page?: number; pageSize?: number 
  */
 export function fetchDramaContractDocument(subscriptionId: string) {
   return getText(`/drama-ipo/agreement/${subscriptionId}/download`)
+}
+
+/** 服务端 headless Chrome 渲染的矢量 PDF（文字可选，中文清晰） */
+export function fetchDramaContractPdf(subscriptionId: string) {
+  return getBlob(`/drama-ipo/agreement/${subscriptionId}/download.pdf`)
 }
 
 export function getDramaSubscribeParams(serialNo: string, shares: number) {

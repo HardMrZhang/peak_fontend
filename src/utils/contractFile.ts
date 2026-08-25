@@ -1,21 +1,31 @@
-import { fetchDramaContractDocument } from '@/api'
+import { fetchDramaContractDocument, fetchDramaContractPdf } from '@/api'
 
 /**
  * 合同的下载与打印。
  *
- * 服务端已经把合同渲染成一份白底纸质样式的单文件 HTML，签名图内联成 base64，
- * 所以这两个动作都只是拿到那段字符串后换个消费方式：
- *   下载 → 存成 .html 文件，离线双击即可打开
- *   打印 → 塞进隐藏 iframe 调 print()，用户在打印对话框里选「存为 PDF」
+ * 下载 → 服务端用 headless Chrome 把合同渲染成矢量文本 PDF（文字可选、
+ *        中文清晰），直接存成 .pdf；渲染服务不可用时降级为单文件 HTML。
+ * 打印 → 拿单文件 HTML 塞进隐藏 iframe 调 print()。
  *
  * 不引 jsPDF / html2canvas：那套是把页面截成位图再塞进 PDF，文字不可选、
- * 中文字形容易糊，对一份需要举证的法律文书来说不合适。浏览器原生打印
- * 输出的是矢量文本 PDF，质量最好且零依赖。
+ * 中文字形容易糊，对一份需要举证的法律文书来说不合适。
  */
 
-function fileNameOf(contractNo: string | null, projectName: string) {
+function fileNameOf(contractNo: string | null, projectName: string, ext: string) {
   const safe = `${contractNo || 'contract'}_${projectName}`.replace(/[\\/:*?"<>|]/g, '_')
-  return `${safe}.html`
+  return `${safe}.${ext}`
+}
+
+function saveBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  // 立刻 revoke 会让部分浏览器来不及取用 blob，延后释放
+  setTimeout(() => URL.revokeObjectURL(url), 4000)
 }
 
 export async function downloadContract(
@@ -23,17 +33,17 @@ export async function downloadContract(
   contractNo: string | null,
   projectName: string,
 ) {
-  const res = await fetchDramaContractDocument(subscriptionId)
-  const blob = new Blob([res.data], { type: 'text/html;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = fileNameOf(contractNo, projectName)
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  // 立刻 revoke 会让部分浏览器来不及取用 blob，延后释放
-  setTimeout(() => URL.revokeObjectURL(url), 4000)
+  try {
+    const res = await fetchDramaContractPdf(subscriptionId)
+    saveBlob(res.data, fileNameOf(contractNo, projectName, 'pdf'))
+  } catch {
+    // PDF 渲染服务不可用时退回 HTML，保证合同始终拿得到
+    const res = await fetchDramaContractDocument(subscriptionId)
+    saveBlob(
+      new Blob([res.data], { type: 'text/html;charset=utf-8' }),
+      fileNameOf(contractNo, projectName, 'html'),
+    )
+  }
 }
 
 export async function printContract(subscriptionId: string) {

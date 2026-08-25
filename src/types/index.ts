@@ -813,6 +813,9 @@ export interface DramaSubscriptionRecord {
   dividendPaidUsdt: string
   principalReturns: DramaPrincipalReturnItem[]
   dividendPayouts: DramaDividendItem[]
+  /** 该笔认购已签署合同（有则订单上给下载入口） */
+  contractSigned?: boolean
+  contractNo?: string | null
   txHash: string | null
   startDate: string
   createdAt: string

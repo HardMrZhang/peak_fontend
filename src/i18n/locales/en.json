@@ -775,6 +775,8 @@
     "view": "View",
     "download": "Download",
     "printPdf": "Print / PDF",
+    "downloadContract": "Download Contract",
+    "downloading": "Downloading…",
     "downloadFail": "Failed to fetch the contract, please try again",
     "noContract": "No signed contracts yet",
     "colProject": "Project",

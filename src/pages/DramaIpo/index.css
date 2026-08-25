@@ -815,6 +815,28 @@
   border-bottom: 1px dashed var(--border-color);
 }
 
+.di-contract-btn {
+  background: transparent;
+  color: #f5a623;
+  border: 1px solid rgba(245, 166, 35, 0.6);
+  border-radius: 8px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.di-contract-btn:hover:not(:disabled) {
+  background: rgba(245, 166, 35, 0.12);
+}
+
+.di-contract-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .di-record-title {
   font-size: 14px;
   font-weight: 700;

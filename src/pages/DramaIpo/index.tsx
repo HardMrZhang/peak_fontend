@@ -15,6 +15,7 @@ import {
 import type { DramaIpoConfig, DramaProject, DramaPendingAgreement, DramaSubscriptionRecord } from '@/types'
 import { useDappTx, hasToken } from '@/hooks/useDappTx'
 import ContractSignModal from '@/components/ContractSignModal'
+import { downloadContract } from '@/utils/contractFile'
 import './index.css'
 
 const STATUS_CLASS: Record<string, string> = {
@@ -67,6 +68,19 @@ export default function DramaIpo() {
 
   // 我的认购：本金返还到期入账后展示「去提现」入口
   const [mySubs, setMySubs] = useState<DramaSubscriptionRecord[]>([])
+  // 正在下载合同的订单 id，防重复点击
+  const [downloadingSub, setDownloadingSub] = useState('')
+
+  const handleDownloadContract = async (s: DramaSubscriptionRecord) => {
+    setDownloadingSub(s.id)
+    try {
+      await downloadContract(s.id, s.contractNo ?? null, s.projectName)
+    } catch {
+      message.error(t('dramaIpo.downloadFail'))
+    } finally {
+      setDownloadingSub('')
+    }
+  }
 
   // 待开盘剧目的倒计时基准：openInMs 是服务端算好的剩余毫秒，本地按秒递减
   const [nowTick, setNowTick] = useState(Date.now())
@@ -712,6 +726,16 @@ export default function DramaIpo() {
                     <span className="di-record-time">
                       {s.shares} {t('dramaIpo.shareUnit')} · {Number(s.amountUsdt).toLocaleString()} USDT
                     </span>
+                    {s.contractSigned ? (
+                      <button
+                        type="button"
+                        className="di-contract-btn"
+                        disabled={downloadingSub === s.id}
+                        onClick={() => handleDownloadContract(s)}
+                      >
+                        {downloadingSub === s.id ? t('dramaIpo.downloading') : t('dramaIpo.downloadContract')}
+                      </button>
+                    ) : null}
                   </div>
                   <div className="di-principal-rows">
                     {s.principalReturns.map((p) => {

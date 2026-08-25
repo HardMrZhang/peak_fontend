@@ -60,11 +60,21 @@
   background: linear-gradient(90deg, #f5a623, #ff7a45);
 }
 
+.ann-greeting {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-primary, #f2f2f5);
+}
+
 .ann-body {
   margin: 0 0 24px;
   font-size: 14.5px;
   line-height: 1.9;
   text-align: justify;
+  /* 文案里的 \n 按换行渲染 */
+  white-space: pre-line;
   color: var(--text-primary, #f2f2f5);
 }
 

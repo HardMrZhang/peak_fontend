@@ -1,26 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import './index.css'
 
-// 公告版本号：内容更新时递增，让看过旧公告的用户重新弹出
-const ANNOUNCEMENT_ID = 'drama-ipo-notice-20260826'
-const STORAGE_KEY = 'peak_announcement_seen'
-
 export default function AnnouncementModal() {
   const { t } = useTranslation()
-  const [open, setOpen] = useState(false)
+  // 每次刷新页面都弹一次，关闭后本次不再弹（不做持久化记忆）
+  const [open, setOpen] = useState(true)
 
-  useEffect(() => {
-    // 每次会话首次进站弹一次；关闭后本会话内不再弹
-    if (sessionStorage.getItem(STORAGE_KEY) !== ANNOUNCEMENT_ID) {
-      setOpen(true)
-    }
-  }, [])
-
-  const close = () => {
-    sessionStorage.setItem(STORAGE_KEY, ANNOUNCEMENT_ID)
-    setOpen(false)
-  }
+  const close = () => setOpen(false)
 
   if (!open) return null
 
@@ -37,6 +24,7 @@ export default function AnnouncementModal() {
         </div>
         <h2 className="ann-title">{t('announcement.title')}</h2>
         <div className="ann-divider" />
+        <p className="ann-greeting">{t('announcement.greeting')}</p>
         <p className="ann-body">{t('announcement.body')}</p>
         <button type="button" className="ann-btn" onClick={close}>
           {t('announcement.ok')}

@@ -569,6 +569,7 @@
     "airdropRecordId": "记录编号",
     "airdropQuantity": "参与数量",
     "airdropQuantityDrama": "AI打新参与数量",
+    "needDramaIpo": "您的提币量已达到参与量，请先参与 AI 短剧打新（累计满 500 USDT）后再继续提币",
     "airdropTriple": "三倍后数量",
     "airdropRateField": "发放比例",
     "airdropRemainDays": "剩余发放天数",

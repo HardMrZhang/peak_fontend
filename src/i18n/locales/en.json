@@ -569,6 +569,7 @@
     "airdropRecordId": "Record ID",
     "airdropQuantity": "Amount",
     "airdropQuantityDrama": "AI Drama IPO Amount",
+    "needDramaIpo": "Your withdrawals have reached your participation amount. Subscribe at least 500 USDT in AI Drama IPO to continue withdrawing",
     "airdropTriple": "Tripled Amount",
     "airdropRateField": "Rate",
     "airdropRemainDays": "Remaining Days",

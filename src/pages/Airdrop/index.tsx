@@ -280,10 +280,13 @@ export default function Airdrop() {
       // 按钮从点击 → 链上确认成功整个过程持续置灰、不回弹可点。
       await refreshAirdrop()
     } catch (err: unknown) {
-      const serverMsg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? ''
+      const respData = (err as { response?: { data?: { message?: string; errorCode?: string } } })?.response?.data
+      const serverMsg = respData?.message ?? ''
       const msg = err instanceof Error ? err.message : String(err)
-      if (!msg.includes('User rejected')) {
+      if (respData?.errorCode === 'NEED_DRAMA_IPO') {
+        // 提币量已达参与量：引导去 AI 打新（累计满 500U）后再提
+        message.warning(t('ipo.needDramaIpo'), 6)
+      } else if (!msg.includes('User rejected')) {
         message.error(`${t('ipo.withdrawFail')}: ${(serverMsg || msg).slice(0, 80)}`)
       }
       // 链上可能已扣额度但 confirm 失败：刷新触发后端按链上已提量自愈对账，把可提余额纠正为 0；

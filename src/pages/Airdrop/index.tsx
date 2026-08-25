@@ -161,6 +161,10 @@ export default function Airdrop() {
 
   const handleJoin = async () => {
     if (joining) return
+    if (airdropConfig?.participateClosed) {
+      message.warning(t('ipo.participateClosed'))
+      return
+    }
     if (!hasToken() || !connected) {
       message.warning(t('account.walletRequired'))
       return
@@ -443,9 +447,18 @@ export default function Airdrop() {
             </div>
           </div>
 
-          <button type="button" className="sp-buy-btn" onClick={handleJoin} disabled={joining}>
-            {t('ipo.confirmJoin')}
-          </button>
+          {airdropConfig?.participateClosed ? (
+            <>
+              <button type="button" className="sp-buy-btn" disabled>
+                {t('ipo.participateClosedBtn')}
+              </button>
+              <div className="sp-airdrop-tip">{t('ipo.participateClosed')}</div>
+            </>
+          ) : (
+            <button type="button" className="sp-buy-btn" onClick={handleJoin} disabled={joining}>
+              {t('ipo.confirmJoin')}
+            </button>
+          )}
 
           {joinTip && <div className="sp-tip success">{joinTip}</div>}
         </section>

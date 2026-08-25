@@ -526,6 +526,8 @@ export interface DappAirdropConfig {
   dailyRateHigh: string
   tierThresholdUsd: number
   minUsd: number
+  /** 三倍空投入金口子已关闭，前端隐藏参与表单 */
+  participateClosed?: boolean
 }
 
 export interface DappAirdropParams extends DappIxParams {

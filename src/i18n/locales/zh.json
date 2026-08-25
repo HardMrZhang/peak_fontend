@@ -570,6 +570,8 @@
     "airdropQuantity": "参与数量",
     "airdropQuantityDrama": "AI打新参与数量",
     "needDramaIpo": "您的提币量已达到参与量，请先参与 AI 短剧打新（累计满 500 USDT）后再继续提币",
+    "participateClosed": "三倍空投参与通道已关闭，存量订单的释放与提币不受影响",
+    "participateClosedBtn": "参与已关闭",
     "airdropTriple": "三倍后数量",
     "airdropRateField": "发放比例",
     "airdropRemainDays": "剩余发放天数",

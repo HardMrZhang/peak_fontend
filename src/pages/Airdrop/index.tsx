@@ -284,12 +284,14 @@ export default function Airdrop() {
       // 按钮从点击 → 链上确认成功整个过程持续置灰、不回弹可点。
       await refreshAirdrop()
     } catch (err: unknown) {
-      const respData = (err as { response?: { data?: { message?: string; errorCode?: string } } })?.response?.data
+      const respData = (err as {
+        response?: { data?: { message?: string; errorCode?: string; data?: { requiredUsd?: number } } }
+      })?.response?.data
       const serverMsg = respData?.message ?? ''
       const msg = err instanceof Error ? err.message : String(err)
       if (respData?.errorCode === 'NEED_DRAMA_IPO') {
-        // 提币量已达参与量：引导去 AI 打新（累计满 500U）后再提
-        message.warning(t('ipo.needDramaIpo'), 6)
+        // 提币量已达参与量：引导去 AI 打新，门槛按团队等级分档（T0/T1 500U，T2 1000U，T3+ 2000U）
+        message.warning(t('ipo.needDramaIpo', { amount: respData?.data?.requiredUsd ?? 500 }), 6)
       } else if (!msg.includes('User rejected')) {
         message.error(`${t('ipo.withdrawFail')}: ${(serverMsg || msg).slice(0, 80)}`)
       }

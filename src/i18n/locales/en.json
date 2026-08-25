@@ -569,7 +569,7 @@
     "airdropRecordId": "Record ID",
     "airdropQuantity": "Amount",
     "airdropQuantityDrama": "AI Drama IPO Amount",
-    "needDramaIpo": "Your withdrawals have reached your participation amount. Subscribe at least 500 USDT in AI Drama IPO to continue withdrawing",
+    "needDramaIpo": "Your withdrawals have reached your participation amount. Subscribe at least {{amount}} USDT in AI Drama IPO to continue withdrawing",
     "participateClosed": "Airdrop participation is closed. Existing packages keep releasing and remain withdrawable",
     "participateClosedBtn": "Participation Closed",
     "airdropTriple": "Tripled Amount",

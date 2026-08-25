@@ -28,11 +28,26 @@ function saveBlob(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 4000)
 }
 
+const isMobile = () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+
 export async function downloadContract(
   subscriptionId: string,
   contractNo: string | null,
   projectName: string,
 ) {
+  // 手机端（尤其钱包内置浏览器）里 blob + a.download 经常静默失败，
+  // 改为直开带鉴权参数的 PDF 链接：inline 模式页内预览，可再分享/保存
+  if (isMobile()) {
+    const base = import.meta.env.VITE_API_BASE_URL ?? '/api'
+    const token = localStorage.getItem('peak_token') ?? ''
+    const url = `${base}/drama-ipo/agreement/${subscriptionId}/download.pdf`
+      + `?inline=1&access_token=${encodeURIComponent(token)}`
+    const win = window.open(url, '_blank')
+    // 弹窗被拦截时退化为当前页跳转（返回键可回来）
+    if (!win) window.location.href = url
+    return
+  }
+
   try {
     const res = await fetchDramaContractPdf(subscriptionId)
     saveBlob(res.data, fileNameOf(contractNo, projectName, 'pdf'))

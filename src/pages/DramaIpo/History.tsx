@@ -68,9 +68,9 @@ export default function DramaIpoHistory() {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [])
 
-  // 售罄剧目列表（公开接口）。售罄后先在首页停留 24h，超过 24h 才进入这里
+  // 售罄剧目列表（公开接口）。售罄后先在首页停留 48h，超过 48h 才进入这里
   useEffect(() => {
-    const LINGER_MS = 24 * 60 * 60 * 1000
+    const LINGER_MS = 48 * 60 * 60 * 1000
     getDramaProjects({ page: 1, pageSize: 50 })
       .then((res) => setSoldOut((res.data?.list ?? []).filter((p) => (
         p.status === 'SOLD_OUT'

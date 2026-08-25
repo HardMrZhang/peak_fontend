@@ -282,11 +282,17 @@ export default function DramaIpo() {
     ? Math.min(100, (detail.soldShares / detail.totalShares) * 100)
     : 0
 
-  // 售罄的剧目移到「历史查询」里展示，首页下拉只留可认购/待开盘的；全部售罄时回退展示原列表
+  // 售罄的剧目先在首页停留 24h（让用户看到已售罄），之后才移入「历史查询」；
+  // 刚售罄还没写入售罄时间的按停留处理。全部被移走时回退展示原列表，避免首页空白。
+  const SOLD_OUT_LINGER_MS = 24 * 60 * 60 * 1000
   const visibleProjects = useMemo(() => {
-    const alive = projects.filter((p) => p.status !== 'SOLD_OUT')
+    const alive = projects.filter((p) => {
+      if (p.status !== 'SOLD_OUT') return true
+      if (!p.soldOutAt) return true
+      return Date.now() - new Date(p.soldOutAt).getTime() < SOLD_OUT_LINGER_MS
+    })
     return alive.length > 0 ? alive : projects
-  }, [projects])
+  }, [projects, SOLD_OUT_LINGER_MS])
 
   // 剧目选择行底部的迷你认购进度条
   const renderTabProgress = (p: DramaProject) => {

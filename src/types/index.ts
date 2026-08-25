@@ -681,6 +681,8 @@ export interface DramaProject {
   status: DramaProjectStatus
   openAt: string | null
   closeAt: string | null
+  /** 售罄时间；售罄后 24h 内仍留在首页展示，之后移入历史查询 */
+  soldOutAt?: string | null
   /** 距离开盘剩余毫秒，已开盘为 0 */
   openInMs: number | null
   platforms: DramaPlatform[]

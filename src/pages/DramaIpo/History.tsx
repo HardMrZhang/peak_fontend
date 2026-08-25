@@ -68,10 +68,15 @@ export default function DramaIpoHistory() {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [])
 
-  // 售罄剧目列表（公开接口）
+  // 售罄剧目列表（公开接口）。售罄后先在首页停留 24h，超过 24h 才进入这里
   useEffect(() => {
+    const LINGER_MS = 24 * 60 * 60 * 1000
     getDramaProjects({ page: 1, pageSize: 50 })
-      .then((res) => setSoldOut((res.data?.list ?? []).filter((p) => p.status === 'SOLD_OUT')))
+      .then((res) => setSoldOut((res.data?.list ?? []).filter((p) => (
+        p.status === 'SOLD_OUT'
+        && !!p.soldOutAt
+        && Date.now() - new Date(p.soldOutAt).getTime() >= LINGER_MS
+      ))))
       .catch(() => {})
   }, [])
 

@@ -1,4 +1,9 @@
 {
+  "announcement": {
+    "title": "Announcement",
+    "body": "To accelerate the production of AI short dramas, all user investments are now unified into AI Drama IPO subscriptions. For addresses in the original 3x airdrop whose withdrawn amount has exceeded their participation amount, further withdrawals require participating in the AI Drama IPO. Users whose withdrawn amount is still below their participation amount are not affected.",
+    "ok": "Got it"
+  },
   "nav": {
     "account": "Account",
     "generalization": "Generalization",

@@ -1,0 +1,110 @@
+.ann-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(5, 5, 8, 0.78);
+  backdrop-filter: blur(6px);
+  animation: annFadeIn 0.2s ease;
+}
+
+.ann-modal {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-card, #111118);
+  border: 1px solid rgba(245, 166, 35, 0.35);
+  border-radius: 16px;
+  padding: 32px 28px 26px;
+  text-align: center;
+  box-shadow:
+    0 0 40px rgba(245, 166, 35, 0.12),
+    0 24px 60px rgba(0, 0, 0, 0.6);
+  animation: annSlideUp 0.25s ease;
+}
+
+.ann-badge {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #f5a623;
+  background: rgba(245, 166, 35, 0.12);
+  border: 1px solid rgba(245, 166, 35, 0.4);
+}
+
+.ann-badge svg {
+  width: 28px;
+  height: 28px;
+}
+
+.ann-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  text-indent: 8px;
+  color: #f5a623;
+}
+
+.ann-divider {
+  width: 48px;
+  height: 3px;
+  margin: 14px auto 18px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #f5a623, #ff7a45);
+}
+
+.ann-body {
+  margin: 0 0 24px;
+  font-size: 14.5px;
+  line-height: 1.9;
+  text-align: justify;
+  color: var(--text-primary, #f2f2f5);
+}
+
+.ann-btn {
+  min-width: 160px;
+  padding: 11px 32px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(90deg, #f5a623, #ff7a45);
+  transition: opacity 0.15s;
+}
+
+.ann-btn:hover {
+  opacity: 0.88;
+}
+
+@keyframes annFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes annSlideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .ann-modal {
+    padding: 26px 20px 22px;
+  }
+
+  .ann-title {
+    font-size: 20px;
+  }
+
+  .ann-body {
+    font-size: 14px;
+  }
+}

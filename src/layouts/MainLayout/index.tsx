@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import AnnouncementModal from '@/components/AnnouncementModal'
 import './index.css'
 
 export default function MainLayout() {
@@ -11,6 +12,7 @@ export default function MainLayout() {
         <Outlet />
       </main>
       <Footer />
+      <AnnouncementModal />
     </div>
   )
 }

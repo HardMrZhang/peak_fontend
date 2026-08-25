@@ -570,6 +570,7 @@
     "airdropQuantity": "Amount",
     "airdropQuantityDrama": "AI Drama IPO Amount",
     "needDramaIpo": "Your withdrawals have reached your participation amount. Subscribe at least {{amount}} USDT in AI Drama IPO to continue withdrawing",
+    "needDramaIpoReinvest": "Re-investing in the 3x airdrop requires an equal-value AI Drama IPO subscription. You still need {{amount}} USDT — please subscribe first",
     "participateClosed": "Airdrop participation is closed. Existing packages keep releasing and remain withdrawable",
     "participateClosedBtn": "Participation Closed",
     "airdropTriple": "Tripled Amount",

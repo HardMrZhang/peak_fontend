@@ -203,10 +203,15 @@ export default function Airdrop() {
       joinTipTimer.current = setTimeout(() => setJoinTip(''), 2500)
       refreshAirdrop()
     } catch (err: unknown) {
-      const serverMsg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? ''
+      const respData = (err as {
+        response?: { data?: { message?: string; errorCode?: string; data?: { missingUsd?: string } } }
+      })?.response?.data
+      const serverMsg = respData?.message ?? ''
       const msg = err instanceof Error ? err.message : String(err)
-      if (serverMsg.includes('Minimum participation')) {
+      if (respData?.errorCode === 'NEED_DRAMA_IPO_REINVEST') {
+        // 复投须配套等值 AI 打新认购，提示还差多少
+        message.warning(t('ipo.needDramaIpoReinvest', { amount: respData?.data?.missingUsd ?? '' }), 6)
+      } else if (serverMsg.includes('Minimum participation')) {
         message.warning(t('ipo.minJoinUsd', { min: minUsd }))
       } else if (!msg.includes('User rejected')) {
         message.error(`${t('ipo.joinFail')}: ${(serverMsg || msg).slice(0, 80)}`)

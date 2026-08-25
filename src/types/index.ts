@@ -549,6 +549,10 @@ export interface DappAirdropRecord {
   id: string
   grantId: string
   principal: string
+  /** 包来源：CHAIN 链上参与 / GENESIS 创世赠投 / DRAMA_IPO AI打新 */
+  sourceType?: string
+  /** AI 打新包的参与数量 = 入金折算代币（三倍总额的 1/3），固定两位小数 */
+  dramaBaseAmount?: string | null
   usdValue: string
   dailyRate: string
   dailyAmount: string

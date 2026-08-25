@@ -568,6 +568,7 @@
     "noAirdropRecord": "暂无参与记录，点击上方按钮参与后自动记录",
     "airdropRecordId": "记录编号",
     "airdropQuantity": "参与数量",
+    "airdropQuantityDrama": "AI打新参与数量",
     "airdropTriple": "三倍后数量",
     "airdropRateField": "发放比例",
     "airdropRemainDays": "剩余发放天数",

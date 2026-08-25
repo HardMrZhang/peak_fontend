@@ -465,7 +465,9 @@ export default function Airdrop() {
                   </div>
                   <div className="sp-record-grid">
                     <div className="sp-record-item">
-                      {t('ipo.airdropQuantity')}: {item.principal} PEAK
+                      {item.sourceType === 'DRAMA_IPO'
+                        ? <>{t('ipo.airdropQuantityDrama')}: {item.dramaBaseAmount} PEAK</>
+                        : <>{t('ipo.airdropQuantity')}: {item.principal} PEAK</>}
                     </div>
                     <div className="sp-record-item">
                       {t('ipo.airdropTriple')}: {item.totalCap} PEAK
@@ -554,7 +556,9 @@ export default function Airdrop() {
                             </div>
                             <div className="sp-record-grid">
                               <div className="sp-record-item">
-                                {t('ipo.airdropQuantity')}: {item.principal} PEAK
+                                {item.sourceType === 'DRAMA_IPO'
+                                  ? <>{t('ipo.airdropQuantityDrama')}: {item.dramaBaseAmount} PEAK</>
+                                  : <>{t('ipo.airdropQuantity')}: {item.principal} PEAK</>}
                               </div>
                               <div className="sp-record-item">
                                 {t('ipo.airdropTriple')}: {item.totalCap} PEAK

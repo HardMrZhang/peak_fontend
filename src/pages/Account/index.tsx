@@ -172,7 +172,10 @@ export default function Account() {
   const usdtBalance = balances.find((b) => b.asset === 'USDT')
   const usdtAmount = usdtBalance ? Number(usdtBalance.availableAmount).toFixed(2) : '0.00'
   const totalLocked = rewardSummary ? Number(rewardSummary.totalLocked).toFixed(2) : '0.00'
-  const totalReleased = rewardSummary ? Number(rewardSummary.totalReleased).toFixed(2) : '0.00'
+  // 账户页「已释放 PEAK」= 节点奖励释放 + 三倍空投/打新释放的合计（两条提现通道分别在节点页与三倍空投页）
+  const totalReleased = rewardSummary
+    ? (Number(rewardSummary.totalReleased) + Number(rewardSummary.airdropReleased ?? 0)).toFixed(2)
+    : '0.00'
   const changeTypeLabelMap: Record<string, string> = {
     NODE_PURCHASE_DEBIT: t('account.changeType.NODE_PURCHASE_DEBIT'),
     NODE_PURCHASE_FEE_REFUND: t('account.changeType.NODE_PURCHASE_FEE_REFUND'),

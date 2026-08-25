@@ -137,6 +137,8 @@ export interface RewardSummary {
   myYesterdayReward: string
   totalLocked: string
   totalReleased: string
+  /** 三倍空投/打新包累计已释放 PEAK（链上提币通道，与节点释放账本分开） */
+  airdropReleased?: string
 }
 
 export interface RewardLot {

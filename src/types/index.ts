@@ -684,7 +684,8 @@ export interface DramaProject {
     producer: string | null
   }
   totalEpisodes: number | null
-  runtimeMinutes: number | null
+  /** 总时长（分钟），可能是区间写法如 "70-80" */
+  runtimeMinutes: string | null
   premiereAt: string | null
   status: DramaProjectStatus
   openAt: string | null

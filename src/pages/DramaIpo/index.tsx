@@ -471,7 +471,7 @@ export default function DramaIpo() {
                           <div className="di-meta-label">{t('dramaIpo.episodes')}</div>
                           <div className="di-meta-value">
                             {detail?.totalEpisodes
-                              ? `${detail.totalEpisodes} ${t('dramaIpo.episodeUnit')}${detail.runtimeMinutes ? ` × ${detail.runtimeMinutes}${t('dramaIpo.minuteUnit')}` : ''}`
+                              ? `${detail.totalEpisodes} ${t('dramaIpo.episodeUnit')}${detail.runtimeMinutes ? ` · ${detail.runtimeMinutes}${t('dramaIpo.minuteUnit')}` : ''}`
                               : '--'}
                           </div>
                         </div>

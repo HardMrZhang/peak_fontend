@@ -305,7 +305,11 @@ export default function DramaIpo() {
       if (!p.soldOutAt) return true
       return Date.now() - new Date(p.soldOutAt).getTime() < SOLD_OUT_LINGER_MS
     })
-    return alive.length > 0 ? alive : projects
+    const list = alive.length > 0 ? alive : projects
+    // 没打完（未售罄）的排上面，售罄的沉底；同组内保持原有顺序
+    return [...list].sort(
+      (a, b) => Number(a.status === 'SOLD_OUT') - Number(b.status === 'SOLD_OUT'),
+    )
   }, [projects, SOLD_OUT_LINGER_MS])
 
   // 剧目选择行底部的迷你认购进度条

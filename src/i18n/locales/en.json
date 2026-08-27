@@ -1,10 +1,4 @@
 {
-  "announcement": {
-    "title": "Announcement",
-    "greeting": "Dear PEAK members,",
-    "body": "To accelerate the production of AI short dramas, the platform will gradually phase out the 3x airdrop program and shift to AI Drama IPO investments.\nFor addresses in the original 3x airdrop whose withdrawn amount has exceeded their participation amount, further withdrawals require participating in the AI Drama IPO.\nUsers whose withdrawn amount is still below their participation amount are not affected.",
-    "ok": "Got it"
-  },
   "nav": {
     "account": "Account",
     "generalization": "Generalization",

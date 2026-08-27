@@ -815,6 +815,11 @@
   border-bottom: 1px dashed var(--border-color);
 }
 
+/* 订单卡片里的剧目认购进度条 */
+.di-record-progress {
+  margin: 2px 0 12px;
+}
+
 .di-contract-btn {
   background: transparent;
   color: #f5a623;

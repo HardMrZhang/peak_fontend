@@ -723,7 +723,10 @@ export default function DramaIpo() {
           <section className="di-card">
             <h3 className="di-card-title">{t('dramaIpo.mySubs')}</h3>
             <div className="di-record-list">
-              {mySubs.map((s) => (
+              {mySubs.map((s) => {
+                // 订单卡片上展示该剧目当前的认购进度（按编号关联剧目）
+                const subProject = projects.find((p) => p.serialNo === s.serialNo)
+                return (
                 <div key={s.id} className="di-record-card">
                   <div className="di-record-head">
                     <span className="di-record-title">{s.serialNo} · {s.projectName}</span>
@@ -741,6 +744,9 @@ export default function DramaIpo() {
                       </button>
                     ) : null}
                   </div>
+                  {subProject ? (
+                    <div className="di-record-progress">{renderTabProgress(subProject)}</div>
+                  ) : null}
                   <div className="di-principal-rows">
                     {s.principalReturns.map((p) => {
                       const isPaid = p.status === 'PAID'
@@ -774,7 +780,8 @@ export default function DramaIpo() {
                     })}
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </section>
         )}

@@ -252,6 +252,11 @@ export default function Airdrop() {
 
   const handleWithdraw = async (record: DappAirdropRecord) => {
     if (withdrawing) return
+    // 非 AI 打新包提币通道已关闭
+    if (record.sourceType !== 'DRAMA_IPO') {
+      message.warning(t('ipo.withdrawClosed'))
+      return
+    }
     if (!hasToken() || !connected) {
       message.warning(t('account.walletRequired'))
       return
@@ -294,7 +299,9 @@ export default function Airdrop() {
       })?.response?.data
       const serverMsg = respData?.message ?? ''
       const msg = err instanceof Error ? err.message : String(err)
-      if (respData?.errorCode === 'NEED_DRAMA_IPO') {
+      if (respData?.errorCode === 'AIRDROP_WITHDRAW_CLOSED') {
+        message.warning(t('ipo.withdrawClosed'), 6)
+      } else if (respData?.errorCode === 'NEED_DRAMA_IPO') {
         // 提币量已达参与量：引导去 AI 打新，门槛按团队等级分档（T0/T1 500U，T2 1000U，T3+ 2000U）
         message.warning(t('ipo.needDramaIpo', { amount: respData?.data?.requiredUsd ?? 500 }), 6)
       } else if (!msg.includes('User rejected')) {
@@ -530,22 +537,26 @@ export default function Airdrop() {
                     {(() => {
                       // 出局且已无残留可提 → 显示「已出局」并禁用；
                       // 出局但仍有最后一笔释放未提 → 仍允许提走，避免余额卡住。
+                      // 非 AI 打新包（CHAIN/GENESIS）提币通道整体关闭。
                       const pkgWithdrawable = getPackageWithdrawableInt(item)
                       const fullyOut = item.isOut && pkgWithdrawable <= 0n
+                      const closed = item.sourceType !== 'DRAMA_IPO'
                       return (
                         <button
                           type="button"
                           className="sp-withdraw-btn"
                           onClick={() => handleWithdraw(item)}
-                          disabled={fullyOut || withdrawing || item.withdrawnToday || pkgWithdrawable <= 0n}
+                          disabled={closed || fullyOut || withdrawing || item.withdrawnToday || pkgWithdrawable <= 0n}
                         >
-                          {fullyOut
-                            ? t('ipo.airdropOut')
-                            : withdrawing && withdrawingId === item.id
-                              ? t('ipo.withdrawing')
-                              : item.withdrawnToday
-                                ? t('ipo.withdrawnToday')
-                                : t('ipo.withdrawBtn')}
+                          {closed
+                            ? t('ipo.withdrawClosedBtn')
+                            : fullyOut
+                              ? t('ipo.airdropOut')
+                              : withdrawing && withdrawingId === item.id
+                                ? t('ipo.withdrawing')
+                                : item.withdrawnToday
+                                  ? t('ipo.withdrawnToday')
+                                  : t('ipo.withdrawBtn')}
                         </button>
                       )
                     })()}

@@ -528,6 +528,8 @@ export interface DappAirdropConfig {
   minUsd: number
   /** 三倍空投入金口子已关闭，前端隐藏参与表单 */
   participateClosed?: boolean
+  /** 非打新包提币通道已关闭（白名单地址返回 false，可正常提币） */
+  nonDramaWithdrawClosed?: boolean
 }
 
 export interface DappAirdropParams extends DappIxParams {

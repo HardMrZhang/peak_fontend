@@ -252,8 +252,8 @@ export default function Airdrop() {
 
   const handleWithdraw = async (record: DappAirdropRecord) => {
     if (withdrawing) return
-    // 非 AI 打新包提币通道已关闭
-    if (record.sourceType !== 'DRAMA_IPO') {
+    // 非 AI 打新包提币通道已关闭（白名单地址后端返回 nonDramaWithdrawClosed=false，放行）
+    if (record.sourceType !== 'DRAMA_IPO' && (airdropConfig?.nonDramaWithdrawClosed ?? true)) {
       message.warning(t('ipo.withdrawClosed'))
       return
     }
@@ -541,6 +541,7 @@ export default function Airdrop() {
                       const pkgWithdrawable = getPackageWithdrawableInt(item)
                       const fullyOut = item.isOut && pkgWithdrawable <= 0n
                       const closed = item.sourceType !== 'DRAMA_IPO'
+                        && (airdropConfig?.nonDramaWithdrawClosed ?? true)
                       return (
                         <button
                           type="button"

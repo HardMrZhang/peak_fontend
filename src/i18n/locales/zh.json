@@ -569,7 +569,7 @@
     "airdropRecordId": "记录编号",
     "airdropQuantity": "参与数量",
     "airdropQuantityDrama": "AI打新参与数量",
-    "needDramaIpo": "您的提币量已达到参与量，请先参与 AI 短剧打新（累计满 {{amount}} USDT）后再继续提币",
+    "needDramaIpo": "三倍空投提币需先参与 AI 短剧打新（累计满 {{amount}} USDT）后才可开启",
     "needDramaIpoReinvest": "复投三倍空投需购买同等价值的 AI 短剧打新，还差 {{amount}} USDT，请先完成打新认购后再参与",
     "withdrawClosed": "该类空投包提币通道已关闭，仅 AI 打新空投包可提币",
     "withdrawClosedBtn": "提币已关闭",

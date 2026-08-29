@@ -242,6 +242,7 @@
     "addrRequired": "Please enter a wallet address",
     "amountRequired": "Please enter a valid amount",
     "submitSuccess": "Withdrawal request submitted",
+    "needDramaIpoNode": "Node holders must subscribe an equal value in AI Drama IPO before withdrawing. Still need {{amount}} USDT",
     "selectToken": "2.Select token",
     "qtyTitle": "3.Quantity of withdrawal",
     "accountBalance": "Balance of Account:",

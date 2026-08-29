@@ -227,7 +227,8 @@ export function estimateWithdraw(asset: string, amount: number) {
 }
 
 export function submitWithdraw(data: { asset: string; toAddress: string; amount: number }) {
-  return post<WithdrawRequest>('/withdraw/submit', data)
+  // 股东节点风控（NEED_DRAMA_IPO_NODE）由页面本地化提示，跳过全局英文弹窗
+  return post<WithdrawRequest>('/withdraw/submit', data, { skipErrorToast: true })
 }
 
 export function getWithdrawHistory(params?: { status?: string; page?: number; pageSize?: number }) {

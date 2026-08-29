@@ -89,8 +89,17 @@ export default function Withdrawal() {
       message.success(t('withdrawal.submitSuccess'))
       setAmount('')
       getBalances().then((r) => setBalances(r.data)).catch(() => { })
-    } catch {
-      // error handled by interceptor
+    } catch (err: unknown) {
+      const respData = (err as {
+        response?: { data?: { message?: string; errorCode?: string; data?: { missingUsd?: number } } }
+      })?.response?.data
+      if (respData?.errorCode === 'NEED_DRAMA_IPO_NODE') {
+        // 股东节点持有者：AI 打新累计认购需 ≥ 节点购买总额才可提 PEAK
+        message.warning(t('withdrawal.needDramaIpoNode', { amount: respData?.data?.missingUsd ?? 0 }), 6)
+      } else {
+        const serverMsg = respData?.message ?? (err instanceof Error ? err.message : 'Network error')
+        message.error(serverMsg)
+      }
     } finally {
       setSubmitting(false)
     }

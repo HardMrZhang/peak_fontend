@@ -242,6 +242,7 @@
     "addrRequired": "请输入钱包地址",
     "amountRequired": "请输入有效的金额",
     "submitSuccess": "提现申请已提交",
+    "needDramaIpoNode": "股东节点提现需参与 AI 短剧打新达到节点购买同等金额，还差 {{amount}} USDT，请先完成打新认购",
     "selectToken": "2.选择代币",
     "qtyTitle": "3.提现数量",
     "accountBalance": "账户余额：",

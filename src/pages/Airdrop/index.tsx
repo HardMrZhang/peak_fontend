@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { assetLabel } from '@/utils/asset'
 import { useNavigate } from 'react-router-dom'
 import { message } from 'antd'
 import {
@@ -331,7 +332,7 @@ export default function Airdrop() {
   // 打新包（V1 PEAK / V2 Aipk）判定与计价单位
   const isDramaPkg = (r: DappAirdropRecord) => r.sourceType === 'DRAMA_IPO' || r.sourceType === 'DRAMA_IPO_AIPK'
   const isAipkPkg = (r: DappAirdropRecord) => r.asset === 'AIPK'
-  const unitOf = (r: DappAirdropRecord) => (isAipkPkg(r) ? 'Aipk' : 'PEAK')
+  const unitOf = (r: DappAirdropRecord) => assetLabel(r.asset, 'PEAK')
 
   const renderReleaseSection = (item: DappAirdropRecord) => (
     <>

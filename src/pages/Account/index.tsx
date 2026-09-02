@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { assetLabel } from '@/utils/asset'
 import { useNavigate } from 'react-router-dom'
 import { Button, Table, Pagination, Modal, message } from 'antd'
 import { ExclamationCircleOutlined, InboxOutlined } from '@ant-design/icons'
@@ -256,7 +257,7 @@ export default function Account() {
   // 资产包每日释放（V2 为 Aipk，V1 历史包为 PEAK）：只有日期与数量有意义
   const dramaAirdropColumns: ColumnsType<DramaEarningRecord> = [
     { title: t('dramaIpo.colProject'), width: 180, render: (_: unknown, r: DramaEarningRecord) => `${r.serialNo ?? '-'} ${r.projectName ?? ''}` },
-    { title: t('dramaIpo.colAmount'), dataIndex: 'amount', width: 140, render: (v: string, r: DramaEarningRecord) => <span style={{ color: '#f5a623' }}>+{parseFloat(v).toFixed(4)} {r.asset === 'AIPK' ? 'Aipk' : r.asset}</span> },
+    { title: t('dramaIpo.colAmount'), dataIndex: 'amount', width: 140, render: (v: string, r: DramaEarningRecord) => <span style={{ color: '#f5a623' }}>+{parseFloat(v).toFixed(4)} {assetLabel(r.asset)}</span> },
     { title: t('account.colStatus'), dataIndex: 'status', width: 100, render: (v: string) => statusLabelMap[v] || v },
     { title: t('account.colTime'), dataIndex: 'bizDate', width: 140, render: (v?: string) => v?.slice(0, 10) ?? '-' },
   ]

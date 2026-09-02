@@ -25,6 +25,7 @@ import type {
 import { useDappTx, hasToken } from '@/hooks/useDappTx'
 import ContractSignModal from '@/components/ContractSignModal'
 import { downloadContract } from '@/utils/contractFile'
+import { assetLabel } from '@/utils/asset'
 import './index.css'
 
 const STATUS_CLASS: Record<string, string> = {
@@ -194,7 +195,7 @@ export default function DramaIpo() {
   const shareCount = Math.max(0, parseInt(shares, 10) || 0)
   const sharePrice = detail ? Number(detail.sharePriceUsdt) : (config?.sharePriceUsdt ?? 100)
   // V2：资产包代币为 Aipk，固定 1 Aipk = 1 USDT
-  const rewardAsset = config?.rewardAsset ?? 'Aipk'
+  const rewardAsset = assetLabel(config?.rewardAsset, 'Aipk')
   const peakPrice = config?.priceUsdt ? parseFloat(config.priceUsdt) : 1
   const remaining = detail?.remainingShares ?? 0
   const canSubscribe = detail?.status === 'OPEN' && remaining > 0
@@ -274,7 +275,7 @@ export default function DramaIpo() {
       }
       message.success(t('dramaIpo.claimSuccess', {
         amount: paramsRes.data.grossAmount,
-        asset: paramsRes.data.rewardAsset === 'AIPK' ? 'Aipk' : paramsRes.data.rewardAsset,
+        asset: assetLabel(paramsRes.data.rewardAsset, 'Aipk'),
       }))
       await loadShareRatio()
     } catch (err: unknown) {
@@ -805,7 +806,7 @@ export default function DramaIpo() {
                 <span className="di-hl">{Number(shareRatio.myActiveShares).toLocaleString()} / {Number(shareRatio.totalActiveShares).toLocaleString()}</span>
               </div>
               {shareRatio.source === 'CHAIN' ? (() => {
-                const unit = shareRatio.rewardAsset === 'AIPK' ? 'Aipk' : (shareRatio.rewardAsset ?? 'Aipk')
+                const unit = assetLabel(shareRatio.rewardAsset, 'Aipk')
                 return (
                   <>
                     <hr className="di-divider" />

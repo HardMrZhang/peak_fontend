@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { assetLabel } from '@/utils/asset'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button, Input, message, Spin } from 'antd'
 import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons'
@@ -11,7 +12,7 @@ import { CHAIN_NAME, DEFAULT_WITHDRAW_FEE_BY_ASSET } from '@/constants'
 import './index.css'
 
 type TokenType = 'USDT' | 'PEAK' | 'AIPK'
-const TOKEN_LABEL: Record<TokenType, string> = { USDT: 'USDT', PEAK: 'PEAK', AIPK: 'Aipk' }
+
 
 /**
  * 向下截断到两位小数（按字符串截断，避开浮点误差）。
@@ -232,10 +233,10 @@ export default function Withdrawal() {
                 />
                 <button className="max-btn" onClick={handleMax}>{t('withdrawal.max')}</button>
               </div>
-              <div className="commission-text">{t('withdrawal.commission')} {fee} {TOKEN_LABEL[tokenType]}</div>
+              <div className="commission-text">{t('withdrawal.commission')} {fee} {assetLabel(tokenType)}</div>
               <div className="estimate-bar">
                 <span className="estimate-label">{t('withdrawal.estimatedArrival')}</span>
-                <span>{actual} {TOKEN_LABEL[tokenType]}</span>
+                <span>{actual} {assetLabel(tokenType)}</span>
               </div>
             </div>
           </div>

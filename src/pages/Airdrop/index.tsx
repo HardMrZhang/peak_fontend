@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { message } from 'antd'
 import {
   getAirdropConfig,
@@ -41,6 +42,7 @@ const toSafeBigInt = (value: string | number | bigint | null | undefined): bigin
 
 export default function Airdrop() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { sendDappIx, connected } = useDappTx()
 
   const [airdropConfig, setAirdropConfig] = useState<DappAirdropConfig | null>(null)
@@ -253,7 +255,12 @@ export default function Airdrop() {
   const handleWithdraw = async (record: DappAirdropRecord) => {
     if (withdrawing) return
     // 非 AI 打新包提币通道已关闭（白名单地址后端返回 nonDramaWithdrawClosed=false，放行）
-    if (record.sourceType !== 'DRAMA_IPO' && (airdropConfig?.nonDramaWithdrawClosed ?? true)) {
+    // AIpk 包的释放已记入 AIPK 账本，提现走账本提现页（提到钱包不收手续费）
+    if (isAipkPkg(record)) {
+      navigate('/withdrawal')
+      return
+    }
+    if (!isDramaPkg(record) && (airdropConfig?.nonDramaWithdrawClosed ?? true)) {
       message.warning(t('ipo.withdrawClosed'))
       return
     }
@@ -321,6 +328,11 @@ export default function Airdrop() {
   }, [refreshAirdrop, connected])
 
   // 「查看每日释放记录」下拉：主列表卡片与出局记录卡片共用
+  // 打新包（V1 PEAK / V2 AIpk）判定与计价单位
+  const isDramaPkg = (r: DappAirdropRecord) => r.sourceType === 'DRAMA_IPO' || r.sourceType === 'DRAMA_IPO_AIPK'
+  const isAipkPkg = (r: DappAirdropRecord) => r.asset === 'AIPK'
+  const unitOf = (r: DappAirdropRecord) => (isAipkPkg(r) ? 'AIpk' : 'PEAK')
+
   const renderReleaseSection = (item: DappAirdropRecord) => (
     <>
       <button
@@ -348,7 +360,7 @@ export default function Airdrop() {
               {releaseMap[item.id].map((r) => (
                 <div key={r.id} className="sp-release-row">
                   <span>{r.bizDate}</span>
-                  <span>{r.amount} PEAK</span>
+                  <span>{r.amount} {unitOf(item)}</span>
                 </div>
               ))}
             </>
@@ -495,52 +507,67 @@ export default function Airdrop() {
                   </div>
                   <div className="sp-record-grid">
                     <div className="sp-record-item">
-                      {item.sourceType === 'DRAMA_IPO'
-                        ? <>{t('ipo.airdropQuantityDrama')}: {item.dramaBaseAmount} PEAK</>
+                      {isDramaPkg(item)
+                        ? <>{t('ipo.airdropQuantityDrama')}: {item.dramaBaseAmount} {unitOf(item)}</>
                         : <>{t('ipo.airdropQuantity')}: {item.principal} PEAK</>}
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.airdropTriple')}: {item.totalCap} PEAK
+                      {isAipkPkg(item) ? t('ipo.airdropPackTotal') : t('ipo.airdropTriple')}: {item.totalCap} {unitOf(item)}
                     </div>
                     <div className="sp-record-item">
                       {t('ipo.airdropRateField')}: {item.dailyRate}%
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.dailyStatic')}: {item.dailyAmount} PEAK
+                      {t('ipo.dailyStatic')}: {item.dailyAmount} {unitOf(item)}
                     </div>
                     <div className="sp-record-item">
                       {t('ipo.airdropRemainDays')}: {item.remainDays} {t('ipo.dayUnit')}
                     </div>
                     <div className="sp-record-item">
-                      {t('ipo.airdropRemaining')}: {item.remaining ?? '0'} PEAK
+                      {t('ipo.airdropRemaining')}: {item.remaining ?? '0'} {unitOf(item)}
                     </div>
-                    <div className="sp-record-item">
-                      {t('ipo.accelTeam')}: {item.isAccelerationOrder ? (summary?.teamAccel ?? '0') : '0'} PEAK
-                    </div>
-                    <div className="sp-record-item">
-                      {t('ipo.accelPeer')}: {item.isAccelerationOrder ? (summary?.peerAccel ?? '0') : '0'} PEAK
-                    </div>
-                    <div className="sp-record-item">
-                      {t('ipo.accelDirect')}: {item.isAccelerationOrder ? (summary?.directAccel ?? '0') : '0'} PEAK
-                    </div>
-                    <div className="sp-record-item">
-                      {t('ipo.accelDirectOnce')}: {item.isAccelerationOrder ? (summary?.directOnceTotal ?? '0') : '0'} PEAK
-                      {item.isAccelerationOrder && Number(summary?.directOnce ?? 0) > 0 && (
-                        <span className="sp-record-today">（{t('ipo.accelDirectOnceToday')} +{summary?.directOnce}）</span>
-                      )}
-                    </div>
+                    {/* AIpk 包不参与三倍空投加速：直推 / 级差在打新分红结算时另算，这里不展示加速行 */}
+                    {!isAipkPkg(item) && (
+                      <>
+                        <div className="sp-record-item">
+                          {t('ipo.accelTeam')}: {item.isAccelerationOrder ? (summary?.teamAccel ?? '0') : '0'} PEAK
+                        </div>
+                        <div className="sp-record-item">
+                          {t('ipo.accelPeer')}: {item.isAccelerationOrder ? (summary?.peerAccel ?? '0') : '0'} PEAK
+                        </div>
+                        <div className="sp-record-item">
+                          {t('ipo.accelDirect')}: {item.isAccelerationOrder ? (summary?.directAccel ?? '0') : '0'} PEAK
+                        </div>
+                        <div className="sp-record-item">
+                          {t('ipo.accelDirectOnce')}: {item.isAccelerationOrder ? (summary?.directOnceTotal ?? '0') : '0'} PEAK
+                          {item.isAccelerationOrder && Number(summary?.directOnce ?? 0) > 0 && (
+                            <span className="sp-record-today">（{t('ipo.accelDirectOnceToday')} +{summary?.directOnce}）</span>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="sp-record-footer">
                     <span className="sp-record-item">
-                      {t('ipo.withdrawable')}: {item.withdrawable ?? '0'} PEAK
+                      {isAipkPkg(item)
+                        ? <>{t('ipo.airdropReleasedToBalance')}: {item.released ?? '0'} AIpk</>
+                        : <>{t('ipo.withdrawable')}: {item.withdrawable ?? '0'} PEAK</>}
                     </span>
                     {(() => {
                       // 出局且已无残留可提 → 显示「已出局」并禁用；
                       // 出局但仍有最后一笔释放未提 → 仍允许提走，避免余额卡住。
                       // 非 AI 打新包（CHAIN/GENESIS）提币通道整体关闭。
+                      if (isAipkPkg(item)) {
+                        // AIpk 包：余额在 AIPK 账本，按钮直接跳转账本提现页
+                        return (
+                          <button type="button" className="sp-withdraw-btn" onClick={() => handleWithdraw(item)}>
+                            {t('ipo.goLedgerWithdraw')}
+                          </button>
+                        )
+                      }
                       const pkgWithdrawable = getPackageWithdrawableInt(item)
                       const fullyOut = item.isOut && pkgWithdrawable <= 0n
-                      const closed = item.sourceType !== 'DRAMA_IPO'
+                      const closed = !isDramaPkg(item)
                         && (airdropConfig?.nonDramaWithdrawClosed ?? true)
                       return (
                         <button
@@ -591,12 +618,12 @@ export default function Airdrop() {
                             </div>
                             <div className="sp-record-grid">
                               <div className="sp-record-item">
-                                {item.sourceType === 'DRAMA_IPO'
-                                  ? <>{t('ipo.airdropQuantityDrama')}: {item.dramaBaseAmount} PEAK</>
+                                {isDramaPkg(item)
+                                  ? <>{t('ipo.airdropQuantityDrama')}: {item.dramaBaseAmount} {unitOf(item)}</>
                                   : <>{t('ipo.airdropQuantity')}: {item.principal} PEAK</>}
                               </div>
                               <div className="sp-record-item">
-                                {t('ipo.airdropTriple')}: {item.totalCap} PEAK
+                                {isAipkPkg(item) ? t('ipo.airdropPackTotal') : t('ipo.airdropTriple')}: {item.totalCap} {unitOf(item)}
                               </div>
                               <div className="sp-record-item">
                                 <span className="sp-out-badge">{t('ipo.airdropOut')}</span>

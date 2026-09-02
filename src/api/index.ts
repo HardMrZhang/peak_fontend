@@ -62,6 +62,10 @@ import type {
   DramaSubscriptionRecord,
   DramaEarningRecord,
   DramaIpoSummary,
+  DramaShareRatio,
+  DramaDividendClaimParams,
+  DramaTeamTier,
+  DramaBalances,
   DramaHistoryRecord,
   DramaProjectRevenue,
 } from '@/types'
@@ -550,6 +554,30 @@ export function getDramaEarningRecords(params: {
 
 export function getDramaSummary() {
   return get<DramaIpoSummary>('/drama-ipo/summary')
+}
+
+// 我的份额占全网份额 %（链上 share_dividend；未配置时后端退化为 DB 口径）
+export function getDramaShareRatio() {
+  return get<DramaShareRatio>('/drama-ipo/share-ratio')
+}
+
+// 领取链上分红：params（用户钱包签名）→ confirm；每周一次，链上按份额加权结算
+export function getDramaDividendClaimParams() {
+  return get<DramaDividendClaimParams>('/drama-ipo/dividend/claim-params', { skipErrorToast: true })
+}
+
+export function confirmDramaDividendClaim(payload: { txHash: string }) {
+  return post<DramaShareRatio & { txHash: string }>('/drama-ipo/dividend/claim-confirm', payload)
+}
+
+// 我的打新团队等级（T1~T7 级差 / 直推 6% / 平级 10%）
+export function getDramaTeamTier() {
+  return get<DramaTeamTier>('/drama-ipo/team-tier')
+}
+
+// AIpk / USDT 余额
+export function getDramaBalances() {
+  return get<DramaBalances>('/drama-ipo/balances')
 }
 
 // 历史查询（公开）：按钱包地址或剧目编号查认购记录与各期分红

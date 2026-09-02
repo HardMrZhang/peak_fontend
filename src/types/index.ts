@@ -23,7 +23,7 @@ export interface WalletUser {
 }
 
 export interface AssetBalance {
-  asset: 'USDT' | 'PEAK'
+  asset: 'USDT' | 'PEAK' | 'AIPK'
   availableAmount: string
   lockedAmount: string
   pendingWithdrawAmount: string
@@ -555,6 +555,10 @@ export interface DappAirdropRecord {
   principal: string
   /** 包来源：CHAIN 链上参与 / GENESIS 创世赠投 / DRAMA_IPO AI打新 */
   sourceType?: string
+  /** 计价资产：打新 V2 包为 AIPK，其余为 PEAK */
+  asset?: 'PEAK' | 'AIPK'
+  /** AIpk 包走账本提现（LEDGER），其余走链上单签提币（CHAIN） */
+  withdrawVia?: 'LEDGER' | 'CHAIN'
   /** AI 打新包的参与数量 = 入金折算代币（三倍总额的 1/3），固定两位小数 */
   dramaBaseAmount?: string | null
   usdValue: string
@@ -701,19 +705,111 @@ export interface DramaProject {
 }
 
 export interface DramaIpoConfig {
+  /** 资产包代币价格（V2 为 AIpk 固定 1 USDT） */
   priceUsdt: string | null
+  rewardAsset?: string
+  aipkPriceUsdt?: number
+  aipkMint?: string
   sharePriceUsdt: number
   minShares: number
   airdropBaseRate: number
   multiplier: number
   releaseDays: number
   dailyRate: string
+  /** 每份资产包总量 / 每日释放（AIpk） */
+  airdropTotalPerShare?: string
+  airdropDailyPerShare?: string
+  /** 本金返还：签约后第 N 天返 rate */
+  principalReturnSchedule?: Array<{ seq: number; dayNo: number; rate: number }>
   principalReturnMonths: number[]
   principalReturnRate: number
   dividendFirstMonth: number
   dividendPeriods: number
   dividendRate: number
+  /** 动态收益 */
+  directDividendRate?: number
+  teamTiers?: Array<{ code: string; minSmallAreaUsdt: number; rate: number }>
+  peerBonusRate?: number
+  /** AIpk 提到钱包的手续费率（0） */
+  aipkWithdrawFeeRate?: number
   agreementVersion: string
+}
+
+/** 我的份额占全网份额（链上 share_dividend） */
+export interface DramaShareRatio {
+  source: 'CHAIN' | 'DB'
+  programId?: string
+  /** 分红池币种（AIPK / USDT） */
+  rewardAsset?: string
+  rewardMint?: string
+  claimIntervalSecs?: number
+  claimFeeRate?: number
+  totalActiveShares: string
+  totalRegisteredShares: string
+  myActiveShares: string
+  myRegisteredShares: string
+  /** 百分比数值，如 33.33 */
+  ratio: number
+  /** 累计分红（已领 + 未领） */
+  earnedTotal?: string
+  claimedTotal?: string
+  unclaimed: string
+  /** 现在就能领的金额（已过每周间隔） */
+  claimableNow?: string
+  canClaimNow?: boolean
+  nextClaimAt?: string | null
+  totalDeposited?: string
+  lastDepositAt?: string | null
+  positions: Array<{
+    subNo: string
+    positionId?: string
+    address: string
+    shares: string
+    status: 'PENDING' | 'ACTIVE' | 'ENDED' | string
+    startAt: string
+    endAt: string
+    ratio: number
+    earnedTotal: string
+    claimedTotal: string
+    claimable: string
+    canClaimNow?: boolean
+    nextClaimAt?: string | null
+    lastClaimAt: string | null
+  }>
+}
+
+/** 领取分红的自签交易参数 */
+export interface DramaDividendClaimParams extends Omit<DappIxParams, 'intentId'> {
+  rewardAsset: string
+  claimFeeRate: number
+  grossAmount: string
+  positionCount: number
+  ownerTokenAccount: string
+}
+
+/** 我的打新团队等级 */
+export interface DramaTeamTier {
+  tierCode: string
+  tier: number
+  rate: number
+  smallAreaUsdt: string
+  teamUsdt: string
+  ownUsdt: string
+  directCount: number
+  nextTier: { tierCode: string; minSmallAreaUsdt: number; rate: number } | null
+  tiers: Array<{ code: string; minSmallAreaUsdt: number; rate: number }>
+  directRate: number
+  peerRate: number
+}
+
+/** AIpk / USDT 账本余额 */
+export interface DramaBalances {
+  aipk: { asset: string; available: string; pendingWithdraw: string; totalIn: string; totalOut: string }
+  usdt: { asset: string; available: string; pendingWithdraw: string; totalIn: string; totalOut: string }
+  aipkPriceUsdt: number
+  /** AIpk 提到钱包的手续费率（0） */
+  aipkWithdrawFeeRate: number
+  aipkMint: string
 }
 
 /** 付款前的《认购须知》 */
@@ -786,7 +882,11 @@ export interface DramaSubscribeParams extends DappIxParams {
 }
 
 export interface DramaPrincipalReturnItem {
+  /** 链上位掩码下标（历史字段），展示请用 seq / dayNo */
   monthNo: number
+  seq?: number
+  /** 签约后第 N 天触发（V2：90 / 120） */
+  dayNo?: number | null
   amountUsdt: string
   dueDate: string
   status: string
@@ -834,11 +934,12 @@ export interface DramaSubscriptionRecord {
 export interface DramaEarningRecord {
   id: string
   type: 'AIRDROP' | 'PRINCIPAL' | 'DIVIDEND'
-  asset: 'PEAK' | 'USDT'
+  /** AIRDROP：V2 为 AIPK、V1 历史包为 PEAK；本金/分红为 USDT */
+  asset: 'PEAK' | 'AIPK' | 'USDT'
   serialNo: string | null
   projectName: string | null
   subNo?: string | null
-  dayNo?: number
+  dayNo?: number | null
   periodNo?: number
   amount: string
   status: string
@@ -871,6 +972,7 @@ export interface DramaHistoryRecord {
   shares: number
   amountUsdt: string
   peakPriceUsdt: string
+  rewardAsset?: string
   airdropTotal: string
   airdropReleased: string
   dividendTotalUsdt: string

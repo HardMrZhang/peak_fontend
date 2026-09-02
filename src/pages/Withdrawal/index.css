@@ -1,1 +1,4 @@
 /* Withdrawal shares styles from TopUp/index.css via global imports */
+
+/* AIpk（AI 短剧打新奖励代币） */
+.token-dot.aipk { background: #f97316; }

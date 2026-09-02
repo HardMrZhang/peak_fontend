@@ -10,7 +10,8 @@ import { useAuthStore } from '@/store/useAuthStore'
 import { CHAIN_NAME, DEFAULT_WITHDRAW_FEE_BY_ASSET } from '@/constants'
 import './index.css'
 
-type TokenType = 'USDT' | 'PEAK'
+type TokenType = 'USDT' | 'PEAK' | 'AIPK'
+const TOKEN_LABEL: Record<TokenType, string> = { USDT: 'USDT', PEAK: 'PEAK', AIPK: 'AIpk' }
 
 /**
  * 向下截断到两位小数（按字符串截断，避开浮点误差）。
@@ -194,7 +195,18 @@ export default function Withdrawal() {
                 >
                   <span className="token-dot peak" /> PEAK
                 </span>
+                <span
+                  className={`token-option ${tokenType === 'AIPK' ? 'active' : ''}`}
+                  onClick={() => { setTokenType('AIPK'); setAmount(''); setEstimate(null) }}
+                >
+                  <span className="token-dot aipk" /> AIpk
+                </span>
               </div>
+              {tokenType === 'AIPK' && (
+                <div className="balance-hint" style={{ marginTop: 8 }}>
+                  {t('withdrawal.aipkHint')}
+                </div>
+              )}
             </div>
           </div>
 
@@ -215,10 +227,10 @@ export default function Withdrawal() {
                 />
                 <button className="max-btn" onClick={handleMax}>{t('withdrawal.max')}</button>
               </div>
-              <div className="commission-text">{t('withdrawal.commission')} {fee} {tokenType}</div>
+              <div className="commission-text">{t('withdrawal.commission')} {fee} {TOKEN_LABEL[tokenType]}</div>
               <div className="estimate-bar">
                 <span className="estimate-label">{t('withdrawal.estimatedArrival')}</span>
-                <span>{actual} {tokenType}</span>
+                <span>{actual} {TOKEN_LABEL[tokenType]}</span>
               </div>
             </div>
           </div>

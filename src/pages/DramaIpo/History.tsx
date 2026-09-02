@@ -204,10 +204,10 @@ export default function DramaIpoHistory() {
                         {t('dramaIpo.subAmount')}: <b>{Number(item.amountUsdt).toLocaleString()} USDT</b>
                       </div>
                       <div className="di-record-item">
-                        {t('dramaIpo.gotPeak')}: <b>{Number(item.airdropTotal).toLocaleString()} PEAK</b>
+                        {t('dramaIpo.gotPeak')}: <b>{Number(item.airdropTotal).toLocaleString()} {item.rewardAsset ?? 'PEAK'}</b>
                       </div>
                       <div className="di-record-item">
-                        {t('dramaIpo.releasedPeak')}: <b>{Number(item.airdropReleased).toLocaleString()} PEAK</b>
+                        {t('dramaIpo.releasedPeak')}: <b>{Number(item.airdropReleased).toLocaleString()} {item.rewardAsset ?? 'PEAK'}</b>
                       </div>
                       <div className="di-record-item">
                         {t('dramaIpo.dividendTotal')}: <b>{Number(item.dividendTotalUsdt).toLocaleString()} USDT</b>

@@ -250,10 +250,10 @@ export default function Account() {
     { title: t('account.colTime'), dataIndex: 'createdAt', width: 170, render: (v: string) => v?.slice(0, 19).replace('T', ' ') },
   ]
 
-  // 三倍代币（PEAK）每日释放：只有日期与数量有意义
+  // 资产包每日释放（V2 为 AIpk，V1 历史包为 PEAK）：只有日期与数量有意义
   const dramaAirdropColumns: ColumnsType<DramaEarningRecord> = [
     { title: t('dramaIpo.colProject'), width: 180, render: (_: unknown, r: DramaEarningRecord) => `${r.serialNo ?? '-'} ${r.projectName ?? ''}` },
-    { title: t('dramaIpo.colAmount'), dataIndex: 'amount', width: 140, render: (v: string) => <span style={{ color: '#f5a623' }}>+{parseFloat(v).toFixed(4)} PEAK</span> },
+    { title: t('dramaIpo.colAmount'), dataIndex: 'amount', width: 140, render: (v: string, r: DramaEarningRecord) => <span style={{ color: '#f5a623' }}>+{parseFloat(v).toFixed(4)} {r.asset === 'AIPK' ? 'AIpk' : r.asset}</span> },
     { title: t('account.colStatus'), dataIndex: 'status', width: 100, render: (v: string) => statusLabelMap[v] || v },
     { title: t('account.colTime'), dataIndex: 'bizDate', width: 140, render: (v?: string) => v?.slice(0, 10) ?? '-' },
   ]
@@ -265,7 +265,9 @@ export default function Account() {
       title: t('account.colType'),
       width: 140,
       render: (_: unknown, r: DramaEarningRecord) => (r.type === 'PRINCIPAL'
-        ? t('dramaIpo.principalMonth', { n: r.periodNo })
+        ? (r.dayNo
+          ? t('dramaIpo.principalOfDay', { n: r.periodNo, day: r.dayNo })
+          : t('dramaIpo.principalMonth', { n: r.periodNo }))
         : t('dramaIpo.dividendPeriod', { n: r.periodNo })),
     },
     { title: t('dramaIpo.colAmount'), dataIndex: 'amount', width: 130, render: (v: string) => <span style={{ color: '#f5a623' }}>+{parseFloat(v).toFixed(2)} USDT</span> },

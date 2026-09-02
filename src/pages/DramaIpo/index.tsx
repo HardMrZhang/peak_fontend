@@ -11,8 +11,17 @@ import {
   previewDramaAgreement,
   getDramaPendingAgreements,
   getDramaSubscriptions,
+  getDramaShareRatio,
+  getDramaDividendClaimParams,
+  confirmDramaDividendClaim,
 } from '@/api'
-import type { DramaIpoConfig, DramaProject, DramaPendingAgreement, DramaSubscriptionRecord } from '@/types'
+import type {
+  DramaIpoConfig,
+  DramaProject,
+  DramaPendingAgreement,
+  DramaSubscriptionRecord,
+  DramaShareRatio,
+} from '@/types'
 import { useDappTx, hasToken } from '@/hooks/useDappTx'
 import ContractSignModal from '@/components/ContractSignModal'
 import { downloadContract } from '@/utils/contractFile'
@@ -48,6 +57,8 @@ export default function DramaIpo() {
   const { sendDappIx, connected } = useDappTx()
 
   const [config, setConfig] = useState<DramaIpoConfig | null>(null)
+  const [shareRatio, setShareRatio] = useState<DramaShareRatio | null>(null)
+  const [claiming, setClaiming] = useState(false)
   const [projects, setProjects] = useState<DramaProject[]>([])
   const [activeSerial, setActiveSerial] = useState<string | null>(null)
   const [detail, setDetail] = useState<DramaProject | null>(null)
@@ -138,12 +149,22 @@ export default function DramaIpo() {
     } catch { /* ignore */ }
   }, [])
 
+  // 我的份额占全网份额 %（链上分红池）
+  const loadShareRatio = useCallback(async () => {
+    if (!hasToken()) return
+    try {
+      const res = await getDramaShareRatio()
+      setShareRatio(res.data ?? null)
+    } catch { /* ignore */ }
+  }, [])
+
   useEffect(() => {
     getDramaIpoConfig().then((res) => setConfig(res.data)).catch(() => {})
     loadProjects()
     loadPending()
     loadMySubs()
-  }, [loadProjects, loadPending, loadMySubs])
+    loadShareRatio()
+  }, [loadProjects, loadPending, loadMySubs, loadShareRatio])
 
   useEffect(() => {
     if (activeSerial) loadDetail(activeSerial)
@@ -172,24 +193,28 @@ export default function DramaIpo() {
 
   const shareCount = Math.max(0, parseInt(shares, 10) || 0)
   const sharePrice = detail ? Number(detail.sharePriceUsdt) : (config?.sharePriceUsdt ?? 100)
-  const peakPrice = config?.priceUsdt ? parseFloat(config.priceUsdt) : 0
+  // V2：资产包代币为 AIpk，固定 1 AIpk = 1 USDT
+  const rewardAsset = config?.rewardAsset ?? 'AIpk'
+  const peakPrice = config?.priceUsdt ? parseFloat(config.priceUsdt) : 1
   const remaining = detail?.remainingShares ?? 0
   const canSubscribe = detail?.status === 'OPEN' && remaining > 0
 
   /**
-   * 预计收益，与链上 subscribe 指令同一套算法：
-   *   空投 = 认购额 × 33% ÷ PEAK 现价 × 3，300 天线性释放
-   *   本金 = 第 2、3 个月各返 50%
-   *   分红 = 第 4 个月起 10 期，每期按份数分摊该月票房的 40%
+   * 预计收益，与链上 subscribe 指令同一套算法（V2）：
+   *   资产包 = 认购额 × 100% ÷ AIpk 价（1U）× 1 = 认购额等值 AIpk，300 天线性释放（每份每天 10 枚）
+   *   本金   = 签约后第 90 / 120 天各返 50%（USDT）
+   *   分红   = 第 4 个月起 10 期，每期按份数分摊该剧真实收益的 40%
    */
   const calc = useMemo(() => {
     const amount = shareCount * sharePrice
-    const baseRate = config?.airdropBaseRate ?? 0.33
-    const multiplier = config?.multiplier ?? 3
+    const baseRate = config?.airdropBaseRate ?? 1
+    const multiplier = config?.multiplier ?? 1
     const releaseDays = config?.releaseDays ?? 300
     const airdropBaseUsdt = amount * baseRate
     const airdropTotal = peakPrice > 0 ? (airdropBaseUsdt / peakPrice) * multiplier : 0
     const principalPerMonth = amount * (config?.principalReturnRate ?? 0.5)
+    const schedule = config?.principalReturnSchedule
+      ?? (config?.principalReturnMonths ?? [3, 4]).map((m, i) => ({ seq: i + 1, dayNo: m * 30, rate: 0.5 }))
     return {
       amount,
       airdropBaseUsdt,
@@ -197,7 +222,7 @@ export default function DramaIpo() {
       airdropDaily: releaseDays > 0 ? airdropTotal / releaseDays : 0,
       releaseDays,
       principalPerMonth,
-      principalMonths: config?.principalReturnMonths ?? [2, 3],
+      principalDays: schedule.map((s) => s.dayNo),
       dividendFirstMonth: config?.dividendFirstMonth ?? 4,
       dividendPeriods: config?.dividendPeriods ?? 10,
       dividendRate: config?.dividendRate ?? 0.4,
@@ -224,6 +249,45 @@ export default function DramaIpo() {
       setAgreementHtml('')
     } finally {
       setAgreementLoading(false)
+    }
+  }
+
+  // 领取链上分红：每周一次，合约按份额加权结算并转到钱包（用户自付 gas）
+  const handleClaimDividend = async () => {
+    if (claiming) return
+    if (!hasToken() || !connected) {
+      message.warning(t('account.walletRequired'))
+      return
+    }
+    setClaiming(true)
+    try {
+      const paramsRes = await getDramaDividendClaimParams()
+      const sig = await sendDappIx({ intentId: '', ...paramsRes.data })
+      let confirmed = false
+      for (let attempt = 0; attempt < 3 && !confirmed; attempt += 1) {
+        try {
+          await confirmDramaDividendClaim({ txHash: sig })
+          confirmed = true
+        } catch {
+          if (attempt < 2) await new Promise((r) => setTimeout(r, 2000))
+        }
+      }
+      message.success(t('dramaIpo.claimSuccess', {
+        amount: paramsRes.data.grossAmount,
+        asset: paramsRes.data.rewardAsset === 'AIPK' ? 'AIpk' : paramsRes.data.rewardAsset,
+      }))
+      await loadShareRatio()
+    } catch (err: unknown) {
+      const resp = (err as { response?: { data?: { code?: string; message?: string; data?: { nextClaimAt?: string } } } })?.response?.data
+      if (resp?.code === 'CLAIM_TOO_SOON') {
+        message.warning(t('dramaIpo.claimTooSoon', { time: formatBeijingDate(resp.data?.nextClaimAt ?? '') }))
+      } else if (resp?.code === 'NOTHING_TO_CLAIM') {
+        message.info(t('dramaIpo.nothingToClaim'))
+      } else {
+        message.error(resp?.message ?? (err instanceof Error ? err.message : t('dramaIpo.claimFail')))
+      }
+    } finally {
+      setClaiming(false)
     }
   }
 
@@ -540,19 +604,28 @@ export default function DramaIpo() {
                   <div className="di-synopsis">
                     <p>{t('dramaIpo.rule1', { price: sharePrice })}</p>
                     <p>{t('dramaIpo.rule2', {
-                      rate: Math.round((config?.airdropBaseRate ?? 0.33) * 100),
-                      multiplier: config?.multiplier ?? 3,
+                      asset: rewardAsset,
+                      total: (sharePrice * (config?.airdropBaseRate ?? 1) * (config?.multiplier ?? 1) / peakPrice).toLocaleString(),
+                      daily: (sharePrice * (config?.airdropBaseRate ?? 1) * (config?.multiplier ?? 1) / peakPrice / (config?.releaseDays ?? 300)).toLocaleString(),
                       days: config?.releaseDays ?? 300,
                     })}</p>
                     <p>{t('dramaIpo.rule3', {
-                      days: (config?.principalReturnMonths ?? [2, 3]).map((m) => m * 30).join('、'),
+                      days: calc.principalDays.join('、'),
                       rate: Math.round((config?.principalReturnRate ?? 0.5) * 100),
                     })}</p>
                     <p>{t('dramaIpo.rule4', {
                       month: config?.dividendFirstMonth ?? 4,
+                      lastMonth: (config?.dividendFirstMonth ?? 4) + (config?.dividendPeriods ?? 10) - 1,
                       periods: config?.dividendPeriods ?? 10,
                       rate: Math.round((config?.dividendRate ?? 0.4) * 100),
                     })}</p>
+                    <p>{t('dramaIpo.rule6', {
+                      asset: rewardAsset,
+                      direct: Math.round((config?.directDividendRate ?? 0.06) * 100),
+                      peer: Math.round((config?.peerBonusRate ?? 0.1) * 100),
+                      tiers: (config?.teamTiers ?? []).map((x) => `${x.code} ${x.minSmallAreaUsdt.toLocaleString()}U→${Math.round(x.rate * 100)}%`).join('，'),
+                    })}</p>
+                    <p>{t('dramaIpo.rule7', { asset: rewardAsset })}</p>
                     <p>{t('dramaIpo.rule5')}</p>
                   </div>
                 </section>
@@ -623,8 +696,8 @@ export default function DramaIpo() {
                     <span className="di-hl">{calc.amount.toFixed(2)} USDT</span>
                   </div>
                   <div className="di-line">
-                    <span>{t('dramaIpo.peakPrice')}</span>
-                    <span className="di-hl">{peakPrice > 0 ? peakPrice.toFixed(4) : '--'} USDT</span>
+                    <span>{t('dramaIpo.peakPrice', { asset: rewardAsset })}</span>
+                    <span className="di-hl">{peakPrice > 0 ? peakPrice.toFixed(2) : '--'} USDT</span>
                   </div>
                   <div className="di-line">
                     <span>{t('dramaIpo.remaining')}</span>
@@ -635,19 +708,19 @@ export default function DramaIpo() {
                 <div className="di-earn-card">
                   <h4 className="di-earn-title">{t('dramaIpo.estimateTitle')}</h4>
                   <div className="di-line">
-                    <span className="di-line-strong">{t('dramaIpo.airdropTotal')}</span>
-                    <span className="di-hl">{calc.airdropTotal.toFixed(2)} PEAK</span>
+                    <span className="di-line-strong">{t('dramaIpo.airdropTotal', { asset: rewardAsset })}</span>
+                    <span className="di-hl">{calc.airdropTotal.toFixed(2)} {rewardAsset}</span>
                   </div>
                   <div className="di-sub-note">
                     {t('dramaIpo.airdropFormula', {
                       base: calc.airdropBaseUsdt.toFixed(2),
-                      rate: Math.round((config?.airdropBaseRate ?? 0.33) * 100),
-                      multiplier: config?.multiplier ?? 3,
+                      asset: rewardAsset,
+                      price: peakPrice.toFixed(2),
                     })}
                   </div>
                   <div className="di-line">
                     <span>{t('dramaIpo.airdropDaily')}</span>
-                    <span className="di-hl">{calc.airdropDaily.toFixed(4)} PEAK × {calc.releaseDays} {t('dramaIpo.dayUnit')}</span>
+                    <span className="di-hl">{calc.airdropDaily.toFixed(2)} {rewardAsset} × {calc.releaseDays} {t('dramaIpo.dayUnit')}</span>
                   </div>
 
                   <hr className="di-divider" />
@@ -658,7 +731,7 @@ export default function DramaIpo() {
                   </div>
                   <div className="di-sub-note">
                     {t('dramaIpo.principalDetail', {
-                      months: calc.principalMonths.join('、'),
+                      days: calc.principalDays.join('、'),
                       amount: calc.principalPerMonth.toFixed(2),
                     })}
                   </div>
@@ -718,6 +791,64 @@ export default function DramaIpo() {
           </>
         )}
 
+        {/* ---------------- 我的份额占全网份额（链上分红池） ---------------- */}
+        {shareRatio && (Number(shareRatio.myRegisteredShares) > 0 || Number(shareRatio.totalActiveShares) > 0) && (
+          <section className="di-card">
+            <h3 className="di-card-title">{t('dramaIpo.shareRatioTitle')}</h3>
+            <div className="di-earn-card">
+              <div className="di-line">
+                <span className="di-line-strong">{t('dramaIpo.myShareRatio')}</span>
+                <span className="di-hl">{shareRatio.ratio.toFixed(2)}%</span>
+              </div>
+              <div className="di-line">
+                <span>{t('dramaIpo.myActiveShares')}</span>
+                <span className="di-hl">{Number(shareRatio.myActiveShares).toLocaleString()} / {Number(shareRatio.totalActiveShares).toLocaleString()}</span>
+              </div>
+              {shareRatio.source === 'CHAIN' ? (() => {
+                const unit = shareRatio.rewardAsset === 'AIPK' ? 'AIpk' : (shareRatio.rewardAsset ?? 'AIpk')
+                return (
+                  <>
+                    <hr className="di-divider" />
+                    <div className="di-line">
+                      <span className="di-line-strong">{t('dramaIpo.earnedDividend')}</span>
+                      <span className="di-hl">{Number(shareRatio.earnedTotal ?? 0).toFixed(4)} {unit}</span>
+                    </div>
+                    <div className="di-line">
+                      <span>{t('dramaIpo.claimedDividend')}</span>
+                      <span>{Number(shareRatio.claimedTotal ?? 0).toFixed(4)} {unit}</span>
+                    </div>
+                    <div className="di-line">
+                      <span>{t('dramaIpo.unclaimedDividend')}</span>
+                      <span className="di-hl">{Number(shareRatio.unclaimed).toFixed(4)} {unit}</span>
+                    </div>
+                    <div className="di-sub-note">
+                      {shareRatio.canClaimNow
+                        ? t('dramaIpo.claimReady', { amount: Number(shareRatio.claimableNow ?? 0).toFixed(4), asset: unit })
+                        : shareRatio.nextClaimAt
+                          ? t('dramaIpo.claimNextAt', { time: formatBeijingDate(shareRatio.nextClaimAt) })
+                          : t('dramaIpo.claimWeeklyNote')}
+                      {(shareRatio.claimFeeRate ?? 0) > 0
+                        ? ` ${t('dramaIpo.claimFeeNote', { fee: Math.round((shareRatio.claimFeeRate ?? 0) * 100) })}`
+                        : ''}
+                    </div>
+                    <button
+                      type="button"
+                      className="di-submit"
+                      onClick={handleClaimDividend}
+                      disabled={claiming || !shareRatio.canClaimNow}
+                    >
+                      {claiming ? t('dramaIpo.claiming') : t('dramaIpo.claimBtn')}
+                    </button>
+                    <div className="di-sub-note">{t('dramaIpo.shareRatioNote')}</div>
+                  </>
+                )
+              })() : (
+                <div className="di-sub-note">{t('dramaIpo.shareRatioDbNote')}</div>
+              )}
+            </div>
+          </section>
+        )}
+
         {/* ---------------- 我的认购：本金返还进度与提现入口 ---------------- */}
         {mySubs.length > 0 && (
           <section className="di-card">
@@ -754,7 +885,9 @@ export default function DramaIpo() {
                       return (
                         <div key={p.monthNo} className="di-principal-row">
                           <span className="di-pr-name">
-                            {t('dramaIpo.principalOfMonth', { n: p.monthNo })}
+                            {p.dayNo
+                              ? t('dramaIpo.principalOfDay', { n: p.seq ?? p.monthNo, day: p.dayNo })
+                              : t('dramaIpo.principalOfMonth', { n: p.monthNo })}
                           </span>
                           <b className="di-pr-amount">{Number(p.amountUsdt).toFixed(2)} USDT</b>
                           {isPaid ? (

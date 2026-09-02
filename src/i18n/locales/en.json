@@ -193,7 +193,8 @@
     "understood": "Got it",
     "signCancelled": "Signature cancelled. Please reconnect your wallet to sign in.",
     "reconnectNeeded": "Wallet authorization expired. Please reconnect your wallet and approve the signature.",
-    "loginFailedRetry": "Wallet login failed. Please reconnect and sign again."
+    "loginFailedRetry": "Wallet login failed. Please reconnect and sign again.",
+    "swapAipk": "Swap to USDT"
   },
   "topup": {
     "breadcrumb": "Account/",

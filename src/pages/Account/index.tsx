@@ -171,6 +171,9 @@ export default function Account() {
 
   const usdtBalance = balances.find((b) => b.asset === 'USDT')
   const usdtAmount = usdtBalance ? Number(usdtBalance.availableAmount).toFixed(2) : '0.00'
+  // AIpk：AI 短剧打新资产包释放 + 直推/级差奖励（账本余额），可提到钱包或站内兑换 USDT
+  const aipkBalance = balances.find((b) => b.asset === 'AIPK')
+  const aipkAmount = aipkBalance ? Number(aipkBalance.availableAmount).toFixed(4) : '0.0000'
   const totalLocked = rewardSummary ? Number(rewardSummary.totalLocked).toFixed(2) : '0.00'
   // 账户页「已释放 PEAK」= 节点奖励释放 + 三倍空投/打新释放的合计（两条提现通道分别在节点页与三倍空投页）
   const totalReleased = rewardSummary
@@ -413,7 +416,13 @@ export default function Account() {
             <div className="card-row">
               <span className="balance-icon usdt">◉</span>
               <span className="balance-amount">{balanceLoading ? '--' : usdtAmount} USDT</span>
-              <Button className="withdraw-btn" onClick={() => handleWalletAction('/account/withdrawal')}>{t('account.withdrawal')}</Button>
+              <Button className="withdraw-btn" onClick={() => handleWalletAction('/account/withdrawal?asset=USDT')}>{t('account.withdrawal')}</Button>
+            </div>
+            <div className="card-row aipk-row">
+              <span className="balance-icon aipk">◉</span>
+              <span className="balance-amount aipk-amount">{balanceLoading ? '--' : aipkAmount} AIpk</span>
+              <Button className="withdraw-btn" onClick={() => handleWalletAction('/account/withdrawal?asset=AIPK')}>{t('account.withdrawal')}</Button>
+              <Button className="withdraw-btn swap-btn" onClick={() => handleWalletAction('/account/aipk-swap')}>{t('account.swapAipk')}</Button>
             </div>
             <div className="peak-stat-row">
               <span className="balance-icon peak">◉</span>

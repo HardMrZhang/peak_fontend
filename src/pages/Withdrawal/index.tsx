@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button, Input, message, Spin } from 'antd'
 import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -31,7 +31,11 @@ export default function Withdrawal() {
   const loginLoading = useAuthStore((s) => s.loginLoading)
   const loginFailed = useAuthStore((s) => s.loginFailed)
   const setLoginFailed = useAuthStore((s) => s.setLoginFailed)
-  const [tokenType, setTokenType] = useState<TokenType>('USDT')
+  const [searchParams] = useSearchParams()
+  const initialAsset = (searchParams.get('asset') || '').toUpperCase()
+  const [tokenType, setTokenType] = useState<TokenType>(
+    initialAsset === 'PEAK' || initialAsset === 'AIPK' ? (initialAsset as TokenType) : 'USDT',
+  )
   const [amount, setAmount] = useState('')
   const [walletAddress, setWalletAddress] = useState(publicKey?.toBase58() ?? '')
   const [balances, setBalances] = useState<AssetBalance[]>([])

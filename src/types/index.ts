@@ -738,6 +738,8 @@ export interface DramaIpoConfig {
 /** 我的份额占全网份额（链上 share_dividend） */
 export interface DramaShareRatio {
   source: 'CHAIN' | 'DB'
+  /** 读链失败时的错误信息（此时为 DB 估算口径） */
+  chainError?: string | null
   programId?: string
   /** 分红池币种（AIPK / USDT） */
   rewardAsset?: string

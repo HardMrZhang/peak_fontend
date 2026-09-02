@@ -558,7 +558,7 @@ export function getDramaSummary() {
 
 // 我的份额占全网份额 %（链上 share_dividend；未配置时后端退化为 DB 口径）
 export function getDramaShareRatio() {
-  return get<DramaShareRatio>('/drama-ipo/share-ratio')
+  return get<DramaShareRatio>('/drama-ipo/share-ratio', { skipErrorToast: true })
 }
 
 // 领取链上分红：params（用户钱包签名）→ confirm；每周一次，链上按份额加权结算

@@ -557,7 +557,7 @@ export interface DappAirdropRecord {
   sourceType?: string
   /** 计价资产：打新 V2 包为 AIPK，其余为 PEAK */
   asset?: 'PEAK' | 'AIPK'
-  /** AIpk 包走账本提现（LEDGER），其余走链上单签提币（CHAIN） */
+  /** Aipk 包走账本提现（LEDGER），其余走链上单签提币（CHAIN） */
   withdrawVia?: 'LEDGER' | 'CHAIN'
   /** AI 打新包的参与数量 = 入金折算代币（三倍总额的 1/3），固定两位小数 */
   dramaBaseAmount?: string | null
@@ -705,7 +705,7 @@ export interface DramaProject {
 }
 
 export interface DramaIpoConfig {
-  /** 资产包代币价格（V2 为 AIpk 固定 1 USDT） */
+  /** 资产包代币价格（V2 为 Aipk 固定 1 USDT） */
   priceUsdt: string | null
   rewardAsset?: string
   aipkPriceUsdt?: number
@@ -716,7 +716,7 @@ export interface DramaIpoConfig {
   multiplier: number
   releaseDays: number
   dailyRate: string
-  /** 每份资产包总量 / 每日释放（AIpk） */
+  /** 每份资产包总量 / 每日释放（Aipk） */
   airdropTotalPerShare?: string
   airdropDailyPerShare?: string
   /** 本金返还：签约后第 N 天返 rate */
@@ -730,7 +730,7 @@ export interface DramaIpoConfig {
   directDividendRate?: number
   teamTiers?: Array<{ code: string; minSmallAreaUsdt: number; rate: number }>
   peerBonusRate?: number
-  /** AIpk 提到钱包的手续费率（0） */
+  /** Aipk 提到钱包的手续费率（0） */
   aipkWithdrawFeeRate?: number
   agreementVersion: string
 }
@@ -780,7 +780,7 @@ export interface DramaShareRatio {
   }>
 }
 
-/** AIpk（钱包内）→ USDT 站内兑换 */
+/** Aipk（钱包内）→ USDT 站内兑换 */
 export interface AipkSwapInfo {
   asset: string
   aipkMint: string
@@ -788,7 +788,7 @@ export interface AipkSwapInfo {
   feeRate: number
   minAipk: number
   receiveAddress: string
-  /** 钱包内 AIpk 余额（读链失败为 null） */
+  /** 钱包内 Aipk 余额（读链失败为 null） */
   walletAipk: string | null
   pendingCount: number
 }
@@ -855,12 +855,12 @@ export interface DramaTeamTier {
   peerRate: number
 }
 
-/** AIpk / USDT 账本余额 */
+/** Aipk / USDT 账本余额 */
 export interface DramaBalances {
   aipk: { asset: string; available: string; pendingWithdraw: string; totalIn: string; totalOut: string }
   usdt: { asset: string; available: string; pendingWithdraw: string; totalIn: string; totalOut: string }
   aipkPriceUsdt: number
-  /** AIpk 提到钱包的手续费率（0） */
+  /** Aipk 提到钱包的手续费率（0） */
   aipkWithdrawFeeRate: number
   aipkMint: string
 }

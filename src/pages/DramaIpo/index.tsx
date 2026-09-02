@@ -193,15 +193,15 @@ export default function DramaIpo() {
 
   const shareCount = Math.max(0, parseInt(shares, 10) || 0)
   const sharePrice = detail ? Number(detail.sharePriceUsdt) : (config?.sharePriceUsdt ?? 100)
-  // V2：资产包代币为 AIpk，固定 1 AIpk = 1 USDT
-  const rewardAsset = config?.rewardAsset ?? 'AIpk'
+  // V2：资产包代币为 Aipk，固定 1 Aipk = 1 USDT
+  const rewardAsset = config?.rewardAsset ?? 'Aipk'
   const peakPrice = config?.priceUsdt ? parseFloat(config.priceUsdt) : 1
   const remaining = detail?.remainingShares ?? 0
   const canSubscribe = detail?.status === 'OPEN' && remaining > 0
 
   /**
    * 预计收益，与链上 subscribe 指令同一套算法（V2）：
-   *   资产包 = 认购额 × 100% ÷ AIpk 价（1U）× 1 = 认购额等值 AIpk，300 天线性释放（每份每天 10 枚）
+   *   资产包 = 认购额 × 100% ÷ Aipk 价（1U）× 1 = 认购额等值 Aipk，300 天线性释放（每份每天 10 枚）
    *   本金   = 签约后第 90 / 120 天各返 50%（USDT）
    *   分红   = 第 4 个月起 10 期，每期按份数分摊该剧真实收益的 40%
    */
@@ -274,7 +274,7 @@ export default function DramaIpo() {
       }
       message.success(t('dramaIpo.claimSuccess', {
         amount: paramsRes.data.grossAmount,
-        asset: paramsRes.data.rewardAsset === 'AIPK' ? 'AIpk' : paramsRes.data.rewardAsset,
+        asset: paramsRes.data.rewardAsset === 'AIPK' ? 'Aipk' : paramsRes.data.rewardAsset,
       }))
       await loadShareRatio()
     } catch (err: unknown) {
@@ -805,7 +805,7 @@ export default function DramaIpo() {
                 <span className="di-hl">{Number(shareRatio.myActiveShares).toLocaleString()} / {Number(shareRatio.totalActiveShares).toLocaleString()}</span>
               </div>
               {shareRatio.source === 'CHAIN' ? (() => {
-                const unit = shareRatio.rewardAsset === 'AIPK' ? 'AIpk' : (shareRatio.rewardAsset ?? 'AIpk')
+                const unit = shareRatio.rewardAsset === 'AIPK' ? 'Aipk' : (shareRatio.rewardAsset ?? 'Aipk')
                 return (
                   <>
                     <hr className="di-divider" />

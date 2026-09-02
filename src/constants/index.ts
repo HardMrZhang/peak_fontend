@@ -5,7 +5,7 @@ export const CHAIN_NAME = 'Solana'
 export const DEFAULT_WITHDRAW_FEE_BY_ASSET = {
   USDT: '1',
   PEAK: '5',
-  /** AIpk 提现固定 20%，此处只是估算兜底，实际以后端 estimate 为准 */
+  /** Aipk 提现固定 20%，此处只是估算兜底，实际以后端 estimate 为准 */
   AIPK: '0',
 } as const
 export const PEAK_TOTAL_SUPPLY = 1_000_000_000

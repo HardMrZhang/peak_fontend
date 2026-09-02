@@ -255,7 +255,7 @@ export default function Airdrop() {
   const handleWithdraw = async (record: DappAirdropRecord) => {
     if (withdrawing) return
     // 非 AI 打新包提币通道已关闭（白名单地址后端返回 nonDramaWithdrawClosed=false，放行）
-    // AIpk 包的释放已记入 AIPK 账本，提现走账本提现页（提到钱包不收手续费）
+    // Aipk 包的释放已记入 AIPK 账本，提现走账本提现页（提到钱包不收手续费）
     if (isAipkPkg(record)) {
       navigate('/withdrawal')
       return
@@ -328,10 +328,10 @@ export default function Airdrop() {
   }, [refreshAirdrop, connected])
 
   // 「查看每日释放记录」下拉：主列表卡片与出局记录卡片共用
-  // 打新包（V1 PEAK / V2 AIpk）判定与计价单位
+  // 打新包（V1 PEAK / V2 Aipk）判定与计价单位
   const isDramaPkg = (r: DappAirdropRecord) => r.sourceType === 'DRAMA_IPO' || r.sourceType === 'DRAMA_IPO_AIPK'
   const isAipkPkg = (r: DappAirdropRecord) => r.asset === 'AIPK'
-  const unitOf = (r: DappAirdropRecord) => (isAipkPkg(r) ? 'AIpk' : 'PEAK')
+  const unitOf = (r: DappAirdropRecord) => (isAipkPkg(r) ? 'Aipk' : 'PEAK')
 
   const renderReleaseSection = (item: DappAirdropRecord) => (
     <>
@@ -526,7 +526,7 @@ export default function Airdrop() {
                     <div className="sp-record-item">
                       {t('ipo.airdropRemaining')}: {item.remaining ?? '0'} {unitOf(item)}
                     </div>
-                    {/* AIpk 包不参与三倍空投加速：直推 / 级差在打新分红结算时另算，这里不展示加速行 */}
+                    {/* Aipk 包不参与三倍空投加速：直推 / 级差在打新分红结算时另算，这里不展示加速行 */}
                     {!isAipkPkg(item) && (
                       <>
                         <div className="sp-record-item">
@@ -550,7 +550,7 @@ export default function Airdrop() {
                   <div className="sp-record-footer">
                     <span className="sp-record-item">
                       {isAipkPkg(item)
-                        ? <>{t('ipo.airdropReleasedToBalance')}: {item.released ?? '0'} AIpk</>
+                        ? <>{t('ipo.airdropReleasedToBalance')}: {item.released ?? '0'} Aipk</>
                         : <>{t('ipo.withdrawable')}: {item.withdrawable ?? '0'} PEAK</>}
                     </span>
                     {(() => {
@@ -558,7 +558,7 @@ export default function Airdrop() {
                       // 出局但仍有最后一笔释放未提 → 仍允许提走，避免余额卡住。
                       // 非 AI 打新包（CHAIN/GENESIS）提币通道整体关闭。
                       if (isAipkPkg(item)) {
-                        // AIpk 包：余额在 AIPK 账本，按钮直接跳转账本提现页
+                        // Aipk 包：余额在 AIPK 账本，按钮直接跳转账本提现页
                         return (
                           <button type="button" className="sp-withdraw-btn" onClick={() => handleWithdraw(item)}>
                             {t('ipo.goLedgerWithdraw')}

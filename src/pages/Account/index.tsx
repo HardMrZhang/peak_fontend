@@ -171,7 +171,7 @@ export default function Account() {
 
   const usdtBalance = balances.find((b) => b.asset === 'USDT')
   const usdtAmount = usdtBalance ? Number(usdtBalance.availableAmount).toFixed(2) : '0.00'
-  // AIpk：AI 短剧打新资产包释放 + 直推/级差奖励（账本余额），可提到钱包或站内兑换 USDT
+  // Aipk：AI 短剧打新资产包释放 + 直推/级差奖励（账本余额），可提到钱包或站内兑换 USDT
   const aipkBalance = balances.find((b) => b.asset === 'AIPK')
   const aipkAmount = aipkBalance ? Number(aipkBalance.availableAmount).toFixed(4) : '0.0000'
   const totalLocked = rewardSummary ? Number(rewardSummary.totalLocked).toFixed(2) : '0.00'
@@ -253,10 +253,10 @@ export default function Account() {
     { title: t('account.colTime'), dataIndex: 'createdAt', width: 170, render: (v: string) => v?.slice(0, 19).replace('T', ' ') },
   ]
 
-  // 资产包每日释放（V2 为 AIpk，V1 历史包为 PEAK）：只有日期与数量有意义
+  // 资产包每日释放（V2 为 Aipk，V1 历史包为 PEAK）：只有日期与数量有意义
   const dramaAirdropColumns: ColumnsType<DramaEarningRecord> = [
     { title: t('dramaIpo.colProject'), width: 180, render: (_: unknown, r: DramaEarningRecord) => `${r.serialNo ?? '-'} ${r.projectName ?? ''}` },
-    { title: t('dramaIpo.colAmount'), dataIndex: 'amount', width: 140, render: (v: string, r: DramaEarningRecord) => <span style={{ color: '#f5a623' }}>+{parseFloat(v).toFixed(4)} {r.asset === 'AIPK' ? 'AIpk' : r.asset}</span> },
+    { title: t('dramaIpo.colAmount'), dataIndex: 'amount', width: 140, render: (v: string, r: DramaEarningRecord) => <span style={{ color: '#f5a623' }}>+{parseFloat(v).toFixed(4)} {r.asset === 'AIPK' ? 'Aipk' : r.asset}</span> },
     { title: t('account.colStatus'), dataIndex: 'status', width: 100, render: (v: string) => statusLabelMap[v] || v },
     { title: t('account.colTime'), dataIndex: 'bizDate', width: 140, render: (v?: string) => v?.slice(0, 10) ?? '-' },
   ]
@@ -420,7 +420,7 @@ export default function Account() {
             </div>
             <div className="card-row aipk-row">
               <span className="balance-icon aipk">◉</span>
-              <span className="balance-amount aipk-amount">{balanceLoading ? '--' : aipkAmount} AIpk</span>
+              <span className="balance-amount aipk-amount">{balanceLoading ? '--' : aipkAmount} Aipk</span>
               <Button className="withdraw-btn" onClick={() => handleWalletAction('/account/withdrawal?asset=AIPK')}>{t('account.withdrawal')}</Button>
               <Button className="withdraw-btn swap-btn" onClick={() => handleWalletAction('/account/aipk-swap')}>{t('account.swapAipk')}</Button>
             </div>

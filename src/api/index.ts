@@ -574,7 +574,7 @@ export function confirmDramaDividendClaim(payload: { txHash: string }) {
   return post<DramaShareRatio & { txHash: string }>('/drama-ipo/dividend/claim-confirm', payload)
 }
 
-// AIpk（钱包内）→ USDT 站内兑换：info → params（钱包签名转 AIpk 给平台）→ confirm → 后台审核打 USDT
+// Aipk（钱包内）→ USDT 站内兑换：info → params（钱包签名转 Aipk 给平台）→ confirm → 后台审核打 USDT
 export function getAipkSwapInfo() {
   return get<AipkSwapInfo>('/aipk-swap/info', { skipErrorToast: true })
 }
@@ -600,7 +600,7 @@ export function getDramaTeamTier() {
   return get<DramaTeamTier>('/drama-ipo/team-tier')
 }
 
-// AIpk / USDT 余额
+// Aipk / USDT 余额
 export function getDramaBalances() {
   return get<DramaBalances>('/drama-ipo/balances')
 }

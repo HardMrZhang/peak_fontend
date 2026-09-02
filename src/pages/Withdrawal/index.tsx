@@ -11,7 +11,7 @@ import { CHAIN_NAME, DEFAULT_WITHDRAW_FEE_BY_ASSET } from '@/constants'
 import './index.css'
 
 type TokenType = 'USDT' | 'PEAK' | 'AIPK'
-const TOKEN_LABEL: Record<TokenType, string> = { USDT: 'USDT', PEAK: 'PEAK', AIPK: 'AIpk' }
+const TOKEN_LABEL: Record<TokenType, string> = { USDT: 'USDT', PEAK: 'PEAK', AIPK: 'Aipk' }
 
 /**
  * 向下截断到两位小数（按字符串截断，避开浮点误差）。
@@ -203,7 +203,7 @@ export default function Withdrawal() {
                   className={`token-option ${tokenType === 'AIPK' ? 'active' : ''}`}
                   onClick={() => { setTokenType('AIPK'); setAmount(''); setEstimate(null) }}
                 >
-                  <span className="token-dot aipk" /> AIpk
+                  <span className="token-dot aipk" /> Aipk
                 </span>
               </div>
               {tokenType === 'AIPK' && (

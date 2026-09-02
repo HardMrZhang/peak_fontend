@@ -30,8 +30,8 @@ function shortHash(h?: string | null) {
 }
 
 /**
- * AIpk（钱包内）→ USDT 站内兑换：
- *   输入数量 → 钱包签名把 AIpk 转到平台收款地址 → 后端验链落单 → 后台审核 → USDT 打回钱包
+ * Aipk（钱包内）→ USDT 站内兑换：
+ *   输入数量 → 钱包签名把 Aipk 转到平台收款地址 → 后端验链落单 → 后台审核 → USDT 打回钱包
  */
 export default function AipkSwap() {
   const { t } = useTranslation()
@@ -93,7 +93,7 @@ export default function AipkSwap() {
     try {
       const paramsRes = await createAipkSwapParams(String(amount))
       const p = paramsRes.data
-      // 用户钱包签名：AIpk 从自己钱包转到平台收款地址
+      // 用户钱包签名：Aipk 从自己钱包转到平台收款地址
       const sig = await sendDappIx(p)
       // 链上已转出，confirm 幂等；网络波动时重试，NOT_FINALIZED 多等一会
       let lastErr: unknown = null
@@ -149,7 +149,7 @@ export default function AipkSwap() {
             <div className="section-content">
               <div className="balance-hint">
                 {t('aipkSwap.walletBalance')}
-                <span className="orange"> {info?.walletAipk ?? '--'} AIpk</span>
+                <span className="orange"> {info?.walletAipk ?? '--'} Aipk</span>
                 <Button type="link" size="small" icon={<ReloadOutlined />} onClick={load} />
               </div>
               <div className="amount-wrapper">
@@ -206,7 +206,7 @@ export default function AipkSwap() {
                         <Tag color={STATUS_COLOR[r.status]}>{t(`aipkSwap.status.${r.status}`)}</Tag>
                       </div>
                       <div className="as-item-row">
-                        <span>{Number(r.aipkAmount).toLocaleString()} AIpk → <b>{Number(r.usdtAmount).toFixed(2)} USDT</b></span>
+                        <span>{Number(r.aipkAmount).toLocaleString()} Aipk → <b>{Number(r.usdtAmount).toFixed(2)} USDT</b></span>
                         <span className="as-item-time">{r.createdAt.slice(0, 19).replace('T', ' ')}</span>
                       </div>
                       <div className="as-item-row as-item-sub">

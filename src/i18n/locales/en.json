@@ -251,7 +251,8 @@
     "submitBtn": "Withdrawal",
     "locked": "Locked",
     "max": "MAX",
-    "aipkHint": "AIpk is the AI Drama IPO reward token. Withdrawing it to your wallet is free; swap it on external platforms after withdrawal."
+    "aipkHint": "AIpk is the AI Drama IPO reward token. Withdrawing it to your wallet is free; you can also swap AIpk from your wallet to USDT here (1:1, paid after review).",
+    "aipkSwapLink": "Swap to USDT here"
   },
   "generalization": {
     "title": "Generalization",
@@ -816,5 +817,37 @@
     "claimTooSoon": "Dividends can be claimed once a week. Next claim: {{time}}",
     "nothingToClaim": "Nothing to claim yet",
     "claimFail": "Claim failed, please try again later"
+  },
+  "aipkSwap": {
+    "title": "Swap AIpk to USDT",
+    "goWithdraw": "Withdraw →",
+    "step1": "1. Enter amount (AIpk in your wallet)",
+    "step2": "2. Sign with your wallet, then wait for review",
+    "walletBalance": "Wallet AIpk balance:",
+    "amountPh": "Min {{min}} AIpk",
+    "rate": "Rate 1 AIpk = {{rate}} USDT",
+    "fee": "{{fee}}% fee",
+    "noFee": "No fee",
+    "receive": "You receive",
+    "flowNote": "After confirming, your wallet will ask you to sign a transfer of AIpk to the platform address. Once received, the request is reviewed and USDT is sent directly to your current wallet (usually within 1 business day).",
+    "receiveAddr": "Platform receiving address",
+    "submitBtn": "Confirm swap",
+    "submitting": "Processing…",
+    "submitSuccess": "Submitted: {{aipk}} AIpk → {{usdt}} USDT, pending review and payout",
+    "submitFail": "Swap submission failed, please try again",
+    "insufficient": "Insufficient AIpk in wallet",
+    "history": "Swap history",
+    "pendingN": "{{n}} in progress",
+    "noHistory": "No swap records yet",
+    "depositTx": "Deposit tx",
+    "payoutTx": "Payout tx",
+    "status": {
+      "PENDING_TX": "Awaiting tx",
+      "PENDING_REVIEW": "Under review",
+      "APPROVED": "Approved · paying",
+      "SUCCESS": "Paid",
+      "REJECTED": "Rejected",
+      "EXPIRED": "Expired"
+    }
   }
 }

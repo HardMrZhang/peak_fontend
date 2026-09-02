@@ -205,6 +205,7 @@ export default function Withdrawal() {
               {tokenType === 'AIPK' && (
                 <div className="balance-hint" style={{ marginTop: 8 }}>
                   {t('withdrawal.aipkHint')}
+                  <Button type="link" size="small" onClick={() => navigate('/account/aipk-swap')}>{t('withdrawal.aipkSwapLink')}</Button>
                 </div>
               )}
             </div>

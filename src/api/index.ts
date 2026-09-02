@@ -64,6 +64,10 @@ import type {
   DramaIpoSummary,
   DramaShareRatio,
   DramaDividendClaimParams,
+  AipkSwapInfo,
+  AipkSwapQuote,
+  AipkSwapParams,
+  AipkSwapRequest,
   DramaTeamTier,
   DramaBalances,
   DramaHistoryRecord,
@@ -568,6 +572,27 @@ export function getDramaDividendClaimParams() {
 
 export function confirmDramaDividendClaim(payload: { txHash: string }) {
   return post<DramaShareRatio & { txHash: string }>('/drama-ipo/dividend/claim-confirm', payload)
+}
+
+// AIpk（钱包内）→ USDT 站内兑换：info → params（钱包签名转 AIpk 给平台）→ confirm → 后台审核打 USDT
+export function getAipkSwapInfo() {
+  return get<AipkSwapInfo>('/aipk-swap/info', { skipErrorToast: true })
+}
+
+export function getAipkSwapQuote(amount: string) {
+  return get<AipkSwapQuote>('/aipk-swap/quote', { params: { amount }, skipErrorToast: true })
+}
+
+export function createAipkSwapParams(amount: string) {
+  return post<AipkSwapParams>('/aipk-swap/params', { amount })
+}
+
+export function confirmAipkSwap(payload: { requestNo: string; txHash: string }) {
+  return post<AipkSwapRequest>('/aipk-swap/confirm', payload, { skipErrorToast: true })
+}
+
+export function getAipkSwapRequests(params?: { page?: number; pageSize?: number; status?: string }) {
+  return get<PageResult<AipkSwapRequest>>('/aipk-swap/requests', { params })
 }
 
 // 我的打新团队等级（T1~T7 级差 / 直推 6% / 平级 10%）

@@ -780,6 +780,57 @@ export interface DramaShareRatio {
   }>
 }
 
+/** AIpk（钱包内）→ USDT 站内兑换 */
+export interface AipkSwapInfo {
+  asset: string
+  aipkMint: string
+  rateUsdt: number
+  feeRate: number
+  minAipk: number
+  receiveAddress: string
+  /** 钱包内 AIpk 余额（读链失败为 null） */
+  walletAipk: string | null
+  pendingCount: number
+}
+
+export interface AipkSwapQuote {
+  aipkAmount: string
+  rateUsdt: string
+  feeRate: number
+  grossUsdt: string
+  feeUsdt: string
+  netUsdt: string
+}
+
+export interface AipkSwapParams extends DappIxParams, AipkSwapQuote {
+  requestNo: string
+  receiveAddress: string
+  receiveTokenAccount: string
+  expiresAt: string
+}
+
+export type AipkSwapStatus = 'PENDING_TX' | 'PENDING_REVIEW' | 'APPROVED' | 'SUCCESS' | 'REJECTED' | 'EXPIRED'
+
+export interface AipkSwapRequest {
+  id: string
+  requestNo: string
+  walletAddress: string
+  aipkAmount: string
+  rateUsdt: string
+  usdtAmount: string
+  feeUsdt: string
+  receiveAddress: string
+  depositTxHash: string | null
+  payoutTxHash: string | null
+  refundTxHash: string | null
+  status: AipkSwapStatus
+  remark: string | null
+  expiresAt: string
+  reviewedAt: string | null
+  paidAt: string | null
+  createdAt: string
+}
+
 /** 领取分红的自签交易参数 */
 export interface DramaDividendClaimParams extends Omit<DappIxParams, 'intentId'> {
   rewardAsset: string

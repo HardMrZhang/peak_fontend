@@ -1,0 +1,39 @@
+/* AIpk → USDT 站内兑换页，复用提现页（withdrawal-page / form-section）基础样式 */
+.aipk-swap-page .as-link {
+  margin-left: 12px;
+  background: none;
+  border: none;
+  color: #f5a623;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+}
+.aipk-swap-page .as-link:hover { text-decoration: underline; }
+
+.aipk-swap-page .as-note {
+  margin: 0 0 6px;
+  color: #c9c9c9;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.aipk-swap-page .as-note-sub { color: #8a8a8a; font-size: 12px; word-break: break-all; }
+.aipk-swap-page .as-note code { color: #f5a623; font-size: 12px; }
+
+.aipk-swap-page .as-error { color: #ff7875; font-size: 12px; margin-top: 6px; }
+
+.aipk-swap-page .as-empty { color: #8a8a8a; font-size: 13px; padding: 16px 0; text-align: center; }
+
+.aipk-swap-page .as-list { display: flex; flex-direction: column; gap: 10px; }
+.aipk-swap-page .as-item {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.aipk-swap-page .as-item-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.aipk-swap-page .as-item-no { color: #f5a623; font-size: 12px; font-family: monospace; }
+.aipk-swap-page .as-item-row { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: #e6e6e6; flex-wrap: wrap; }
+.aipk-swap-page .as-item-sub { color: #8a8a8a; font-size: 12px; margin-top: 4px; }
+.aipk-swap-page .as-item-sub a { color: #8ab4f8; }
+.aipk-swap-page .as-item-time { color: #8a8a8a; font-size: 12px; }
+.aipk-swap-page .as-reject { color: #ff7875; }

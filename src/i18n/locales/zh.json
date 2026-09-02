@@ -251,7 +251,8 @@
     "submitBtn": "提现",
     "locked": "锁仓中",
     "max": "最大",
-    "aipkHint": "AIpk 为 AI 短剧打新奖励代币，提到钱包不收手续费；请提到钱包后在外部平台自行兑换。"
+    "aipkHint": "AIpk 为 AI 短剧打新奖励代币，提到钱包不收手续费；也可在站内把钱包里的 AIpk 兑换为 USDT（1:1，后台审核后打款）。",
+    "aipkSwapLink": "站内兑换 USDT"
   },
   "generalization": {
     "title": "推广",
@@ -816,5 +817,37 @@
     "claimTooSoon": "分红每周可领一次，下次可领时间：{{time}}",
     "nothingToClaim": "暂无可领取的分红",
     "claimFail": "领取失败，请稍后重试"
+  },
+  "aipkSwap": {
+    "title": "AIpk 兑换 USDT",
+    "goWithdraw": "去提现 →",
+    "step1": "1. 输入兑换数量（使用钱包内 AIpk）",
+    "step2": "2. 钱包签名转入平台，等待后台审核",
+    "walletBalance": "钱包 AIpk 余额：",
+    "amountPh": "最少 {{min}} AIpk",
+    "rate": "兑换比例 1 AIpk = {{rate}} USDT",
+    "fee": "手续费 {{fee}}%",
+    "noFee": "不收手续费",
+    "receive": "预计到账",
+    "flowNote": "点击「确认兑换」后，钱包会弹出签名，把 AIpk 转入平台收款地址；到账后由后台审核，通过后 USDT 直接打到你的当前钱包地址（一般 1 个工作日内）。",
+    "receiveAddr": "平台收款地址",
+    "submitBtn": "确认兑换",
+    "submitting": "处理中…",
+    "submitSuccess": "已提交：{{aipk}} AIpk 兑换 {{usdt}} USDT，等待后台审核打款",
+    "submitFail": "兑换提交失败，请稍后重试",
+    "insufficient": "钱包 AIpk 余额不足",
+    "history": "兑换记录",
+    "pendingN": "{{n}} 笔处理中",
+    "noHistory": "暂无兑换记录",
+    "depositTx": "转入交易",
+    "payoutTx": "打款交易",
+    "status": {
+      "PENDING_TX": "待上链",
+      "PENDING_REVIEW": "待审核",
+      "APPROVED": "已通过·待打款",
+      "SUCCESS": "已到账",
+      "REJECTED": "已驳回",
+      "EXPIRED": "已过期"
+    }
   }
 }

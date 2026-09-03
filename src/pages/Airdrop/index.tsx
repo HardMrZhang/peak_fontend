@@ -256,9 +256,9 @@ export default function Airdrop() {
   const handleWithdraw = async (record: DappAirdropRecord) => {
     if (withdrawing) return
     // 非 AI 打新包提币通道已关闭（白名单地址后端返回 nonDramaWithdrawClosed=false，放行）
-    // Aipk 包的释放已记入 AIPK 账本，提现走账本提现页（提到钱包不收手续费）
+    // Aipk 包的释放已记入 AIPK 账本，跳到账户页（那里有 Aipk 余额及「提现 / 兑换 USDT」入口）
     if (isAipkPkg(record)) {
-      navigate('/withdrawal')
+      navigate('/account')
       return
     }
     if (!isDramaPkg(record) && (airdropConfig?.nonDramaWithdrawClosed ?? true)) {
@@ -559,7 +559,7 @@ export default function Airdrop() {
                       // 出局但仍有最后一笔释放未提 → 仍允许提走，避免余额卡住。
                       // 非 AI 打新包（CHAIN/GENESIS）提币通道整体关闭。
                       if (isAipkPkg(item)) {
-                        // Aipk 包：余额在 AIPK 账本，按钮直接跳转账本提现页
+                        // Aipk 包：余额在 AIPK 账本，按钮直接跳转账户页
                         return (
                           <button type="button" className="sp-withdraw-btn" onClick={() => handleWithdraw(item)}>
                             {t('ipo.goLedgerWithdraw')}

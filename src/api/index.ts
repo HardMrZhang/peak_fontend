@@ -66,6 +66,8 @@ import type {
   DramaIpoSummary,
   DramaShareRatio,
   DramaDividendClaimParams,
+  DramaReferralDividend,
+  DramaReferralClaimParams,
   AipkSwapInfo,
   AipkSwapQuote,
   AipkSwapParams,
@@ -580,6 +582,19 @@ export function getDramaDividendClaimParams() {
 
 export function confirmDramaDividendClaim(payload: { txHash: string }) {
   return post<DramaShareRatio & { txHash: string }>('/drama-ipo/dividend/claim-confirm', payload)
+}
+
+// 直推 6% 分红（链上 referral_dividend）：概览 → 领取 params（钱包签名）→ confirm；每周一次
+export function getDramaReferralDividend() {
+  return get<DramaReferralDividend>('/drama-ipo/referral/summary', { skipErrorToast: true })
+}
+
+export function getDramaReferralClaimParams() {
+  return get<DramaReferralClaimParams>('/drama-ipo/referral/claim-params', { skipErrorToast: true })
+}
+
+export function confirmDramaReferralClaim(payload: { txHash: string }) {
+  return post<DramaReferralDividend & { txHash: string }>('/drama-ipo/referral/claim-confirm', payload)
 }
 
 // Aipk（钱包内）→ USDT 站内兑换：info → params（钱包签名转 Aipk 给平台）→ confirm → 后台审核打 USDT

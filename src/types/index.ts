@@ -882,6 +882,33 @@ export interface DramaDividendClaimParams extends Omit<DappIxParams, 'intentId'>
   ownerTokenAccount: string
 }
 
+/** 直推 6% 分红（链上 referral_dividend）概览 */
+export interface DramaReferralDividend {
+  enabled: boolean
+  source: 'CHAIN' | 'NONE' | 'UNAVAILABLE'
+  rewardAsset: string
+  referralRate: number
+  directCount: number
+  refereeCount: number
+  refereeSharesUsdt: string
+  accrued: string
+  claimed: string
+  claimable: string
+  feePaid: string
+  claimFeeRate: number
+  claimIntervalDays: number
+  lastClaimAt: string | null
+  nextClaimAt: string | null
+  canClaimNow: boolean
+}
+
+export interface DramaReferralClaimParams extends Omit<DappIxParams, 'intentId'> {
+  rewardAsset: string
+  claimFeeRate: number
+  grossAmount: string
+  ownerTokenAccount: string
+}
+
 /** 我的打新团队等级 */
 export interface DramaTeamTier {
   tierCode: string

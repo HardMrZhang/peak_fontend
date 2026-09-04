@@ -14,6 +14,9 @@ import {
   getDramaShareRatio,
   getDramaDividendClaimParams,
   confirmDramaDividendClaim,
+  getDramaReferralDividend,
+  getDramaReferralClaimParams,
+  confirmDramaReferralClaim,
 } from '@/api'
 import type {
   DramaIpoConfig,
@@ -21,6 +24,7 @@ import type {
   DramaPendingAgreement,
   DramaSubscriptionRecord,
   DramaShareRatio,
+  DramaReferralDividend,
 } from '@/types'
 import { useDappTx, hasToken } from '@/hooks/useDappTx'
 import ContractSignModal from '@/components/ContractSignModal'
@@ -59,6 +63,8 @@ export default function DramaIpo() {
 
   const [config, setConfig] = useState<DramaIpoConfig | null>(null)
   const [shareRatio, setShareRatio] = useState<DramaShareRatio | null>(null)
+  const [referral, setReferral] = useState<DramaReferralDividend | null>(null)
+  const [claimingReferral, setClaimingReferral] = useState(false)
   const [claiming, setClaiming] = useState(false)
   const [projects, setProjects] = useState<DramaProject[]>([])
   const [activeSerial, setActiveSerial] = useState<string | null>(null)
@@ -151,6 +157,14 @@ export default function DramaIpo() {
   }, [])
 
   // 我的份额占全网份额 %（链上分红池）
+  const loadReferral = useCallback(async () => {
+    if (!hasToken()) { setReferral(null); return }
+    try {
+      const res = await getDramaReferralDividend()
+      setReferral(res.data ?? null)
+    } catch { /* ignore */ }
+  }, [])
+
   const loadShareRatio = useCallback(async () => {
     if (!hasToken()) return
     try {
@@ -165,7 +179,8 @@ export default function DramaIpo() {
     loadPending()
     loadMySubs()
     loadShareRatio()
-  }, [loadProjects, loadPending, loadMySubs, loadShareRatio])
+    loadReferral()
+  }, [loadProjects, loadPending, loadMySubs, loadShareRatio, loadReferral])
 
   useEffect(() => {
     if (activeSerial) loadDetail(activeSerial)
@@ -250,6 +265,45 @@ export default function DramaIpo() {
       setAgreementHtml('')
     } finally {
       setAgreementLoading(false)
+    }
+  }
+
+  // 领取直推 6% 分红：每周一次，链上 referral_dividend 出金（扣 20% 手续费，用户自付 gas）
+  const handleClaimReferral = async () => {
+    if (claimingReferral) return
+    if (!hasToken() || !connected) {
+      message.warning(t('account.walletRequired'))
+      return
+    }
+    setClaimingReferral(true)
+    try {
+      const paramsRes = await getDramaReferralClaimParams()
+      const sig = await sendDappIx({ intentId: '', ...paramsRes.data })
+      let confirmed = false
+      for (let attempt = 0; attempt < 3 && !confirmed; attempt += 1) {
+        try {
+          await confirmDramaReferralClaim({ txHash: sig })
+          confirmed = true
+        } catch {
+          if (attempt < 2) await new Promise((r) => setTimeout(r, 2000))
+        }
+      }
+      message.success(t('dramaIpo.claimSuccess', {
+        amount: paramsRes.data.grossAmount,
+        asset: assetLabel(paramsRes.data.rewardAsset, 'Aipk'),
+      }))
+      await loadReferral()
+    } catch (err: unknown) {
+      const resp = (err as { response?: { data?: { code?: string; message?: string; data?: { nextClaimAt?: string } } } })?.response?.data
+      if (resp?.code === 'CLAIM_TOO_SOON') {
+        message.warning(t('dramaIpo.claimTooSoon', { time: formatBeijingDate(resp.data?.nextClaimAt ?? '') }))
+      } else if (resp?.code === 'NOTHING_TO_CLAIM') {
+        message.info(t('dramaIpo.nothingToClaim'))
+      } else {
+        message.error(resp?.message ?? (err instanceof Error ? err.message : t('dramaIpo.claimFail')))
+      }
+    } finally {
+      setClaimingReferral(false)
     }
   }
 
@@ -849,6 +903,58 @@ export default function DramaIpo() {
             </div>
           </section>
         )}
+
+        {/* ---------------- 直推 6% 分红（链上 referral_dividend） ---------------- */}
+        {referral && referral.enabled && (referral.directCount > 0 || Number(referral.accrued) > 0) && (() => {
+          const unit = assetLabel(referral.rewardAsset, 'Aipk')
+          return (
+            <section className="di-card">
+              <h3 className="di-card-title">{t('dramaIpo.referralTitle', { rate: Math.round(referral.referralRate * 100) })}</h3>
+              <div className="di-earn-card">
+                <div className="di-line">
+                  <span>{t('dramaIpo.referralDirects')}</span>
+                  <span className="di-hl">{referral.refereeCount} / {referral.directCount}</span>
+                </div>
+                <div className="di-line">
+                  <span>{t('dramaIpo.referralShares')}</span>
+                  <span className="di-hl">{Number(referral.refereeSharesUsdt).toLocaleString()} USDT</span>
+                </div>
+                <hr className="di-divider" />
+                <div className="di-line">
+                  <span className="di-line-strong">{t('dramaIpo.referralAccrued')}</span>
+                  <span className="di-hl">{Number(referral.accrued).toFixed(4)} {unit}</span>
+                </div>
+                <div className="di-line">
+                  <span>{t('dramaIpo.claimedDividend')}</span>
+                  <span>{Number(referral.claimed).toFixed(4)} {unit}</span>
+                </div>
+                <div className="di-line">
+                  <span>{t('dramaIpo.unclaimedDividend')}</span>
+                  <span className="di-hl">{Number(referral.claimable).toFixed(4)} {unit}</span>
+                </div>
+                <div className="di-sub-note">
+                  {referral.source !== 'CHAIN'
+                    ? t('dramaIpo.shareRatioDbNote')
+                    : referral.canClaimNow
+                      ? t('dramaIpo.claimReady', { amount: Number(referral.claimable).toFixed(4), asset: unit })
+                      : referral.nextClaimAt
+                        ? t('dramaIpo.claimNextAt', { time: formatBeijingDate(referral.nextClaimAt) })
+                        : t('dramaIpo.claimWeeklyNote')}
+                  {referral.claimFeeRate > 0 ? ` ${t('dramaIpo.claimFeeNote', { fee: Math.round(referral.claimFeeRate * 100) })}` : ''}
+                </div>
+                <button
+                  type="button"
+                  className="di-submit"
+                  onClick={handleClaimReferral}
+                  disabled={claimingReferral || !referral.canClaimNow}
+                >
+                  {claimingReferral ? t('dramaIpo.claiming') : t('dramaIpo.claimBtn')}
+                </button>
+                <div className="di-sub-note">{t('dramaIpo.referralNote', { rate: Math.round(referral.referralRate * 100) })}</div>
+              </div>
+            </section>
+          )
+        })()}
 
         {/* ---------------- 我的认购：本金返还进度与提现入口 ---------------- */}
         {mySubs.length > 0 && (

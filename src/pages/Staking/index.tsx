@@ -12,13 +12,17 @@ import {
   getClaimStakeRewardParams,
   confirmClaimStakeReward,
 } from '@/api'
-import type { DappStakePool, DappStakeRecord, DappStakeRewardsInfo } from '@/types'
+import type { DappStakePool, DappStakeRecord, DappStakeRewardsInfo, StakeAsset } from '@/types'
 import { useDappTx, hasToken } from '@/hooks/useDappTx'
+import { assetLabel } from '@/utils/asset'
 import './index.css'
 
 const BLOCK_EXPLORER_URL = 'https://solscan.io/tx/'
 const DURATIONS = [15, 30, 90, 150] as const
 type Duration = (typeof DURATIONS)[number]
+const STAKE_ASSETS: StakeAsset[] = ['PEAK', 'AIPK']
+const DEFAULT_MIN_STAKE: Record<StakeAsset, number> = { PEAK: 1000, AIPK: 10 }
+const unitOf = (asset?: StakeAsset | string | null) => assetLabel(asset || 'PEAK', 'PEAK')
 
 function shortenHash(hash: string | null): string {
   if (!hash) return ''
@@ -30,7 +34,10 @@ export default function Staking() {
   const { sendDappIx, connected } = useDappTx()
 
   const [pools, setPools] = useState<DappStakePool[]>([])
-  const [minStake, setMinStake] = useState(1000)
+  const [minStakeByAsset, setMinStakeByAsset] = useState<Record<StakeAsset, number>>(DEFAULT_MIN_STAKE)
+  // 质押币种（下拉）：PEAK 走原合约通道，Aipk 走同一程序的 v2（按 mint 分池）
+  const [stakeAsset, setStakeAsset] = useState<StakeAsset>('PEAK')
+  const minStake = minStakeByAsset[stakeAsset] ?? DEFAULT_MIN_STAKE[stakeAsset]
   const [selectedDay, setSelectedDay] = useState<Duration | null>(null)
   const [stakeAmount, setStakeAmount] = useState('')
   const [stakeTip, setStakeTip] = useState<{ text: string; type: 'success' | 'fail' | '' }>({ text: '', type: '' })
@@ -38,7 +45,7 @@ export default function Staking() {
   const [now, setNow] = useState(Date.now())
   const [stakeRecords, setStakeRecords] = useState<DappStakeRecord[]>([])
   const [stakeRewards, setStakeRewards] = useState<DappStakeRewardsInfo | null>(null)
-  const [claimingPeriod, setClaimingPeriod] = useState<number | null>(null)
+  const [claimingPeriod, setClaimingPeriod] = useState<string | null>(null)
   // 同步锁：state 更新是异步的，快速连点会在 re-render 前重复通过校验而发起多笔领取交易；
   // 用 ref 在事件回调里同步加锁，确保同一时刻只处理一笔领取（防抖 / 防重复提交）。
   const claimingRef = useRef(false)
@@ -48,9 +55,17 @@ export default function Staking() {
     return () => clearInterval(timer)
   }, [])
 
+  // 每个周期两种币的已质押总量
   const stakeTotals = useMemo(() => {
-    const map: Record<number, string> = { 15: '0', 30: '0', 90: '0', 150: '0' }
-    pools.forEach((p) => { map[p.periodDays] = p.totalStaked })
+    const map: Record<number, Record<StakeAsset, string>> = {
+      15: { PEAK: '0', AIPK: '0' }, 30: { PEAK: '0', AIPK: '0' }, 90: { PEAK: '0', AIPK: '0' }, 150: { PEAK: '0', AIPK: '0' },
+    }
+    pools.forEach((p) => {
+      map[p.periodDays] = {
+        PEAK: p.totals?.PEAK?.amount ?? p.totalStaked,
+        AIPK: p.totals?.AIPK?.amount ?? '0',
+      }
+    })
     return map
   }, [pools])
 
@@ -63,37 +78,52 @@ export default function Staking() {
     return map
   }, [stakeRewards])
 
-  // 分红额度链上按「用户 + 周期」聚合（独立 dividend 合约），领取按周期一键结清。
-  // periodDays -> { raw 合计, display 展示值, positionId 任一仓位（接口参数用） }
+  // 分红额度链上按「用户 + 周期 + 币种」聚合（独立 dividend 合约），领取按周期一键结清。
+  // key `${periodDays}:${asset}` -> { raw 合计, display 展示值, positionId 任一仓位（接口参数用） }
   const pendingByPeriod = useMemo(() => {
-    const map = new Map<number, { raw: bigint; display: string; positionId: string }>()
+    const map = new Map<string, { periodDays: number; asset: StakeAsset; raw: bigint; display: string; positionId: string }>()
     stakeRewards?.positions?.forEach((p) => {
       const raw = BigInt(p.pendingRewardRaw || '0')
       if (raw <= 0n) return
-      const prev = map.get(p.periodDays)
-      map.set(p.periodDays, {
+      const asset = (p.asset || 'PEAK') as StakeAsset
+      const key = `${p.periodDays}:${asset}`
+      const prev = map.get(key)
+      map.set(key, {
+        periodDays: p.periodDays,
+        asset,
         raw: (prev?.raw ?? 0n) + raw,
         display: '',
         positionId: prev?.positionId ?? p.positionId,
       })
     })
     // 9 位精度格式化，最多 4 位小数（与后端展示口径一致）
-    for (const [period, v] of map) {
+    for (const [key, v] of map) {
       const base = 10n ** 9n
       const intPart = v.raw / base
       const frac = (v.raw % base).toString().padStart(9, '0').slice(0, 4).replace(/0+$/, '')
-      map.set(period, { ...v, display: frac ? `${intPart}.${frac}` : intPart.toString() })
+      map.set(key, { ...v, display: frac ? `${intPart}.${frac}` : intPart.toString() })
     }
     return map
   }, [stakeRewards])
+  const pendingChips = useMemo(() => [...pendingByPeriod.values()].sort((a, b) => a.periodDays - b.periodDays || a.asset.localeCompare(b.asset)), [pendingByPeriod])
+  const totalPendingText = useMemo(() => {
+    const parts: string[] = []
+    const peak = stakeRewards?.totalPendingByAsset?.PEAK?.amount ?? stakeRewards?.totalPending
+    const aipk = stakeRewards?.totalPendingByAsset?.AIPK?.amount
+    if (peak && parseFloat(peak) > 0) parts.push(`${peak} PEAK`)
+    if (aipk && parseFloat(aipk) > 0) parts.push(`${aipk} Aipk`)
+    return parts.join(' + ')
+  }, [stakeRewards])
 
-  // 权重占比 = 该笔订单质押量 ÷ 所属期限池子的总质押量（分母至少包含当前订单）
+  // 权重占比 = 该笔订单质押量 ÷ 所属期限池子「同币种」的总质押量（分母至少包含当前订单）
   const weightOf = useCallback((record: DappStakeRecord): string => {
     if (record.status === 'REDEEMED') return '-'
     const mine = parseFloat(record.amount)
     if (!mine || mine <= 0) return '-'
     const pool = pools.find((p) => p.periodDays === record.periodDays)
-    const poolTotal = pool ? parseFloat(pool.totalStaked) || 0 : 0
+    const asset = (record.asset || 'PEAK') as StakeAsset
+    const poolTotalStr = pool ? (pool.totals?.[asset]?.amount ?? (asset === 'PEAK' ? pool.totalStaked : '0')) : '0'
+    const poolTotal = parseFloat(poolTotalStr) || 0
     // 链上总量尚未同步到该笔质押时兜底，保证分母包含当前订单
     const total = Math.max(poolTotal, mine)
     if (total <= 0) return '-'
@@ -105,7 +135,9 @@ export default function Staking() {
       const res = await getStakeOverview()
       if (res.data) {
         setPools(res.data.pools)
-        setMinStake(res.data.minStakePeak)
+        const next: Record<StakeAsset, number> = { ...DEFAULT_MIN_STAKE, PEAK: Number(res.data.minStakePeak) || DEFAULT_MIN_STAKE.PEAK }
+        res.data.assets?.forEach((a) => { next[a.asset] = Number(a.minStake) || DEFAULT_MIN_STAKE[a.asset] })
+        setMinStakeByAsset(next)
       }
     } catch { /* chain/overview not ready */ }
     if (hasToken()) {
@@ -165,7 +197,7 @@ export default function Staking() {
     setStaking(true)
     setStakeTip({ text: t('ipo.staking'), type: '' })
     try {
-      const paramsRes = await getStakeParams(selectedDay, Math.floor(amount))
+      const paramsRes = await getStakeParams(selectedDay, Math.floor(amount), stakeAsset)
       const sig = await sendDappIx(paramsRes.data)
       await confirmStake({ txHash: sig, intentId: paramsRes.data.intentId })
       setStakeAmount('')
@@ -183,24 +215,25 @@ export default function Staking() {
     }
   }
 
-  // 领取质押分红（按周期一键结清）：用户钱包单签到对应周期分红合约 claim，自付 GAS
-  const handleClaimPeriod = async (periodDays: number) => {
+  // 领取质押分红（按周期 + 币种一键结清）：用户钱包单签到对应周期分红合约 claim / claim_v2，自付 GAS
+  const handleClaimPeriod = async (periodDays: number, asset: StakeAsset) => {
     // 同步加锁：连点时后续调用会立即被拦截（ref 立刻生效，不等 re-render）
     if (claimingRef.current || claimingPeriod !== null) return
     if (!hasToken() || !connected) {
       message.warning(t('account.walletRequired'))
       return
     }
-    const pending = pendingByPeriod.get(periodDays)
+    const key = `${periodDays}:${asset}`
+    const pending = pendingByPeriod.get(key)
     if (!pending || pending.raw <= 0n) return
     claimingRef.current = true
-    setClaimingPeriod(periodDays)
+    setClaimingPeriod(key)
     setStakeTip({ text: t('ipo.claiming'), type: '' })
     try {
-      const paramsRes = await getClaimStakeRewardParams(pending.positionId, periodDays)
+      const paramsRes = await getClaimStakeRewardParams(pending.positionId, periodDays, asset)
       const sig = await sendDappIx(paramsRes.data)
       await confirmClaimStakeReward({ txHash: sig, intentId: paramsRes.data.intentId })
-      setStakeTip({ text: `${t('ipo.claimSuccess')} +${paramsRes.data.reward} PEAK`, type: 'success' })
+      setStakeTip({ text: `${t('ipo.claimSuccess')} +${paramsRes.data.reward} ${unitOf(asset)}`, type: 'success' })
       refreshStake()
     } catch (err: unknown) {
       const errorCode = (err as { response?: { data?: { errorCode?: string } } })?.response?.data?.errorCode
@@ -258,6 +291,7 @@ export default function Staking() {
             <p>1. {t('ipo.rule1')}</p>
             <p>2. {t('ipo.rule2')}</p>
             <p>3. {t('ipo.rule3')}</p>
+            <p>4. {t('ipo.rule4')}</p>
           </div>
 
           <div className="sp-duration-grid">
@@ -277,7 +311,8 @@ export default function Staking() {
                 </span>
                 <span className="sp-duration-total">
                   <span className="sp-duration-total-label">{t('ipo.stakedTotal')}</span>
-                  <span className="sp-duration-total-value">{stakeTotals[day]} PEAK</span>
+                  <span className="sp-duration-total-value">{stakeTotals[day].PEAK} PEAK</span>
+                  <span className="sp-duration-total-value sp-duration-total-aipk">{stakeTotals[day].AIPK} Aipk</span>
                 </span>
               </button>
             ))}
@@ -290,11 +325,29 @@ export default function Staking() {
             </span>
           </div>
 
+          {/* 质押币种：PEAK / Aipk（Aipk 最低 10 枚，分红按币种各自分池） */}
+          <div className="sp-info-row">
+            <span className="sp-info-label">{t('ipo.stakeAssetLabel')}</span>
+            <select
+              className="sp-asset-select"
+              value={stakeAsset}
+              onChange={(e) => {
+                setStakeAsset(e.target.value as StakeAsset)
+                setStakeAmount('')
+                setStakeTip({ text: '', type: '' })
+              }}
+            >
+              {STAKE_ASSETS.map((a) => (
+                <option key={a} value={a}>{unitOf(a)}</option>
+              ))}
+            </select>
+          </div>
+
           <div className="sp-input-group">
             <input
               type="number"
               className="sp-amount-input"
-              placeholder={t('ipo.amountPlaceholder')}
+              placeholder={t('ipo.amountPlaceholderAsset', { min: minStake, unit: unitOf(stakeAsset) })}
               min={0}
               step={1}
               value={stakeAmount}
@@ -312,31 +365,31 @@ export default function Staking() {
         <section className="sp-card">
           <div className="sp-record-title-row">
             <h2 className="sp-card-title">{t('ipo.stakeRecordTitle')}</h2>
-            {stakeRewards && parseFloat(stakeRewards.totalPending) > 0 && (
+            {totalPendingText && (
               <span className="sp-total-pending">
-                {t('ipo.totalPendingReward')}: <b>{stakeRewards.totalPending} PEAK</b>
+                {t('ipo.totalPendingReward')}: <b>{totalPendingText}</b>
               </span>
             )}
           </div>
           {/* 按周期领取分红：链上额度按「用户 + 周期」记在对应 dividend 合约，一键结清该周期全部待领 */}
-          {pendingByPeriod.size > 0 && (
+          {pendingChips.length > 0 && (
             <div className="sp-period-claims">
-              {DURATIONS.filter((d) => pendingByPeriod.has(d)).map((d) => {
-                const pending = pendingByPeriod.get(d)!
+              {pendingChips.map((pending) => {
+                const key = `${pending.periodDays}:${pending.asset}`
                 return (
-                  <div key={d} className="sp-period-chip">
+                  <div key={key} className="sp-period-chip">
                     <span className="sp-period-chip-label">
-                      {d}
+                      {pending.periodDays}
                       {t('ipo.dayUnit')} {t('ipo.pendingReward')}
                     </span>
-                    <span className="sp-period-chip-amount">{pending.display} PEAK</span>
+                    <span className="sp-period-chip-amount">{pending.display} {unitOf(pending.asset)}</span>
                     <button
                       type="button"
                       className="sp-claim-btn"
                       disabled={claimingPeriod !== null}
-                      onClick={() => handleClaimPeriod(d)}
+                      onClick={() => handleClaimPeriod(pending.periodDays, pending.asset)}
                     >
-                      {claimingPeriod === d ? t('ipo.claiming') : t('ipo.claimReward')}
+                      {claimingPeriod === key ? t('ipo.claiming') : t('ipo.claimReward')}
                     </button>
                   </div>
                 )
@@ -361,7 +414,7 @@ export default function Staking() {
                     </div>
                     <div className="sp-record-row">
                       <span className="sp-record-label">{t('ipo.recordAmount')}</span>
-                      <span className="sp-record-value">{item.amount} PEAK</span>
+                      <span className="sp-record-value">{item.amount} {unitOf(item.asset)}</span>
                     </div>
                     <div className="sp-record-row">
                       <span className="sp-record-label">{t('ipo.recordDuration')}</span>
@@ -377,13 +430,13 @@ export default function Staking() {
                       <span className="sp-record-label">{t('ipo.pendingReward')}</span>
                       <span className="sp-record-value">
                         <span className={hasPending ? 'sp-pending-amount' : ''}>
-                          {pending ? pending.pendingReward : '0'} PEAK
+                          {pending ? pending.pendingReward : '0'} {unitOf(item.asset)}
                         </span>
                       </span>
                     </div>
                     <div className="sp-record-row">
                       <span className="sp-record-label">{t('ipo.claimedReward')}</span>
-                      <span className="sp-record-value">{item.claimedReward} PEAK</span>
+                      <span className="sp-record-value">{item.claimedReward} {unitOf(item.asset)}</span>
                     </div>
                     <div className="sp-record-row">
                       <span className="sp-record-label">{t('ipo.recordStatus')}</span>

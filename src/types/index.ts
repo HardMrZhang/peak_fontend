@@ -391,22 +391,42 @@ export interface DappIxParams {
   userPeakAta?: string
 }
 
+/** 可质押 / 可提币种：PEAK（主通道）| AIPK（第二币种，链上按 mint 分账） */
+export type StakeAsset = 'PEAK' | 'AIPK'
+
+export interface DappAssetAmount {
+  raw: string
+  amount: string
+}
+
 export interface DappStakePool {
   periodDays: number
+  /** 兼容字段：PEAK 总量 */
   totalStakedRaw: string
   totalStaked: string
+  /** 双币种总量 */
+  totals?: Record<StakeAsset, DappAssetAmount>
   rewardBps: number
   rewardPercent: string
 }
 
+export interface DappStakeAssetInfo {
+  asset: StakeAsset
+  minStake: string
+  minStakeRaw: string
+}
+
 export interface DappStakeOverview {
   minStakePeak: number
+  /** 可质押币种及各自最低质押 */
+  assets?: DappStakeAssetInfo[]
   pools: DappStakePool[]
 }
 
 export interface DappStakeParams extends DappIxParams {
   positionId: string
   periodDays: number
+  asset?: StakeAsset
   amountRaw: string
 }
 
@@ -419,6 +439,7 @@ export interface DappStakeRecord {
   id: string
   positionId: string
   periodDays: number
+  asset?: StakeAsset
   amount: string
   claimedReward: string
   startTime: string | null
@@ -432,6 +453,7 @@ export interface DappStakeRecord {
 export interface DappStakeRewardPosition {
   positionId: string
   periodDays: number
+  asset?: StakeAsset
   amount: string
   pendingReward: string
   pendingRewardRaw: string
@@ -442,6 +464,7 @@ export interface DappStakeRewardPosition {
 export interface DappStakeRewardDaily {
   bizDate: string
   periodDays: number
+  asset?: StakeAsset
   positionId: string
   staked: string
   poolStaked: string
@@ -450,8 +473,10 @@ export interface DappStakeRewardDaily {
 }
 
 export interface DappStakeRewardsInfo {
+  /** 兼容字段：PEAK 待领 */
   totalPending: string
   totalPendingRaw: string
+  totalPendingByAsset?: Record<StakeAsset, DappAssetAmount>
   positions: DappStakeRewardPosition[]
   list: DappStakeRewardDaily[]
   total: number
@@ -462,6 +487,7 @@ export interface DappStakeRewardsInfo {
 export interface DappClaimStakeRewardParams extends DappIxParams {
   positionId: string
   periodDays: number
+  asset?: StakeAsset
   rewardRaw: string
   reward: string
 }
@@ -469,6 +495,7 @@ export interface DappClaimStakeRewardParams extends DappIxParams {
 // ---- 1推5 推广分红 / T7 加权分红 ----
 export interface DappPromoDividendDaily {
   bizDate: string
+  asset?: StakeAsset
   qualifiedCount: number
   directCount: number
   share: string
@@ -479,6 +506,7 @@ export interface DappPromoDividendDaily {
 export interface DappPromoSummary {
   pending: string
   pendingRaw: string
+  pendingByAsset?: Record<StakeAsset, DappAssetAmount>
   // 实时统计（与每日结算同一口径）：全网达标总人数 / 本人是否达标 / 本人有效直推数
   qualifiedCount: number
   myQualified: boolean
@@ -491,6 +519,7 @@ export interface DappPromoSummary {
 
 export interface DappT7DividendDaily {
   bizDate: string
+  asset?: StakeAsset
   smallAreaUsdt: string
   share: string
   status: 'ACCRUED' | 'CLAIMED'
@@ -500,6 +529,7 @@ export interface DappT7DividendDaily {
 export interface DappT7Summary {
   pending: string
   pendingRaw: string
+  pendingByAsset?: Record<StakeAsset, DappAssetAmount>
   list: DappT7DividendDaily[]
   total: number
   page: number
@@ -507,6 +537,7 @@ export interface DappT7Summary {
 }
 
 export interface DappDividendClaimParams extends DappIxParams {
+  asset?: StakeAsset
   amountRaw: string
   amount: string
   recipientAta: string
@@ -557,7 +588,7 @@ export interface DappAirdropRecord {
   sourceType?: string
   /** 计价资产：打新 V2 包为 AIPK，其余为 PEAK */
   asset?: 'PEAK' | 'AIPK'
-  /** Aipk 包走账本提现（LEDGER），其余走链上单签提币（CHAIN） */
+  /** 全部走链上单签提币；Aipk 包为账户级链上额度（peak_withdraw v2，withdraw_v2） */
   withdrawVia?: 'LEDGER' | 'CHAIN'
   /** AI 打新包的参与数量 = 入金折算代币（三倍总额的 1/3），固定两位小数 */
   dramaBaseAmount?: string | null
@@ -623,8 +654,19 @@ export interface DappAirdropSummary {
 
 // 空投收益提现（链上 withdraw_airdrop，扣 20% 手续费七份拆分，用户单签付 GAS）
 export interface DappWithdrawParams extends DappIxParams {
+  asset?: StakeAsset
   amountRaw: string
   amount: string
+}
+
+// 链上可提额度：PEAK 三倍空投额度 + Aipk 账户级额度（所有 Aipk 收益归集后在此，withdraw_v2 提到钱包）
+export interface DappWithdrawInfo {
+  airdropCreditRaw: string
+  airdropCredit: string
+  airdropFeePercent: string
+  aipkCreditRaw: string
+  aipkCredit: string
+  aipkFeePercent: string
 }
 
 export interface DappZeroCardInfo {

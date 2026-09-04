@@ -101,6 +101,30 @@
   color: var(--text-secondary);
 }
 
+/* 第二币种（Aipk）总量：与 PEAK 同列显示，颜色稍暗以区分 */
+.sp-duration-total-aipk {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* 质押币种下拉 */
+.sp-asset-select {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 15px;
+  font-weight: 600;
+  min-width: 120px;
+  cursor: pointer;
+  outline: none;
+}
+
+.sp-asset-select:focus {
+  border-color: var(--accent-orange);
+}
+
 .sp-duration-btn.day-15 { --d-color: var(--accent-cyan); }
 .sp-duration-btn.day-30 { --d-color: #3b88ff; }
 .sp-duration-btn.day-90 { --d-color: #a855f7; }

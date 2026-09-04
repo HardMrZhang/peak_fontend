@@ -252,6 +252,23 @@
   cursor: not-allowed;
 }
 
+/* 按币种一行一个领取按钮（PEAK / Aipk） */
+.dv-claim-line {
+  gap: 10px;
+}
+
+.dv-claim-line .dv-stat-value {
+  margin-left: auto;
+}
+
+.dv-claim-btn-inline {
+  width: auto;
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
 /* 操作提示 */
 .dv-tip {
   font-size: 13px;

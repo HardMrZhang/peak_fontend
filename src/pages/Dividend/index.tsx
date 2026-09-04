@@ -12,9 +12,13 @@ import {
   getT7ClaimParams,
   confirmT7Claim,
 } from '@/api'
-import type { DappPromoSummary, DappT7Summary, DirectReferralRecord } from '@/types'
+import type { DappPromoSummary, DappT7Summary, DirectReferralRecord, StakeAsset } from '@/types'
 import { useDappTx, hasToken } from '@/hooks/useDappTx'
+import { assetLabel } from '@/utils/asset'
 import './index.css'
+
+const ASSETS: StakeAsset[] = ['PEAK', 'AIPK']
+const unitOf = (asset?: StakeAsset | string | null) => assetLabel(asset || 'PEAK', 'PEAK')
 
 const BLOCK_EXPLORER_URL = 'https://solscan.io/tx/'
 
@@ -37,8 +41,9 @@ export default function Dividend() {
   const [promo, setPromo] = useState<DappPromoSummary | null>(null)
   const [t7, setT7] = useState<DappT7Summary | null>(null)
 
-  const [promoClaiming, setPromoClaiming] = useState(false)
-  const [t7Claiming, setT7Claiming] = useState(false)
+  // 领取中的币种（PEAK / AIPK 各自一个按钮）
+  const [promoClaiming, setPromoClaiming] = useState<StakeAsset | null>(null)
+  const [t7Claiming, setT7Claiming] = useState<StakeAsset | null>(null)
   const [promoTip, setPromoTip] = useState<Tip>(EMPTY_TIP)
   const [t7Tip, setT7Tip] = useState<Tip>(EMPTY_TIP)
 
@@ -75,31 +80,37 @@ export default function Dividend() {
     }
   }
 
-  const promoPending = promo ? BigInt(promo.pendingRaw || '0') : 0n
-  const t7Pending = t7 ? BigInt(t7.pendingRaw || '0') : 0n
+  // 按币种的待领（后端 pendingByAsset；缺省回退兼容字段 = PEAK）
+  const pendingOf = (sum: DappPromoSummary | DappT7Summary | null, asset: StakeAsset) => {
+    if (!sum) return { raw: 0n, amount: '0' }
+    const v = sum.pendingByAsset?.[asset]
+    if (v) return { raw: BigInt(v.raw || '0'), amount: v.amount }
+    if (asset === 'PEAK') return { raw: BigInt(sum.pendingRaw || '0'), amount: sum.pending }
+    return { raw: 0n, amount: '0' }
+  }
   // 实时资格（后端与每日结算同一口径统计），不依赖是否已有分红记录
   const promoQualified = promo?.myQualified ?? false
   const t7Qualified = (t7?.list?.length ?? 0) > 0
   const latestT7 = t7?.list?.[0] ?? null
 
-  // 领取推广分红：后端先补写链上额度，用户钱包单签领取、自付 GAS
-  const handlePromoClaim = async () => {
+  // 领取推广分红（按币种）：后端先补写链上额度，用户钱包单签领取、自付 GAS
+  const handlePromoClaim = async (asset: StakeAsset) => {
     if (promoClaiming) return
     if (!hasToken() || !connected) {
       message.warning(t('account.walletRequired'))
       return
     }
-    if (promoPending <= 0n) {
+    if (pendingOf(promo, asset).raw <= 0n) {
       setPromoTip({ text: t('dividend.noClaimable'), type: 'fail' })
       return
     }
-    setPromoClaiming(true)
+    setPromoClaiming(asset)
     setPromoTip({ text: t('dividend.claiming'), type: '' })
     try {
-      const paramsRes = await getPromoClaimParams()
+      const paramsRes = await getPromoClaimParams(asset)
       const sig = await sendDappIx(paramsRes.data)
       await confirmPromoClaim({ txHash: sig, intentId: paramsRes.data.intentId })
-      setPromoTip({ text: `${t('dividend.claimSuccess')} +${paramsRes.data.amount} PEAK`, type: 'success' })
+      setPromoTip({ text: `${t('dividend.claimSuccess')} +${paramsRes.data.amount} ${unitOf(asset)}`, type: 'success' })
       refresh()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -109,28 +120,28 @@ export default function Dividend() {
         setPromoTip(EMPTY_TIP)
       }
     } finally {
-      setPromoClaiming(false)
+      setPromoClaiming(null)
     }
   }
 
-  // 领取 T7 股东分红：同上，一次领完名下所有待领份额
-  const handleT7Claim = async () => {
+  // 领取 T7 股东分红（按币种）：同上，一次领完名下该币种所有待领份额
+  const handleT7Claim = async (asset: StakeAsset) => {
     if (t7Claiming) return
     if (!hasToken() || !connected) {
       message.warning(t('account.walletRequired'))
       return
     }
-    if (t7Pending <= 0n) {
+    if (pendingOf(t7, asset).raw <= 0n) {
       setT7Tip({ text: t('dividend.noClaimable'), type: 'fail' })
       return
     }
-    setT7Claiming(true)
+    setT7Claiming(asset)
     setT7Tip({ text: t('dividend.claiming'), type: '' })
     try {
-      const paramsRes = await getT7ClaimParams()
+      const paramsRes = await getT7ClaimParams(asset)
       const sig = await sendDappIx(paramsRes.data)
       await confirmT7Claim({ txHash: sig, intentId: paramsRes.data.intentId })
-      setT7Tip({ text: `${t('dividend.claimSuccess')} +${paramsRes.data.amount} PEAK`, type: 'success' })
+      setT7Tip({ text: `${t('dividend.claimSuccess')} +${paramsRes.data.amount} ${unitOf(asset)}`, type: 'success' })
       refresh()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -140,9 +151,34 @@ export default function Dividend() {
         setT7Tip(EMPTY_TIP)
       }
     } finally {
-      setT7Claiming(false)
+      setT7Claiming(null)
     }
   }
+
+  // 待领 + 领取按钮（两种币各一行）
+  const renderClaimRows = (
+    sum: DappPromoSummary | DappT7Summary | null,
+    claiming: StakeAsset | null,
+    onClaim: (asset: StakeAsset) => void,
+  ) => ASSETS.map((asset) => {
+    const p = pendingOf(sum, asset)
+    return (
+      <div key={asset} className="dv-stat-line dv-claim-line">
+        <span className="dv-stat-label">{t('dividend.pendingDividend')}（{unitOf(asset)}）</span>
+        <span className="dv-stat-value">
+          <b className="dv-num">{p.amount}</b> {unitOf(asset)}
+        </span>
+        <button
+          type="button"
+          className="dv-claim-btn dv-claim-btn-inline"
+          disabled={claiming !== null || p.raw <= 0n}
+          onClick={() => onClaim(asset)}
+        >
+          {claiming === asset ? t('dividend.claiming') : t('dividend.claimNow')}
+        </button>
+      </div>
+    )
+  })
 
   const visibleReferrals = listExpanded ? referrals : referrals.slice(0, 2)
 
@@ -214,22 +250,8 @@ export default function Dividend() {
                 <b className="dv-num">{promo?.qualifiedCount ?? 0}</b> {t('dividend.personUnit')}
               </span>
             </div>
-            <div className="dv-stat-line">
-              <span className="dv-stat-label">{t('dividend.pendingDividend')}</span>
-              <span className="dv-stat-value">
-                <b className="dv-num">{promo?.pending ?? '0'}</b> PEAK
-              </span>
-            </div>
+            {renderClaimRows(promo, promoClaiming, handlePromoClaim)}
           </div>
-
-          <button
-            type="button"
-            className="dv-claim-btn"
-            disabled={promoClaiming || promoPending <= 0n}
-            onClick={handlePromoClaim}
-          >
-            {promoClaiming ? t('dividend.claiming') : t('dividend.claimNow')}
-          </button>
           {promoTip.text && <div className={`dv-tip ${promoTip.type}`}>{promoTip.text}</div>}
 
           <h3 className="dv-record-title">{t('dividend.promoRecordTitle')}</h3>
@@ -238,10 +260,10 @@ export default function Dividend() {
               <div className="dv-record-empty">{t('dividend.noRecord')}</div>
             ) : (
               promo!.list.map((r) => (
-                <div key={r.bizDate} className="dv-record-item">
+                <div key={`${r.bizDate}:${r.asset || 'PEAK'}`} className="dv-record-item">
                   <span className="dv-record-date">{r.bizDate}</span>
                   <span className="dv-record-amount">
-                    <b className="dv-num">{r.share}</b> PEAK
+                    <b className="dv-num">{r.share}</b> {unitOf(r.asset)}
                   </span>
                   <span className="dv-record-status">
                     {r.status === 'CLAIMED' ? (
@@ -286,22 +308,8 @@ export default function Dividend() {
               <span className="dv-stat-label">{t('dividend.latestSettleDate')}</span>
               <span className="dv-stat-value">{latestT7?.bizDate ?? '--'}</span>
             </div>
-            <div className="dv-stat-line">
-              <span className="dv-stat-label">{t('dividend.pendingDividend')}</span>
-              <span className="dv-stat-value">
-                <b className="dv-num">{t7?.pending ?? '0'}</b> PEAK
-              </span>
-            </div>
+            {renderClaimRows(t7, t7Claiming, handleT7Claim)}
           </div>
-
-          <button
-            type="button"
-            className="dv-claim-btn"
-            disabled={t7Claiming || t7Pending <= 0n}
-            onClick={handleT7Claim}
-          >
-            {t7Claiming ? t('dividend.claiming') : t('dividend.claimNow')}
-          </button>
           {t7Tip.text && <div className={`dv-tip ${t7Tip.type}`}>{t7Tip.text}</div>}
 
           <h3 className="dv-record-title">{t('dividend.t7RecordTitle')}</h3>
@@ -310,10 +318,10 @@ export default function Dividend() {
               <div className="dv-record-empty">{t('dividend.noRecord')}</div>
             ) : (
               t7!.list.map((r) => (
-                <div key={r.bizDate} className="dv-record-item">
+                <div key={`${r.bizDate}:${r.asset || 'PEAK'}`} className="dv-record-item">
                   <span className="dv-record-date">{r.bizDate}</span>
                   <span className="dv-record-amount">
-                    <b className="dv-num">{r.share}</b> PEAK
+                    <b className="dv-num">{r.share}</b> {unitOf(r.asset)}
                   </span>
                   <span className="dv-record-status">
                     {r.status === 'CLAIMED' ? (

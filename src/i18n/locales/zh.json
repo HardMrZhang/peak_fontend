@@ -194,7 +194,12 @@
     "signCancelled": "您已取消签名，请重新连接钱包登录",
     "reconnectNeeded": "钱包授权已失效，请重新连接钱包并在钱包中确认签名",
     "loginFailedRetry": "钱包登录失败，请重新连接并签名",
-    "swapAipk": "兑换 USDT"
+    "swapAipk": "兑换 USDT",
+    "aipkPendingSweep": "Aipk 余额正在归集到链上额度（每小时一次），稍后再试",
+    "aipkNothingToWithdraw": "暂无可提的 Aipk",
+    "aipkWithdrawSuccess": "提现成功，{{amount}} Aipk（扣 20% 手续费后）已到钱包",
+    "aipkWithdrawnToday": "Aipk 今日已提现，明天再来",
+    "aipkWithdrawFail": "Aipk 提现失败"
   },
   "topup": {
     "breadcrumb": "账户/",
@@ -510,12 +515,15 @@
   "ipo": {
     "title": "空投与质押",
     "subtitle": "质押 PEAK，参与三倍空投，享链上实时收益",
-    "stakeTitle": "质押 PEAK",
+    "stakeTitle": "质押 PEAK / Aipk",
     "ruleTitle": "质押规则",
     "rule1": "收益每日结算，可随时领取至个人钱包；",
-    "rule2": "收益权重公式：质押数量 ÷ 质押池总量 × 当前对应质押期收入；",
+    "rule2": "收益权重公式：质押数量 ÷ 同币种质押池总量 × 当前对应质押期该币种收入（PEAK 与 Aipk 分池分红）；",
     "rule3": "领取收益由您的钱包发起交易并自付 GAS，链上可查。",
     "stakedTotal": "已质押总量",
+    "amountPlaceholderAsset": "最低质押 {{min}} {{unit}}",
+    "stakeAssetLabel": "质押币种",
+    "rule4": "支持质押 PEAK 或 Aipk：PEAK 最低 1000 枚，Aipk 最低 10 枚，提币手续费 20% 按原比例分流至各分红池。",
     "durationLabel": "质押时长",
     "selectDuration": "请选择时长",
     "amountPlaceholder": "最低质押 1000 PEAK",

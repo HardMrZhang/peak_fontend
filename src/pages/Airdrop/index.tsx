@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { assetLabel } from '@/utils/asset'
-import { useNavigate } from 'react-router-dom'
 import { message } from 'antd'
 import {
   getAirdropConfig,
@@ -43,7 +42,6 @@ const toSafeBigInt = (value: string | number | bigint | null | undefined): bigin
 
 export default function Airdrop() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const { sendDappIx, connected } = useDappTx()
 
   const [airdropConfig, setAirdropConfig] = useState<DappAirdropConfig | null>(null)
@@ -256,17 +254,52 @@ export default function Airdrop() {
   const handleWithdraw = async (record: DappAirdropRecord) => {
     if (withdrawing) return
     // 非 AI 打新包提币通道已关闭（白名单地址后端返回 nonDramaWithdrawClosed=false，放行）
-    // Aipk 包的释放已记入 AIPK 账本，跳到账户页（那里有 Aipk 余额及「提现 / 兑换 USDT」入口）
-    if (isAipkPkg(record)) {
-      navigate('/account')
-      return
-    }
     if (!isDramaPkg(record) && (airdropConfig?.nonDramaWithdrawClosed ?? true)) {
       message.warning(t('ipo.withdrawClosed'))
       return
     }
     if (!hasToken() || !connected) {
       message.warning(t('account.walletRequired'))
+      return
+    }
+    // Aipk 包：额度是账户级链上额度（peak_withdraw v2），一次提全部；和 PEAK 一样用户单签、链上扣 20%
+    if (isAipkPkg(record)) {
+      if (BigInt(record.withdrawableRaw || '0') <= 0n) {
+        message.warning(t('ipo.noWithdrawable'))
+        return
+      }
+      setWithdrawing(true)
+      setWithdrawingId(record.id)
+      try {
+        const paramsRes = await getDappWithdrawParams('', record.id, 'AIPK')
+        const sig = await sendDappIx(paramsRes.data)
+        let confirmErr: unknown = null
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+          try {
+            await confirmDappWithdraw({ txHash: sig, intentId: paramsRes.data.intentId })
+            confirmErr = null
+            break
+          } catch (err) {
+            confirmErr = err
+            if (attempt < 2) await new Promise((r) => setTimeout(r, 2000))
+          }
+        }
+        if (confirmErr) throw confirmErr
+        message.success(t('ipo.withdrawSuccess'))
+        await refreshAirdrop()
+      } catch (err: unknown) {
+        const respData = (err as { response?: { data?: { message?: string; errorCode?: string } } })?.response?.data
+        const msg = err instanceof Error ? err.message : String(err)
+        if (respData?.errorCode === 'ALREADY_WITHDRAWN_TODAY') {
+          message.warning(t('ipo.withdrawnToday'), 6)
+        } else if (!msg.includes('User rejected')) {
+          message.error(`${t('ipo.withdrawFail')}: ${(respData?.message || msg).slice(0, 80)}`)
+        }
+        await refreshAirdrop()
+      } finally {
+        setWithdrawing(false)
+        setWithdrawingId(null)
+      }
       return
     }
     const packageWithdrawableInt = getPackageWithdrawableInt(record)
@@ -551,7 +584,7 @@ export default function Airdrop() {
                   <div className="sp-record-footer">
                     <span className="sp-record-item">
                       {isAipkPkg(item)
-                        ? <>{t('ipo.airdropReleasedToBalance')}: {item.released ?? '0'} Aipk</>
+                        ? <>{t('ipo.withdrawable')}: {item.withdrawable ?? '0'} Aipk</>
                         : <>{t('ipo.withdrawable')}: {item.withdrawable ?? '0'} PEAK</>}
                     </span>
                     {(() => {
@@ -559,10 +592,16 @@ export default function Airdrop() {
                       // 出局但仍有最后一笔释放未提 → 仍允许提走，避免余额卡住。
                       // 非 AI 打新包（CHAIN/GENESIS）提币通道整体关闭。
                       if (isAipkPkg(item)) {
-                        // Aipk 包：余额在 AIPK 账本，按钮直接跳转账户页
+                        // Aipk 包：可提 = 账户级链上 Aipk 额度（所有 Aipk 收益归集），与 PEAK 一样单签提币、链上扣 20%
+                        const aipkAvail = BigInt(item.withdrawableRaw || '0')
                         return (
-                          <button type="button" className="sp-withdraw-btn" onClick={() => handleWithdraw(item)}>
-                            {t('ipo.goLedgerWithdraw')}
+                          <button
+                            type="button"
+                            className="sp-withdraw-btn"
+                            onClick={() => handleWithdraw(item)}
+                            disabled={withdrawing || item.withdrawnToday || aipkAvail <= 0n}
+                          >
+                            {withdrawingId === item.id ? t('ipo.withdrawing') : item.withdrawnToday ? t('ipo.withdrawnToday') : t('ipo.withdrawBtn')}
                           </button>
                         )
                       }

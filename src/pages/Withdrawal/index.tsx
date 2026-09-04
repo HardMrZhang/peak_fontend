@@ -11,7 +11,8 @@ import { useAuthStore } from '@/store/useAuthStore'
 import { CHAIN_NAME, DEFAULT_WITHDRAW_FEE_BY_ASSET } from '@/constants'
 import './index.css'
 
-type TokenType = 'USDT' | 'PEAK' | 'AIPK'
+// Aipk 已改为链上提现（账户页 / 空投页单签 withdraw_v2），账本提现只保留 USDT / PEAK
+type TokenType = 'USDT' | 'PEAK'
 
 
 /**
@@ -35,7 +36,7 @@ export default function Withdrawal() {
   const [searchParams] = useSearchParams()
   const initialAsset = (searchParams.get('asset') || '').toUpperCase()
   const [tokenType, setTokenType] = useState<TokenType>(
-    initialAsset === 'PEAK' || initialAsset === 'AIPK' ? (initialAsset as TokenType) : 'USDT',
+    initialAsset === 'PEAK' ? 'PEAK' : 'USDT',
   )
   const [amount, setAmount] = useState('')
   const [walletAddress, setWalletAddress] = useState(publicKey?.toBase58() ?? '')
@@ -200,19 +201,7 @@ export default function Withdrawal() {
                 >
                   <span className="token-dot peak" /> PEAK
                 </span>
-                <span
-                  className={`token-option ${tokenType === 'AIPK' ? 'active' : ''}`}
-                  onClick={() => { setTokenType('AIPK'); setAmount(''); setEstimate(null) }}
-                >
-                  <span className="token-dot aipk" /> Aipk
-                </span>
               </div>
-              {tokenType === 'AIPK' && (
-                <div className="balance-hint" style={{ marginTop: 8 }}>
-                  {t('withdrawal.aipkHint')}
-                  <Button type="link" size="small" onClick={() => navigate('/account/aipk-swap')}>{t('withdrawal.aipkSwapLink')}</Button>
-                </div>
-              )}
             </div>
           </div>
 

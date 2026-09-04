@@ -194,7 +194,12 @@
     "signCancelled": "Signature cancelled. Please reconnect your wallet to sign in.",
     "reconnectNeeded": "Wallet authorization expired. Please reconnect your wallet and approve the signature.",
     "loginFailedRetry": "Wallet login failed. Please reconnect and sign again.",
-    "swapAipk": "Swap to USDT"
+    "swapAipk": "Swap to USDT",
+    "aipkPendingSweep": "Your Aipk balance is being moved to on-chain credit (hourly). Please try again later.",
+    "aipkNothingToWithdraw": "No Aipk available to withdraw",
+    "aipkWithdrawSuccess": "Withdrawn {{amount}} Aipk (20% fee deducted) to your wallet",
+    "aipkWithdrawnToday": "Aipk already withdrawn today, try again tomorrow",
+    "aipkWithdrawFail": "Aipk withdrawal failed"
   },
   "topup": {
     "breadcrumb": "Account/",
@@ -510,12 +515,15 @@
   "ipo": {
     "title": "Airdrop & Staking",
     "subtitle": "Stake PEAK, join the triple airdrop, earn real-time on-chain rewards",
-    "stakeTitle": "Stake PEAK",
+    "stakeTitle": "Stake PEAK / Aipk",
     "ruleTitle": "Staking Rules",
     "rule1": "Rewards settle daily and can be claimed to your wallet anytime;",
-    "rule2": "Reward weight formula: staked amount ÷ pool total staked × current period income;",
+    "rule2": "Reward weight formula: staked amount ÷ same-token pool total × current period income of that token (PEAK and Aipk pools are separate);",
     "rule3": "Claims are initiated by your own wallet (you pay gas), verifiable on-chain.",
     "stakedTotal": "Total Staked",
+    "amountPlaceholderAsset": "Min stake {{min}} {{unit}}",
+    "stakeAssetLabel": "Token",
+    "rule4": "Stake PEAK or Aipk: min 1000 PEAK / 10 Aipk. The 20% withdrawal fee is split into the dividend pools at the original ratios.",
     "durationLabel": "Staking Period",
     "selectDuration": "Select a period",
     "amountPlaceholder": "Min stake 1000 PEAK",

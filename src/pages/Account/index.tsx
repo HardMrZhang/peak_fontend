@@ -6,7 +6,9 @@ import { Button, Table, Pagination, Modal, message } from 'antd'
 import { ExclamationCircleOutlined, InboxOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo, getMyGenesisNfts, getNotices, getDramaEarningRecords, getDramaPendingAgreements, getDramaMyContracts, getDramaAgreement } from '@/api'
+import { getBalances, getLedger, getNodeOrders, getReferralRewards, getRewardSummary, getNodeInfo, getMyGenesisNfts, getNotices, getDramaEarningRecords, getDramaPendingAgreements, getDramaMyContracts, getDramaAgreement, getDappWithdrawInfo, getDappWithdrawParams, confirmDappWithdraw } from '@/api'
+import type { DappWithdrawInfo } from '@/types'
+import { useDappTx } from '@/hooks/useDappTx'
 import type { AssetBalance, LedgerEntry, NodeOrder, ReferralReward, RewardSummary, PageResult, Notice, DramaEarningRecord, DramaPendingAgreement, DramaMyContract } from '@/types'
 import { useAuthStore } from '@/store/useAuthStore'
 import ContractSignModal from '@/components/ContractSignModal'
@@ -83,11 +85,16 @@ export default function Account() {
   const [genesisNftCount, setGenesisNftCount] = useState(0)
   const [balanceLoading, setBalanceLoading] = useState(true)
   const [tableLoading, setTableLoading] = useState(false)
+  // 链上可提额度（Aipk：所有 Aipk 收益归集到 peak_withdraw 的 Aipk 账本，账户级）
+  const [withdrawInfo, setWithdrawInfo] = useState<DappWithdrawInfo | null>(null)
+  const [aipkWithdrawing, setAipkWithdrawing] = useState(false)
+  const { sendDappIx } = useDappTx()
 
   const refreshBalances = useCallback(async () => {
     if (!token) return
     await Promise.all([
       getBalances().then((r) => setBalances(r.data)).catch(() => { }),
+      getDappWithdrawInfo().then((r) => setWithdrawInfo(r.data)).catch(() => { }),
       getRewardSummary().then((r) => setRewardSummary(r.data)).catch(() => { }),
       getNodeInfo().then((r) => setUserNodes(r.data.userNodes)).catch(() => { }),
       getMyGenesisNfts({ page: 1, pageSize: 1 }).then((r) => setGenesisNftCount(r.data.total)).catch(() => { }),
@@ -172,9 +179,45 @@ export default function Account() {
 
   const usdtBalance = balances.find((b) => b.asset === 'USDT')
   const usdtAmount = usdtBalance ? Number(usdtBalance.availableAmount).toFixed(2) : '0.00'
-  // Aipk：AI 短剧打新资产包释放 + 直推/级差奖励（账本余额），可提到钱包或站内兑换 USDT
+  // Aipk：AI 短剧打新资产包释放 + 级差/平级奖励。账本余额每小时归集到链上可提额度，
+  // 展示 = 链上可提 + 尚未归集的账本余额；「提现」直接单签 withdraw_v2 提到钱包（链上扣 20%）。
   const aipkBalance = balances.find((b) => b.asset === 'AIPK')
-  const aipkAmount = aipkBalance ? Number(aipkBalance.availableAmount).toFixed(4) : '0.0000'
+  const aipkLedger = aipkBalance ? Number(aipkBalance.availableAmount) : 0
+  const aipkOnchain = withdrawInfo ? Number(withdrawInfo.aipkCredit) : 0
+  const aipkAmount = (aipkLedger + aipkOnchain).toFixed(4)
+  const aipkCreditRaw = withdrawInfo ? BigInt(withdrawInfo.aipkCreditRaw || '0') : 0n
+
+  // Aipk 链上提现：与三倍空投 PEAK 提币同一合约同一规则（用户单签自付 gas，20% 手续费七份拆分）
+  const handleAipkWithdraw = async () => {
+    if (!connected || loginLoading || loginFailed || !token) {
+      setWalletTipOpen(true)
+      return
+    }
+    if (aipkWithdrawing) return
+    if (aipkCreditRaw <= 0n) {
+      message.warning(aipkLedger > 0 ? t('account.aipkPendingSweep') : t('account.aipkNothingToWithdraw'))
+      return
+    }
+    setAipkWithdrawing(true)
+    try {
+      const paramsRes = await getDappWithdrawParams('', '', 'AIPK')
+      const sig = await sendDappIx(paramsRes.data)
+      await confirmDappWithdraw({ txHash: sig, intentId: paramsRes.data.intentId })
+      message.success(t('account.aipkWithdrawSuccess', { amount: paramsRes.data.amount }))
+      await refreshBalances()
+    } catch (err: unknown) {
+      const respData = (err as { response?: { data?: { message?: string; errorCode?: string } } })?.response?.data
+      const msg = err instanceof Error ? err.message : String(err)
+      if (respData?.errorCode === 'ALREADY_WITHDRAWN_TODAY') {
+        message.warning(t('account.aipkWithdrawnToday'))
+      } else if (!msg.includes('User rejected')) {
+        message.error(`${t('account.aipkWithdrawFail')}: ${(respData?.message || msg).slice(0, 80)}`)
+      }
+      await refreshBalances()
+    } finally {
+      setAipkWithdrawing(false)
+    }
+  }
   const totalLocked = rewardSummary ? Number(rewardSummary.totalLocked).toFixed(2) : '0.00'
   // 账户页「已释放 PEAK」= 节点奖励释放 + 三倍空投/打新释放的合计（两条提现通道分别在节点页与三倍空投页）
   const totalReleased = rewardSummary
@@ -422,7 +465,7 @@ export default function Account() {
             <div className="card-row aipk-row">
               <span className="balance-icon aipk">◉</span>
               <span className="balance-amount aipk-amount">{balanceLoading ? '--' : aipkAmount} Aipk</span>
-              <Button className="withdraw-btn" onClick={() => handleWalletAction('/account/withdrawal?asset=AIPK')}>{t('account.withdrawal')}</Button>
+              <Button className="withdraw-btn" loading={aipkWithdrawing} onClick={handleAipkWithdraw}>{t('account.withdrawal')}</Button>
               <Button className="withdraw-btn swap-btn" onClick={() => handleWalletAction('/account/aipk-swap')}>{t('account.swapAipk')}</Button>
             </div>
             <div className="peak-stat-row">

@@ -1,5 +1,7 @@
 import { get, post, getText, getBlob } from '@/utils/request'
 import type {
+  StakeAsset,
+  DappWithdrawInfo,
   WalletUser,
   AssetBalance,
   DepositAddress,
@@ -325,8 +327,8 @@ export function getStakeOverview() {
   return get<DappStakeOverview>('/dapp/stake/overview')
 }
 
-export function getStakeParams(periodDays: number, amount: string | number) {
-  return get<DappStakeParams>('/dapp/stake/params', { params: { periodDays, amount } })
+export function getStakeParams(periodDays: number, amount: string | number, asset: StakeAsset = 'PEAK') {
+  return get<DappStakeParams>('/dapp/stake/params', { params: { periodDays, amount, asset } })
 }
 
 export function confirmStake(data: { txHash: string; intentId: string }) {
@@ -346,14 +348,14 @@ export function getStakeRecords(params?: { page?: number; pageSize?: number }) {
 }
 
 // ==================== DApp: 质押收益（日结可提，用户付 GAS） ====================
-export function getStakeRewards(params?: { page?: number; pageSize?: number }) {
+export function getStakeRewards(params?: { page?: number; pageSize?: number; asset?: StakeAsset }) {
   return get<DappStakeRewardsInfo>('/dapp/stake/rewards', { params })
 }
 
-export function getClaimStakeRewardParams(positionId: string | number, periodDays: number) {
+export function getClaimStakeRewardParams(positionId: string | number, periodDays: number, asset: StakeAsset = 'PEAK') {
   // 该接口返回前需在链上补记分红额度并等待确认，主网确认可能 >15s，单独放宽超时。
   // 领取相关错误（已到账自愈 / 串行锁占用）由页面内联提示，跳过全局红色弹窗。
-  return get<DappClaimStakeRewardParams>('/dapp/stake/claim-reward-params', { params: { positionId, periodDays }, timeout: ONCHAIN_CREDIT_TIMEOUT, skipErrorToast: true })
+  return get<DappClaimStakeRewardParams>('/dapp/stake/claim-reward-params', { params: { positionId, periodDays, asset }, timeout: ONCHAIN_CREDIT_TIMEOUT, skipErrorToast: true })
 }
 
 export function confirmClaimStakeReward(data: { txHash: string; intentId: string }) {
@@ -361,13 +363,13 @@ export function confirmClaimStakeReward(data: { txHash: string; intentId: string
 }
 
 // ==================== DApp: 1推5 推广分红（每日平均分配，用户付 GAS 领取） ====================
-export function getPromoSummary(params?: { page?: number; pageSize?: number }) {
+export function getPromoSummary(params?: { page?: number; pageSize?: number; asset?: StakeAsset }) {
   return get<DappPromoSummary>('/dapp/promo/summary', { params })
 }
 
-export function getPromoClaimParams() {
+export function getPromoClaimParams(asset: StakeAsset = 'PEAK') {
   // 同上：返回前链上补记分红额度并等待确认，放宽超时
-  return get<DappDividendClaimParams>('/dapp/promo/claim-params', { timeout: ONCHAIN_CREDIT_TIMEOUT })
+  return get<DappDividendClaimParams>('/dapp/promo/claim-params', { params: { asset }, timeout: ONCHAIN_CREDIT_TIMEOUT })
 }
 
 export function confirmPromoClaim(data: { txHash: string; intentId: string }) {
@@ -375,13 +377,13 @@ export function confirmPromoClaim(data: { txHash: string; intentId: string }) {
 }
 
 // ==================== DApp: T7 加权分红（按小区业绩每日加权计提，用户付 GAS 领取） ====================
-export function getT7Summary(params?: { page?: number; pageSize?: number }) {
+export function getT7Summary(params?: { page?: number; pageSize?: number; asset?: StakeAsset }) {
   return get<DappT7Summary>('/dapp/t7/summary', { params })
 }
 
-export function getT7ClaimParams() {
+export function getT7ClaimParams(asset: StakeAsset = 'PEAK') {
   // 同上：返回前链上补记分红额度并等待确认，放宽超时
-  return get<DappDividendClaimParams>('/dapp/t7/claim-params', { timeout: ONCHAIN_CREDIT_TIMEOUT })
+  return get<DappDividendClaimParams>('/dapp/t7/claim-params', { params: { asset }, timeout: ONCHAIN_CREDIT_TIMEOUT })
 }
 
 export function confirmT7Claim(data: { txHash: string; intentId: string }) {
@@ -414,7 +416,12 @@ export function confirmAirdrop(data: { txHash: string; intentId: string }) {
 }
 
 export function getAirdropRecords(params?: { page?: number; pageSize?: number }) {
-  return get<PageResult<DappAirdropRecord>>('/dapp/airdrop/records', { params })
+  return get<PageResult<DappAirdropRecord> & { aipkCreditRaw?: string; aipkCredit?: string }>('/dapp/airdrop/records', { params })
+}
+
+/** 链上可提额度：PEAK（airdrop_credit）与 Aipk（peak_withdraw v2 账本） */
+export function getDappWithdrawInfo() {
+  return get<DappWithdrawInfo>('/dapp/withdraw/info', { skipErrorToast: true })
 }
 
 // 单个空投包的「每日可提（每日释放）记录」
@@ -432,9 +439,10 @@ export function getAirdropSummary() {
 }
 
 // ==================== DApp: 空投收益提现（扣 20% 手续费，用户单签付 GAS） ====================
-export function getDappWithdrawParams(amount: string | number, packageId: string) {
+export function getDappWithdrawParams(amount: string | number, packageId: string, asset: StakeAsset = 'PEAK') {
   // 返回前可能触发链上额度自愈补单并等待确认，放宽超时
-  return get<DappWithdrawParams>('/dapp/withdraw/params', { params: { amount, packageId }, skipErrorToast: true, timeout: ONCHAIN_CREDIT_TIMEOUT })
+  // Aipk：账户级链上额度（peak_withdraw v2 通道），amount 可传空串表示全部
+  return get<DappWithdrawParams>('/dapp/withdraw/params', { params: { amount, packageId, asset }, skipErrorToast: true, timeout: ONCHAIN_CREDIT_TIMEOUT })
 }
 
 export function confirmDappWithdraw(data: { txHash: string; intentId: string }) {

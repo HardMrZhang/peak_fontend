@@ -630,6 +630,7 @@
     "noticeConfirm": "I Understand",
     "airdropPackTotal": "Asset Pack Total",
     "airdropReleasedToBalance": "Released to balance",
+    "aipkAccountWithdrawable": "Aipk withdrawable (all packs & rewards)",
     "goLedgerWithdraw": "Withdraw"
   },
   "dividend": {

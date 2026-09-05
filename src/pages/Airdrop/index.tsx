@@ -560,6 +560,11 @@ export default function Airdrop() {
                     <div className="sp-record-item">
                       {t('ipo.airdropRemaining')}: {item.remaining ?? '0'} {unitOf(item)}
                     </div>
+                    {isAipkPkg(item) && (
+                      <div className="sp-record-item">
+                        {t('ipo.airdropReleasedToBalance')}: {item.released ?? '0'} Aipk
+                      </div>
+                    )}
                     {/* Aipk 包不参与三倍空投加速：直推 / 级差在打新分红结算时另算，这里不展示加速行 */}
                     {!isAipkPkg(item) && (
                       <>
@@ -584,7 +589,7 @@ export default function Airdrop() {
                   <div className="sp-record-footer">
                     <span className="sp-record-item">
                       {isAipkPkg(item)
-                        ? <>{t('ipo.withdrawable')}: {item.withdrawable ?? '0'} Aipk</>
+                        ? <>{t('ipo.aipkAccountWithdrawable')}: {item.withdrawable ?? '0'} Aipk</>
                         : <>{t('ipo.withdrawable')}: {item.withdrawable ?? '0'} PEAK</>}
                     </span>
                     {(() => {

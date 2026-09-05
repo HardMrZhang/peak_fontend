@@ -431,11 +431,6 @@ export default function Account() {
               <span className="balance-amount aipk-amount">{balanceLoading ? '--' : aipkAmount} Aipk</span>
               <Button className="withdraw-btn swap-btn" onClick={() => handleWalletAction('/account/aipk-swap')}>{t('account.swapAipk')}</Button>
             </div>
-            <div className="peak-stat-row">
-              <span className="balance-icon peak">◉</span>
-              <span className="peak-stat-label">{t('account.releasedPeak')}</span>
-              <span className="peak-stat-value">{balanceLoading ? '--' : totalReleased} PEAK</span>
-            </div>
           </div>
           <div className="account-card nodes-card">
             <span className="card-label">{t('account.myNodes')}</span>
@@ -447,6 +442,12 @@ export default function Account() {
               <span className="balance-icon peak">◉</span>
               <span className="peak-stat-label">{t('account.earnedPeak')}</span>
               <span className="peak-stat-value">{balanceLoading ? '--' : totalLocked} PEAK</span>
+            </div>
+            {/* 已释放 PEAK（节点奖励释放 + 三倍空投/打新释放合计）放在股东节点卡片下 */}
+            <div className="peak-stat-row">
+              <span className="balance-icon peak">◉</span>
+              <span className="peak-stat-label">{t('account.releasedPeak')}</span>
+              <span className="peak-stat-value">{balanceLoading ? '--' : totalReleased} PEAK</span>
             </div>
           </div>
           <div className="account-card nodes-card">

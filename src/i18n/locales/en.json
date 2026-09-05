@@ -523,7 +523,7 @@
     "stakedTotal": "Total Staked",
     "amountPlaceholderAsset": "Min stake {{min}} {{unit}}",
     "stakeAssetLabel": "Token",
-    "rule4": "Stake PEAK or Aipk: min 1000 PEAK / 10 Aipk. The 20% withdrawal fee is split into the dividend pools at the original ratios.",
+    "rule4": "Stake PEAK or Aipk: min 1000 PEAK / 10 Aipk. No fee on staking or redemption.",
     "durationLabel": "Staking Period",
     "selectDuration": "Select a period",
     "amountPlaceholder": "Min stake 1000 PEAK",

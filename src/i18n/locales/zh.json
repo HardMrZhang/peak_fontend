@@ -523,7 +523,7 @@
     "stakedTotal": "已质押总量",
     "amountPlaceholderAsset": "最低质押 {{min}} {{unit}}",
     "stakeAssetLabel": "质押币种",
-    "rule4": "支持质押 PEAK 或 Aipk：PEAK 最低 1000 枚，Aipk 最低 10 枚，提币手续费 20% 按原比例分流至各分红池。",
+    "rule4": "支持质押 PEAK 或 Aipk：PEAK 最低 1000 枚，Aipk 最低 10 枚；质押与赎回不收手续费。",
     "durationLabel": "质押时长",
     "selectDuration": "请选择时长",
     "amountPlaceholder": "最低质押 1000 PEAK",

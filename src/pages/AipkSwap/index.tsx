@@ -152,6 +152,12 @@ export default function AipkSwap() {
                 <span className="orange"> {info?.walletAipk ?? '--'} Aipk</span>
                 <Button type="link" size="small" icon={<ReloadOutlined />} onClick={load} />
               </div>
+              {info?.platformAipk != null && Number(info.platformAipk) > 0 ? (
+                <div className="as-platform-hint">
+                  {t('aipkSwap.platformHint', { amount: info.platformAipk })}
+                  <button type="button" className="as-link" onClick={() => navigate('/airdrop')}>{t('aipkSwap.goAirdropWithdraw')}</button>
+                </div>
+              ) : null}
               <div className="amount-wrapper">
                 <Input
                   value={amount}

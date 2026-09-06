@@ -834,6 +834,8 @@ export interface AipkSwapInfo {
   receiveAddress: string
   /** 钱包内 Aipk 余额（读链失败为 null） */
   walletAipk: string | null
+  /** 平台内尚未提到钱包的 Aipk（链上可提额度） */
+  platformAipk?: string | null
   pendingCount: number
 }
 

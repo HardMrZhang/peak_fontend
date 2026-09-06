@@ -212,6 +212,8 @@
     "selectToken": "2.选择代币/充值金额",
     "amountTitle": "3.充值金额",
     "walletBalance": "钱包余额：",
+    "platformHint": "平台内还有 {{amount}} Aipk 未提到钱包，兑换前请先在空投页提币（扣 20% 手续费）。",
+    "goAirdropWithdraw": "去提币 →",
     "amountTip": "请指定您希望充值的金额。考虑到代币定价，建议您充值高于目标购买价格的金额，以确保资金充足。",
     "copySuccess": "地址已复制！",
     "copyAddressBtn": "复制地址",

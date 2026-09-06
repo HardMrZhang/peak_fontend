@@ -212,6 +212,8 @@
     "selectToken": "2.Select token/Amount of recharge",
     "amountTitle": "3.Amount of recharge",
     "walletBalance": "Balance of wallet:",
+    "platformHint": "You still have {{amount}} Aipk on the platform not yet withdrawn to your wallet. Withdraw on the Airdrop page first (20% fee) before swapping.",
+    "goAirdropWithdraw": "Withdraw →",
     "amountTip": "Please specify the amount you wish to deposit. Considering the token pricing, it is recommended that you deposit an amount higher than the target purchase price to ensure that you have sufficient funds.",
     "copySuccess": "Address copied!",
     "copyAddressBtn": "Copy address",

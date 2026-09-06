@@ -37,3 +37,14 @@
 .aipk-swap-page .as-item-sub a { color: #8ab4f8; }
 .aipk-swap-page .as-item-time { color: #8a8a8a; font-size: 12px; }
 .aipk-swap-page .as-reject { color: #ff7875; }
+
+.aipk-swap-page .as-platform-hint {
+  margin: 6px 0 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 170, 0, 0.08);
+  color: #c9a24a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.aipk-swap-page .as-platform-hint .as-link { margin-left: 6px; }

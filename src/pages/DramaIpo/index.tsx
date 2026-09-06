@@ -905,7 +905,7 @@ export default function DramaIpo() {
         )}
 
         {/* ---------------- 直推 6% 分红（链上 referral_dividend） ---------------- */}
-        {referral && referral.enabled && (referral.directCount > 0 || Number(referral.accrued) > 0) && (() => {
+        {referral && (referral.directCount > 0 || Number(referral.accrued) > 0 || Number(referral.directStaticTotal ?? 0) > 0) && (() => {
           const unit = assetLabel(referral.rewardAsset, 'Aipk')
           return (
             <section className="di-card">
@@ -919,6 +919,16 @@ export default function DramaIpo() {
                   <span>{t('dramaIpo.referralShares')}</span>
                   <span className="di-hl">{Number(referral.refereeSharesUsdt).toLocaleString()} USDT</span>
                 </div>
+                <hr className="di-divider" />
+                <div className="di-line">
+                  <span className="di-line-strong">{t('dramaIpo.referralStaticTotal')}</span>
+                  <span className="di-hl">{Number(referral.directStaticTotal ?? 0).toFixed(4)} {unit}</span>
+                </div>
+                <div className="di-line">
+                  <span>{t('dramaIpo.referralStaticToday')}</span>
+                  <span>{Number(referral.directStaticToday ?? 0).toFixed(4)} {unit}</span>
+                </div>
+                <div className="di-sub-note">{t('dramaIpo.referralStaticNote', { rate: Math.round(referral.referralRate * 100) })}</div>
                 <hr className="di-divider" />
                 <div className="di-line">
                   <span className="di-line-strong">{t('dramaIpo.referralAccrued')}</span>

@@ -891,6 +891,9 @@ export interface DramaReferralDividend {
   directCount: number
   refereeCount: number
   refereeSharesUsdt: string
+  /** 直推每日静态奖励（下级每日释放 × 6%）累计 / 近 24h，已计入 Aipk 可提总额 */
+  directStaticTotal?: string
+  directStaticToday?: string
   accrued: string
   claimed: string
   claimable: string

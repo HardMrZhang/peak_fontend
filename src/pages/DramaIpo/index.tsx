@@ -239,7 +239,7 @@ export default function DramaIpo() {
       releaseDays,
       principalPerMonth,
       principalDays: schedule.map((s) => s.dayNo),
-      dividendFirstMonth: config?.dividendFirstMonth ?? 4,
+      dividendFirstMonth: config?.dividendFirstMonth ?? 5,
       dividendPeriods: config?.dividendPeriods ?? 10,
       dividendRate: config?.dividendRate ?? 0.4,
     }
@@ -669,8 +669,8 @@ export default function DramaIpo() {
                       rate: Math.round((config?.principalReturnRate ?? 0.5) * 100),
                     })}</p>
                     <p>{t('dramaIpo.rule4', {
-                      month: config?.dividendFirstMonth ?? 4,
-                      lastMonth: (config?.dividendFirstMonth ?? 4) + (config?.dividendPeriods ?? 10) - 1,
+                      month: config?.dividendFirstMonth ?? 5,
+                      lastMonth: (config?.dividendFirstMonth ?? 5) + (config?.dividendPeriods ?? 10) - 1,
                       periods: config?.dividendPeriods ?? 10,
                       rate: Math.round((config?.dividendRate ?? 0.4) * 100),
                     })}</p>

@@ -570,10 +570,10 @@ export default function Airdrop() {
                           {t('ipo.aipkDirectStatic')}: {item.aipkRewards?.directStatic ?? '0'} Aipk
                         </div>
                         <div className="sp-record-item">
-                          {t('ipo.accelTeam')}: {item.aipkRewards?.teamDiff ?? '0'} Aipk
+                          {t('ipo.aipkTeamReward')}: {item.aipkRewards?.teamDiff ?? '0'} Aipk
                         </div>
                         <div className="sp-record-item">
-                          {t('ipo.accelPeer')}: {item.aipkRewards?.peer ?? '0'} Aipk
+                          {t('ipo.aipkPeerReward')}: {item.aipkRewards?.peer ?? '0'} Aipk
                         </div>
                       </>
                     )}

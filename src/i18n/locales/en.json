@@ -631,6 +631,8 @@
     "airdropPackTotal": "Asset Pack Total",
     "airdropReleasedToBalance": "Released to balance",
     "aipkDirectStatic": "Referral static reward (6% of referrals\\u2019 daily release)",
+    "aipkTeamReward": "Team Reward (Tier Diff)",
+    "aipkPeerReward": "Peer Reward",
     "aipkAccountWithdrawable": "Aipk withdrawable (all packs & rewards)",
     "goLedgerWithdraw": "Withdraw"
   },

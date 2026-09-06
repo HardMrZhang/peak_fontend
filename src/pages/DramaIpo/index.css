@@ -635,6 +635,7 @@
 }
 
 .di-submit {
+  display: block;
   width: 100%;
   background: var(--gradient-orange);
   border: none;
@@ -646,6 +647,10 @@
   cursor: pointer;
   transition: opacity 0.2s;
 }
+
+/* 分红 / 直推卡片里：说明文字 → 按钮 → 说明文字 的间距（.di-sub-note 默认负上边距只适用于紧跟 .di-line） */
+.di-sub-note + .di-submit { margin-top: 14px; }
+.di-submit + .di-sub-note { margin-top: 12px; margin-bottom: 0; }
 
 .di-submit:hover:not(:disabled) { opacity: 0.9; }
 

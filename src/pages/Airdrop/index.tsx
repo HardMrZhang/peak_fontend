@@ -561,11 +561,23 @@ export default function Airdrop() {
                       {t('ipo.airdropRemaining')}: {item.remaining ?? '0'} {unitOf(item)}
                     </div>
                     {isAipkPkg(item) && (
-                      <div className="sp-record-item">
-                        {t('ipo.airdropReleasedToBalance')}: {item.released ?? '0'} Aipk
-                      </div>
+                      <>
+                        <div className="sp-record-item">
+                          {t('ipo.airdropReleasedToBalance')}: {item.released ?? '0'} Aipk
+                        </div>
+                        {/* Aipk 动态奖励（账户级累计，已计入 Aipk 可提总额）：直推静态 6% / 团队级差 / 平级 */}
+                        <div className="sp-record-item">
+                          {t('ipo.aipkDirectStatic')}: {item.aipkRewards?.directStatic ?? '0'} Aipk
+                        </div>
+                        <div className="sp-record-item">
+                          {t('ipo.accelTeam')}: {item.aipkRewards?.teamDiff ?? '0'} Aipk
+                        </div>
+                        <div className="sp-record-item">
+                          {t('ipo.accelPeer')}: {item.aipkRewards?.peer ?? '0'} Aipk
+                        </div>
+                      </>
                     )}
-                    {/* Aipk 包不参与三倍空投加速：直推 / 级差在打新分红结算时另算，这里不展示加速行 */}
+                    {/* PEAK 包的三倍空投加速行 */}
                     {!isAipkPkg(item) && (
                       <>
                         <div className="sp-record-item">

@@ -592,6 +592,8 @@ export interface DappAirdropRecord {
   withdrawVia?: 'LEDGER' | 'CHAIN'
   /** AI 打新包的参与数量 = 入金折算代币（三倍总额的 1/3），固定两位小数 */
   dramaBaseAmount?: string | null
+  /** Aipk 包：账户级动态奖励累计（直推静态 6% / 直推分红回退 / 团队级差 / 平级），已计入 Aipk 可提总额 */
+  aipkRewards?: { directStatic: string; directBonus: string; teamDiff: string; peer: string }
   usdValue: string
   dailyRate: string
   dailyAmount: string

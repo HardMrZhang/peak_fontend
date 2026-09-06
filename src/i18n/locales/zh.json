@@ -630,6 +630,7 @@
     "noticeConfirm": "我已知晓",
     "airdropPackTotal": "资产包总量",
     "airdropReleasedToBalance": "已释放到余额",
+    "aipkDirectStatic": "直推静态收益（下级每日释放 6%）",
     "aipkAccountWithdrawable": "Aipk 可提总额（所有资产包及奖励合计）",
     "goLedgerWithdraw": "去提现"
   },

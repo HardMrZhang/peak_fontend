@@ -636,7 +636,6 @@
     "aipkTeamReward": "Team Reward (Tier Diff)",
     "aipkPeerReward": "Peer Reward",
     "aipkAccountWithdrawable": "Aipk withdrawable (all packs & rewards)",
-    "aipkPkgWithdrawn": "Withdrawn from this package",
     "goLedgerWithdraw": "Withdraw"
   },
   "dividend": {

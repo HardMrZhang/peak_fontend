@@ -575,9 +575,6 @@ export default function Airdrop() {
                         <div className="sp-record-item">
                           {t('ipo.aipkPeerReward')}: {item.aipkRewards?.peer ?? '0'} Aipk
                         </div>
-                        <div className="sp-record-item">
-                          {t('ipo.aipkPkgWithdrawn')}: {item.aipkRewards?.withdrawn ?? '0'} Aipk
-                        </div>
                       </>
                     )}
                     {/* PEAK 包的三倍空投加速行 */}

@@ -15,7 +15,7 @@ import {
 } from '@/api'
 import type {
   DappAirdropConfig,
-  DappAirdropRecord, DappAipkRewards,
+  DappAirdropRecord,
   DappAirdropReleaseRecord,
   DappAirdropSummary,
 } from '@/types'
@@ -51,7 +51,6 @@ export default function Airdrop() {
   const currencyRef = useRef<HTMLDivElement | null>(null)
   const [quantity, setQuantity] = useState('100')
   const [airdropRecords, setAirdropRecords] = useState<DappAirdropRecord[]>([])
-  const [aipkRewards, setAipkRewards] = useState<DappAipkRewards | null>(null)
   const [summary, setSummary] = useState<DappAirdropSummary | null>(null)
   const [joining, setJoining] = useState(false)
   const [withdrawing, setWithdrawing] = useState(false)
@@ -110,7 +109,6 @@ export default function Airdrop() {
       try {
         const rec = await getAirdropRecords({ page: 1, pageSize: 50 })
         setAirdropRecords(rec.data?.list ?? [])
-        setAipkRewards(rec.data?.aipkRewards ?? null)
       } catch { /* ignore */ }
       try {
         const sum = await getAirdropSummary()
@@ -264,7 +262,7 @@ export default function Airdrop() {
       message.warning(t('account.walletRequired'))
       return
     }
-    // Aipk 包：按包独立核算（可提 = 本包释放 − 本包已提），单签 withdraw_v2、链上扣 20%
+    // Aipk 包：按包独立核算（可提 = 本包释放 + 本包奖励分摊 − 本包已提），单签 withdraw_v2、链上扣 20%
     if (isAipkPkg(record)) {
       if (BigInt(record.withdrawableRaw || '0') <= 0n) {
         message.warning(t('ipo.noWithdrawable'))
@@ -352,51 +350,6 @@ export default function Airdrop() {
       }
       // 链上可能已扣额度但 confirm 失败：刷新触发后端按链上已提量自愈对账，把可提余额纠正为 0；
       // 同样等刷新完成再解禁，避免余额虚高时按钮回弹可点。
-      await refreshAirdrop()
-    } finally {
-      setWithdrawing(false)
-      setWithdrawingId(null)
-    }
-  }
-
-  // Aipk 奖励桶（直推静态 / 团队级差 / 平级）：独立于各资产包，单独提币（packageId 传哨兵 id）
-  const handleWithdrawAipkRewards = async () => {
-    if (withdrawing || !aipkRewards) return
-    if (!hasToken() || !connected) {
-      message.warning(t('account.walletRequired'))
-      return
-    }
-    if (BigInt(aipkRewards.withdrawableRaw || '0') <= 0n) {
-      message.warning(t('ipo.noWithdrawable'))
-      return
-    }
-    setWithdrawing(true)
-    setWithdrawingId(aipkRewards.id)
-    try {
-      const paramsRes = await getDappWithdrawParams(aipkRewards.withdrawable, aipkRewards.id, 'AIPK')
-      const sig = await sendDappIx(paramsRes.data)
-      let confirmErr: unknown = null
-      for (let attempt = 0; attempt < 3; attempt += 1) {
-        try {
-          await confirmDappWithdraw({ txHash: sig, intentId: paramsRes.data.intentId })
-          confirmErr = null
-          break
-        } catch (err) {
-          confirmErr = err
-          if (attempt < 2) await new Promise((r) => setTimeout(r, 2000))
-        }
-      }
-      if (confirmErr) throw confirmErr
-      message.success(t('ipo.withdrawSuccess'))
-      await refreshAirdrop()
-    } catch (err: unknown) {
-      const respData = (err as { response?: { data?: { message?: string; errorCode?: string } } })?.response?.data
-      const msg = err instanceof Error ? err.message : String(err)
-      if (respData?.errorCode === 'ALREADY_WITHDRAWN_TODAY') {
-        message.warning(t('ipo.withdrawnToday'), 6)
-      } else if (!msg.includes('User rejected')) {
-        message.error(`${t('ipo.withdrawFail')}: ${(respData?.message || msg).slice(0, 80)}`)
-      }
       await refreshAirdrop()
     } finally {
       setWithdrawing(false)
@@ -578,31 +531,6 @@ export default function Airdrop() {
               <div className="sp-record-empty">{t('ipo.noAirdropRecord')}</div>
             ) : (
               <>
-                {aipkRewards && (
-                  <div className="sp-record-card sp-aipk-rewards-card">
-                    <div className="sp-record-header">
-                      <span className="sp-record-id">{t('ipo.aipkRewardsTitle')}</span>
-                      <span className="sp-record-time">{t('ipo.aipkRewardsSub')}</span>
-                    </div>
-                    <div className="sp-record-grid">
-                      <div className="sp-record-item">{t('ipo.aipkDirectStatic')}: {aipkRewards.directStatic} Aipk</div>
-                      <div className="sp-record-item">{t('ipo.aipkTeamReward')}: {aipkRewards.teamDiff} Aipk</div>
-                      <div className="sp-record-item">{t('ipo.aipkPeerReward')}: {aipkRewards.peer} Aipk</div>
-                      <div className="sp-record-item">{t('ipo.aipkRewardsWithdrawn')}: {aipkRewards.withdrawn} Aipk</div>
-                    </div>
-                    <div className="sp-record-footer">
-                      <span className="sp-record-item">{t('ipo.withdrawable')}: {aipkRewards.withdrawable} Aipk</span>
-                      <button
-                        type="button"
-                        className="sp-withdraw-btn"
-                        onClick={handleWithdrawAipkRewards}
-                        disabled={withdrawing || aipkRewards.withdrawnToday || BigInt(aipkRewards.withdrawableRaw || '0') <= 0n}
-                      >
-                        {withdrawingId === aipkRewards.id ? t('ipo.withdrawing') : aipkRewards.withdrawnToday ? t('ipo.withdrawnToday') : t('ipo.withdrawBtn')}
-                      </button>
-                    </div>
-                  </div>
-                )}
                 {activeRecords.map((item) => (
                 <div key={item.id} className="sp-record-card">
                   <div className="sp-record-header">
@@ -637,6 +565,19 @@ export default function Airdrop() {
                         <div className="sp-record-item">
                           {t('ipo.airdropReleasedToBalance')}: {item.released ?? '0'} Aipk
                         </div>
+                        {/* 本包分摊到的动态奖励（按资产包总量比例分摊到每个打新包）：直推静态 6% / 团队级差 / 平级 */}
+                        <div className="sp-record-item">
+                          {t('ipo.aipkDirectStatic')}: {item.aipkRewards?.directStatic ?? '0'} Aipk
+                        </div>
+                        <div className="sp-record-item">
+                          {t('ipo.aipkTeamReward')}: {item.aipkRewards?.teamDiff ?? '0'} Aipk
+                        </div>
+                        <div className="sp-record-item">
+                          {t('ipo.aipkPeerReward')}: {item.aipkRewards?.peer ?? '0'} Aipk
+                        </div>
+                        <div className="sp-record-item">
+                          {t('ipo.aipkPkgWithdrawn')}: {item.aipkRewards?.withdrawn ?? '0'} Aipk
+                        </div>
                       </>
                     )}
                     {/* PEAK 包的三倍空投加速行 */}
@@ -669,7 +610,7 @@ export default function Airdrop() {
                       // 出局但仍有最后一笔释放未提 → 仍允许提走，避免余额卡住。
                       // 非 AI 打新包（CHAIN/GENESIS）提币通道整体关闭。
                       if (isAipkPkg(item)) {
-                        // Aipk 包：可提 = 本包累计释放 − 本包已提，与 PEAK 一样单签提币、链上扣 20%
+                        // Aipk 包：可提 = 本包累计释放 + 本包奖励分摊 − 本包已提，与 PEAK 一样单签提币、链上扣 20%
                         const aipkAvail = BigInt(item.withdrawableRaw || '0')
                         return (
                           <button

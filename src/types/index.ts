@@ -580,21 +580,6 @@ export interface DappAirdropParams extends DappIxParams {
   peakSourceWallet?: string
 }
 
-/** 账户级 Aipk 动态奖励桶（直推静态 / 团队级差 / 平级），独立于各资产包、单独提币 */
-export interface DappAipkRewards {
-  /** 提币时作为 packageId 传给后端（哨兵 '0'） */
-  id: string
-  directStatic: string
-  directBonus: string
-  teamDiff: string
-  peer: string
-  total: string
-  withdrawn: string
-  withdrawableRaw: string
-  withdrawable: string
-  withdrawnToday: boolean
-}
-
 export interface DappAirdropRecord {
   id: string
   grantId: string
@@ -622,6 +607,8 @@ export interface DappAirdropRecord {
   withdrawableInt: string
   // 当天(北京时间)已提过 → 可提展示为 0、按钮置灰，次日恢复（每个加速包每天限提一次）
   withdrawnToday?: boolean
+  /** Aipk 包：本包分摊到的动态奖励（直推静态 / 直推分红回退 / 团队级差 / 平级）与本包已提 */
+  aipkRewards?: { directStatic: string; directBonus: string; teamDiff: string; peer: string; withdrawn: string }
   remainDays: number
   isOut: boolean
   // 只有用户历史第一笔三倍空投订单承接各种加速；其他订单仅静态释放

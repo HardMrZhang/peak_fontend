@@ -482,3 +482,8 @@
   border: 1px solid var(--border-color);
   border-radius: 6px;
 }
+
+.sp-aipk-rewards-card {
+  border-color: rgba(255, 170, 0, 0.35);
+  background: linear-gradient(180deg, rgba(255, 170, 0, 0.08), rgba(255, 170, 0, 0.02));
+}

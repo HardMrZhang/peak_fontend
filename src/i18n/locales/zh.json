@@ -636,6 +636,9 @@
     "aipkTeamReward": "团队奖励（级差）",
     "aipkPeerReward": "平级奖励",
     "aipkAccountWithdrawable": "Aipk 可提总额（所有资产包及奖励合计）",
+    "aipkRewardsTitle": "Aipk 奖励（直推 / 团队 / 平级）",
+    "aipkRewardsSub": "账户级累计，独立于各资产包",
+    "aipkRewardsWithdrawn": "奖励已提",
     "goLedgerWithdraw": "去提现"
   },
   "dividend": {

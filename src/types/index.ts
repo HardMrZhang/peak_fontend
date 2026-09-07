@@ -580,6 +580,21 @@ export interface DappAirdropParams extends DappIxParams {
   peakSourceWallet?: string
 }
 
+/** 账户级 Aipk 动态奖励桶（直推静态 / 团队级差 / 平级），独立于各资产包、单独提币 */
+export interface DappAipkRewards {
+  /** 提币时作为 packageId 传给后端（哨兵 '0'） */
+  id: string
+  directStatic: string
+  directBonus: string
+  teamDiff: string
+  peer: string
+  total: string
+  withdrawn: string
+  withdrawableRaw: string
+  withdrawable: string
+  withdrawnToday: boolean
+}
+
 export interface DappAirdropRecord {
   id: string
   grantId: string
@@ -593,7 +608,6 @@ export interface DappAirdropRecord {
   /** AI 打新包的参与数量 = 入金折算代币（三倍总额的 1/3），固定两位小数 */
   dramaBaseAmount?: string | null
   /** Aipk 包：账户级动态奖励累计（直推静态 6% / 直推分红回退 / 团队级差 / 平级），已计入 Aipk 可提总额 */
-  aipkRewards?: { directStatic: string; directBonus: string; teamDiff: string; peer: string }
   usdValue: string
   dailyRate: string
   dailyAmount: string

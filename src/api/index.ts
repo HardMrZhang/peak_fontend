@@ -46,6 +46,7 @@ import type {
   DappAirdropConfig,
   DappAirdropParams,
   DappAirdropRecord,
+  DappAipkRewards,
   DappAirdropReleaseRecord,
   DappAirdropSummary,
   DappWithdrawParams,
@@ -418,7 +419,7 @@ export function confirmAirdrop(data: { txHash: string; intentId: string }) {
 }
 
 export function getAirdropRecords(params?: { page?: number; pageSize?: number }) {
-  return get<PageResult<DappAirdropRecord> & { aipkCreditRaw?: string; aipkCredit?: string }>('/dapp/airdrop/records', { params })
+  return get<PageResult<DappAirdropRecord> & { aipkCreditRaw?: string; aipkCredit?: string; aipkRewards?: DappAipkRewards | null }>('/dapp/airdrop/records', { params })
 }
 
 /** 链上可提额度：PEAK（airdrop_credit）与 Aipk（peak_withdraw v2 账本） */

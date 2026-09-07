@@ -708,7 +708,7 @@
     "rule2": "Static: every share comes with an equal-value {{asset}} asset pack ({{asset}} is valued 1:1 to USDT; {{total}} {{asset}} per share), releasing {{daily}} {{asset}} per day over {{days}} days.",
     "rule3": "Principal is returned in two installments: {{rate}}% of the contract amount on day {{days}} after signing (USDT).",
     "rule4": "Long-term dividends: months {{month}}–{{lastMonth}} ({{periods}} periods), {{rate}}% of the drama's real revenue is distributed weighted by your share of the network total; settled daily, claimable weekly.",
-    "rule6": "Dynamic: {{direct}}% of your direct referrals' dividends; team differential by small-area performance ({{tiers}}), peer bonus {{peer}}%; all paid in {{asset}}.",
+    "rule6": "Dynamic: {{direct}}% of your direct referrals' dividends; team differential by total team performance ({{tiers}}), peer bonus {{peer}}%; all paid in {{asset}}.",
     "rule7": "Withdrawal: {{asset}} is withdrawn directly to your wallet with no fee (sent after review); swap it on external platforms. USDT withdrawal fees are shown on the withdrawal page.",
     "rule5": "Once sold out, a project no longer accepts subscriptions. Past records can be looked up by wallet address or serial number under History.",
     "formTitle": "Subscribe",

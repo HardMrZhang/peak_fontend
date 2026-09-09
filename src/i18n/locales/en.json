@@ -610,6 +610,8 @@
     "withdrawSuccess": "Withdraw successful",
     "withdrawFail": "Withdraw failed",
     "noWithdrawable": "No withdrawable balance",
+    "aipkMinWithdraw": "Minimum withdrawal is {{min}} Aipk, please accumulate first",
+    "aipkMinWithdrawBtn": "Min {{min}}",
     "releaseRecordsShow": "View daily release records",
     "releaseRecordsHide": "Hide daily release records",
     "outRecordsShow": "View exited records ({{n}})",

@@ -610,6 +610,8 @@
     "withdrawSuccess": "提币成功",
     "withdrawFail": "提币失败",
     "noWithdrawable": "暂无可提余额",
+    "aipkMinWithdraw": "Aipk 满 {{min}} 个才可提币，请累计后再提",
+    "aipkMinWithdrawBtn": "满 {{min}} 可提",
     "releaseRecordsShow": "查看每日释放记录",
     "releaseRecordsHide": "收起每日释放记录",
     "outRecordsShow": "查看出局记录 ({{n}})",

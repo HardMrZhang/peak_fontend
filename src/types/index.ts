@@ -561,6 +561,8 @@ export interface DappAirdropConfig {
   participateClosed?: boolean
   /** 非打新包提币通道已关闭（白名单地址返回 false，可正常提币） */
   nonDramaWithdrawClosed?: boolean
+  /** Aipk 包单笔最低提币数量 */
+  aipkMinWithdraw?: number
 }
 
 export interface DappAirdropParams extends DappIxParams {

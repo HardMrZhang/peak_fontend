@@ -268,6 +268,10 @@ export default function Airdrop() {
         message.warning(t('ipo.noWithdrawable'))
         return
       }
+      if (Number(record.withdrawable || 0) < aipkMinWithdraw) {
+        message.warning(t('ipo.aipkMinWithdraw', { min: aipkMinWithdraw }))
+        return
+      }
       setWithdrawing(true)
       setWithdrawingId(record.id)
       try {
@@ -365,6 +369,8 @@ export default function Airdrop() {
   // 打新包（V1 PEAK / V2 Aipk）判定与计价单位
   const isDramaPkg = (r: DappAirdropRecord) => r.sourceType === 'DRAMA_IPO' || r.sourceType === 'DRAMA_IPO_AIPK'
   const isAipkPkg = (r: DappAirdropRecord) => r.asset === 'AIPK'
+  // Aipk 包单笔最低提币数量（后端配置，默认 20）
+  const aipkMinWithdraw = airdropConfig?.aipkMinWithdraw ?? 20
   const unitOf = (r: DappAirdropRecord) => assetLabel(r.asset, 'PEAK')
 
   const renderReleaseSection = (item: DappAirdropRecord) => (
@@ -631,14 +637,22 @@ export default function Airdrop() {
                       if (isAipkPkg(item)) {
                         // Aipk 包：可提 = 本包累计释放 + 本包奖励分摊 − 本包已提，与 PEAK 一样单签提币、链上扣 20%
                         const aipkAvail = BigInt(item.withdrawableRaw || '0')
+                        const belowMin = aipkAvail > 0n && Number(item.withdrawable || 0) < aipkMinWithdraw
                         return (
                           <button
                             type="button"
                             className="sp-withdraw-btn"
                             onClick={() => handleWithdraw(item)}
-                            disabled={withdrawing || item.withdrawnToday || aipkAvail <= 0n}
+                            disabled={withdrawing || item.withdrawnToday || aipkAvail <= 0n || belowMin}
+                            title={belowMin ? t('ipo.aipkMinWithdraw', { min: aipkMinWithdraw }) : undefined}
                           >
-                            {withdrawingId === item.id ? t('ipo.withdrawing') : item.withdrawnToday ? t('ipo.withdrawnToday') : t('ipo.withdrawBtn')}
+                            {withdrawingId === item.id
+                              ? t('ipo.withdrawing')
+                              : item.withdrawnToday
+                                ? t('ipo.withdrawnToday')
+                                : belowMin
+                                  ? t('ipo.aipkMinWithdrawBtn', { min: aipkMinWithdraw })
+                                  : t('ipo.withdrawBtn')}
                           </button>
                         )
                       }

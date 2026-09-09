@@ -623,6 +623,11 @@ export interface DappAirdropReleaseRecord {
   bizDate: string
   dayNo: number
   amount: string
+  /** Aipk 包：当天动态奖励按本包权重的分摊，total = amount + direct + teamDiff + peer */
+  direct?: string
+  teamDiff?: string
+  peer?: string
+  total?: string
   status: string
   txHash: string | null
   createdAt: string

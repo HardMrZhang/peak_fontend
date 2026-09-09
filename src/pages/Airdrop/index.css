@@ -482,3 +482,14 @@
   border: 1px solid var(--border-color);
   border-radius: 6px;
 }
+
+/* Aipk 包每日明细：日期 / 静态 / 直推 / 团队 / 合计 */
+.sp-release-row-aipk {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr 1fr 1.1fr;
+  gap: 6px;
+  font-size: 12px;
+}
+.sp-release-row-aipk span { text-align: right; white-space: nowrap; }
+.sp-release-row-aipk span:first-child { text-align: left; }
+.sp-release-row-aipk .sp-release-total { color: #f5a524; font-weight: 600; }

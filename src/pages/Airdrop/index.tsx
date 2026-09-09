@@ -386,18 +386,40 @@ export default function Airdrop() {
           ) : (releaseMap[item.id]?.length ?? 0) === 0 ? (
             <div className="sp-release-empty">{t('ipo.noReleaseRecord')}</div>
           ) : (
-            <>
-              <div className="sp-release-row sp-release-head">
-                <span>{t('ipo.releaseDate')}</span>
-                <span>{t('ipo.releaseAmount')}</span>
-              </div>
-              {releaseMap[item.id].map((r) => (
-                <div key={r.id} className="sp-release-row">
-                  <span>{r.bizDate}</span>
-                  <span>{r.amount} {unitOf(item)}</span>
+            isAipkPkg(item) ? (
+              <>
+                {/* Aipk 包：每日 = 日静态 + 当天直推 / 团队 / 平级奖励（按本包权重分摊），与可提余额同口径 */}
+                <div className="sp-release-row sp-release-row-aipk sp-release-head">
+                  <span>{t('ipo.releaseDate')}</span>
+                  <span>{t('ipo.releaseStatic')}</span>
+                  <span>{t('ipo.releaseDirect')}</span>
+                  <span>{t('ipo.releaseTeam')}</span>
+                  <span>{t('ipo.releaseTotal')}</span>
                 </div>
-              ))}
-            </>
+                {releaseMap[item.id].map((r) => (
+                  <div key={r.id} className="sp-release-row sp-release-row-aipk">
+                    <span>{r.bizDate.slice(5)}</span>
+                    <span>{r.amount}</span>
+                    <span>{r.direct ?? '0'}</span>
+                    <span>{(Number(r.teamDiff ?? 0) + Number(r.peer ?? 0)).toFixed(4).replace(/\.?0+$/, '')}</span>
+                    <span className="sp-release-total">{r.total ?? r.amount}</span>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                <div className="sp-release-row sp-release-head">
+                  <span>{t('ipo.releaseDate')}</span>
+                  <span>{t('ipo.releaseAmount')}</span>
+                </div>
+                {releaseMap[item.id].map((r) => (
+                  <div key={r.id} className="sp-release-row">
+                    <span>{r.bizDate}</span>
+                    <span>{r.amount} {unitOf(item)}</span>
+                  </div>
+                ))}
+              </>
+            )
           )}
         </div>
       )}

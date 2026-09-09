@@ -10,6 +10,19 @@
 }
 .aipk-swap-page .as-link:hover { text-decoration: underline; }
 
+.aipk-swap-page .as-notice {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(245, 166, 35, 0.28);
+  border-radius: 8px;
+  background: rgba(245, 166, 35, 0.08);
+  color: #d8c49e;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.aipk-swap-page .as-notice-title { color: #f5a623; font-weight: 600; margin-bottom: 3px; }
+.aipk-swap-page .as-notice p { margin: 0; }
+
 .aipk-swap-page .as-note {
   margin: 0 0 6px;
   color: #c9c9c9;

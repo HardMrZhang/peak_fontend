@@ -144,6 +144,11 @@ export default function AipkSwap() {
             <button type="button" className="as-link" onClick={() => navigate('/account/withdrawal')}>{t('aipkSwap.goWithdraw')}</button>
           </div>
 
+          <div className="as-notice" role="note">
+            <div className="as-notice-title">{t('aipkSwap.noticeTitle')}</div>
+            <p>{t('aipkSwap.notice')}</p>
+          </div>
+
           <div className="form-section">
             <h3 className="section-label">{t('aipkSwap.step1')}</h3>
             <div className="section-content">

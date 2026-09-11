@@ -296,6 +296,10 @@ export default function Airdrop() {
         const msg = err instanceof Error ? err.message : String(err)
         if (respData?.errorCode === 'ALREADY_WITHDRAWN_TODAY') {
           message.warning(t('ipo.withdrawnToday'), 6)
+        } else if (respData?.errorCode === 'AIPK_PENDING_SWEEP') {
+          message.warning(t('account.aipkPendingSweep'), 6)
+        } else if (respData?.errorCode === 'MIN_WITHDRAW') {
+          message.warning(t('ipo.aipkMinWithdraw', { min: aipkMinWithdraw }), 6)
         } else if (!msg.includes('User rejected')) {
           message.error(`${t('ipo.withdrawFail')}: ${(respData?.message || msg).slice(0, 80)}`)
         }

@@ -395,7 +395,7 @@
     "recentPerfTitle": "Recent Performance",
     "recentPerfPeriod": "Period",
     "recentPerfUsdt": "New USDT Volume",
-    "recentPerfPeak": "New PEAK Volume",
+    "recentPerfPeak": "New Volume (USDT)",
     "recentPerfSearch": "Custom Range (max 30 days)",
     "perfStartDate": "Start date",
     "perfEndDate": "End date",

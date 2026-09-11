@@ -32,7 +32,7 @@ export default function GenesisNodes() {
   const [recentPerfLoading, setRecentPerfLoading] = useState(false)
 
   const [customRange, setCustomRange] = useState<[string, string] | null>(null)
-  const [customPerf, setCustomPerf] = useState<{ usdt: string; peak: string } | null>(null)
+  const [customPerf, setCustomPerf] = useState<{ usdt: string; peak: string; total?: string } | null>(null)
   const [customLoading, setCustomLoading] = useState(false)
 
   const loadTeamDetail = useCallback(async () => {
@@ -100,7 +100,7 @@ export default function GenesisNodes() {
     getGenesisRecentPerformance({ start: startStr, end: endStr })
       .then((r) => {
         if (r.data?.custom) {
-          setCustomPerf({ usdt: r.data.custom.usdt, peak: r.data.custom.peak })
+          setCustomPerf({ usdt: r.data.custom.usdt, peak: r.data.custom.peak, total: r.data.custom.total })
         }
       })
       .catch(() => {})
@@ -342,7 +342,7 @@ export default function GenesisNodes() {
               ) : (
                 <span className="genesis-perf-custom-vals">
                   <span className="genesis-perf-val peak">
-                    {customPerf?.peak ?? '0.00'} <em>PEAK</em>
+                    {customPerf?.total ?? customPerf?.usdt ?? '0.00'} <em>USDT</em>
                   </span>
                 </span>
               )}
@@ -362,7 +362,7 @@ export default function GenesisNodes() {
                 <div className="genesis-perf-row" key={w.key}>
                   <span className="genesis-perf-period">{periodLabels[w.key] ?? w.key}</span>
                   <span className="genesis-perf-val peak">
-                    {w.peak} <em>PEAK</em>
+                    {w.total ?? w.usdt} <em>USDT</em>
                   </span>
                 </div>
               ))

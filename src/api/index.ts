@@ -294,12 +294,15 @@ export interface GenesisRecentPerformance {
     key: string
     usdt: string
     peak: string
+    /** 新增业绩合计（USDT）= U 入金 + PEAK 入金按 0.025 折算 */
+    total?: string
   }[]
   custom?: {
     start: string
     end: string
     usdt: string
     peak: string
+    total?: string
   } | null
 }
 

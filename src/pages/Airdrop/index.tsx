@@ -374,7 +374,7 @@ export default function Airdrop() {
   const isDramaPkg = (r: DappAirdropRecord) => r.sourceType === 'DRAMA_IPO' || r.sourceType === 'DRAMA_IPO_AIPK'
   const isAipkPkg = (r: DappAirdropRecord) => r.asset === 'AIPK'
   // Aipk 包单笔最低提币数量（后端配置，默认 20）
-  const aipkMinWithdraw = airdropConfig?.aipkMinWithdraw ?? 20
+  const aipkMinWithdraw = airdropConfig?.aipkMinWithdraw ?? 10
   const unitOf = (r: DappAirdropRecord) => assetLabel(r.asset, 'PEAK')
 
   const renderReleaseSection = (item: DappAirdropRecord) => (

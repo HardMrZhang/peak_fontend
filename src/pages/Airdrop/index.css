@@ -483,10 +483,10 @@
   border-radius: 6px;
 }
 
-/* Aipk 包每日明细：日期 / 静态 / 直推 / 团队 / 合计 */
+/* Aipk 包每日明细：日期 / 静态 / 直推 / 合计（团队级差、平级已隐藏） */
 .sp-release-row-aipk {
   display: grid;
-  grid-template-columns: 1.1fr 1fr 1fr 1fr 1.1fr;
+  grid-template-columns: 1.1fr 1fr 1fr 1.1fr;
   gap: 6px;
   font-size: 12px;
 }

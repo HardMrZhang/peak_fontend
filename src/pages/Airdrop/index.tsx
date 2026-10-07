@@ -155,8 +155,8 @@ export default function Airdrop() {
     const referAccel = summary ? parseFloat(summary.directAccel) || 0 : 0
     const teamAccel = summary ? parseFloat(summary.teamAccel) || 0 : 0
     const peerAccel = summary ? parseFloat(summary.peerAccel) || 0 : 0
-    // 级差团队加速已从三倍空投页隐藏，预估天数不再计入
-    const dailyTotal = dailyAirdrop + referAccel + peerAccel
+    // 级差、平级已从页面隐藏，预估天数不再计入
+    const dailyTotal = dailyAirdrop + referAccel
     const totalDays = dailyTotal > 0 ? Math.ceil(totalAirdrop / dailyTotal) : 0
     return { usdAmount, peakQty, rateText, totalAirdrop, dailyAirdrop, referAccel, teamAccel, peerAccel, totalDays }
   }, [quantity, price, payCurrency, airdropConfig, summary])
@@ -404,7 +404,6 @@ export default function Airdrop() {
                   <span>{t('ipo.releaseDate')}</span>
                   <span>{t('ipo.releaseStatic')}</span>
                   <span>{t('ipo.releaseDirect')}</span>
-                  <span>{t('ipo.releaseTeam')}</span>
                   <span>{t('ipo.releaseTotal')}</span>
                 </div>
                 {releaseMap[item.id].map((r) => (
@@ -412,7 +411,6 @@ export default function Airdrop() {
                     <span>{r.bizDate.slice(5)}</span>
                     <span>{r.amount}</span>
                     <span>{r.direct ?? '0'}</span>
-                    <span>{(Number(r.teamDiff ?? 0) + Number(r.peer ?? 0)).toFixed(4).replace(/\.?0+$/, '')}</span>
                     <span className="sp-release-total">{r.total ?? r.amount}</span>
                   </div>
                 ))}
@@ -531,10 +529,13 @@ export default function Airdrop() {
               <span className="sp-highlight">{airdropCalc.teamAccel.toFixed(2)} PEAK</span>
             </div>
             )}
+            {/* 平级加速暂时隐藏 */}
+            {false && (
             <div className="sp-info-line">
               <span>{t('ipo.peerAirdrop')}</span>
               <span className="sp-highlight">{airdropCalc.peerAccel.toFixed(2)} PEAK</span>
             </div>
+            )}
             <div className="sp-info-line">
               <span>{t('ipo.estimateDays')}</span>
               <span className="sp-highlight">
@@ -605,12 +606,18 @@ export default function Airdrop() {
                         <div className="sp-record-item">
                           {t('ipo.aipkDirectStatic')}: {item.aipkRewards?.directStatic ?? '0'} Aipk
                         </div>
+                        {/* 团队奖励（级差）暂时隐藏 */}
+                        {false && (
                         <div className="sp-record-item">
                           {t('ipo.aipkTeamReward')}: {item.aipkRewards?.teamDiff ?? '0'} Aipk
                         </div>
+                        )}
+                        {/* 平级奖励暂时隐藏 */}
+                        {false && (
                         <div className="sp-record-item">
                           {t('ipo.aipkPeerReward')}: {item.aipkRewards?.peer ?? '0'} Aipk
                         </div>
+                        )}
                       </>
                     )}
                     {/* PEAK 包的三倍空投加速行 */}
@@ -622,9 +629,12 @@ export default function Airdrop() {
                           {t('ipo.accelTeam')}: {item.isAccelerationOrder ? (summary?.teamAccel ?? '0') : '0'} PEAK
                         </div>
                         )}
+                        {/* 平级加速暂时隐藏 */}
+                        {false && (
                         <div className="sp-record-item">
                           {t('ipo.accelPeer')}: {item.isAccelerationOrder ? (summary?.peerAccel ?? '0') : '0'} PEAK
                         </div>
+                        )}
                         <div className="sp-record-item">
                           {t('ipo.accelDirect')}: {item.isAccelerationOrder ? (summary?.directAccel ?? '0') : '0'} PEAK
                         </div>

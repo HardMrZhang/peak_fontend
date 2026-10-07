@@ -654,36 +654,6 @@ export default function DramaIpo() {
                   </section>
                 ) : null}
 
-                <section className="di-card">
-                  <h3 className="di-card-title">{t('dramaIpo.rulesTitle')}</h3>
-                  <div className="di-synopsis">
-                    <p>{t('dramaIpo.rule1', { price: sharePrice })}</p>
-                    <p>{t('dramaIpo.rule2', {
-                      asset: rewardAsset,
-                      total: (sharePrice * (config?.airdropBaseRate ?? 1) * (config?.multiplier ?? 1) / peakPrice).toLocaleString(),
-                      daily: (sharePrice * (config?.airdropBaseRate ?? 1) * (config?.multiplier ?? 1) / peakPrice / (config?.releaseDays ?? 300)).toLocaleString(),
-                      days: config?.releaseDays ?? 300,
-                    })}</p>
-                    <p>{t('dramaIpo.rule3', {
-                      days: calc.principalDays.join('、'),
-                      rate: Math.round((config?.principalReturnRate ?? 0.5) * 100),
-                    })}</p>
-                    <p>{t('dramaIpo.rule4', {
-                      month: config?.dividendFirstMonth ?? 5,
-                      lastMonth: (config?.dividendFirstMonth ?? 5) + (config?.dividendPeriods ?? 10) - 1,
-                      periods: config?.dividendPeriods ?? 10,
-                      rate: Math.round((config?.dividendRate ?? 0.4) * 100),
-                    })}</p>
-                    <p>{t('dramaIpo.rule6', {
-                      asset: rewardAsset,
-                      direct: Math.round((config?.directDividendRate ?? 0.06) * 100),
-                      peer: Math.round((config?.peerBonusRate ?? 0.1) * 100),
-                      tiers: (config?.teamTiers ?? []).map((x) => `${x.code} ${x.minSmallAreaUsdt.toLocaleString()}U→${Math.round(x.rate * 100)}%`).join('，'),
-                    })}</p>
-                    <p>{t('dramaIpo.rule7', { asset: rewardAsset })}</p>
-                    <p>{t('dramaIpo.rule5')}</p>
-                  </div>
-                </section>
               </div>
 
               {/* ---------------- 右侧：参与表单 ---------------- */}

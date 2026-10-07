@@ -45,10 +45,8 @@ export default function Airdrop() {
   const { sendDappIx, connected } = useDappTx()
 
   const [airdropConfig, setAirdropConfig] = useState<DappAirdropConfig | null>(null)
-  const [payCurrency, setPayCurrency] = useState<'USDT' | 'PEAK'>('USDT')
+  const payCurrency = 'PEAK' as const
   // 自定义币种下拉（原生 <select> 在 TP/部分钱包 webview 里弹不出，改用受控 div 下拉）
-  const [currencyOpen, setCurrencyOpen] = useState(false)
-  const currencyRef = useRef<HTMLDivElement | null>(null)
   const [quantity, setQuantity] = useState('100')
   const [airdropRecords, setAirdropRecords] = useState<DappAirdropRecord[]>([])
   const [summary, setSummary] = useState<DappAirdropSummary | null>(null)
@@ -64,22 +62,6 @@ export default function Airdrop() {
   const [releaseLoadingId, setReleaseLoadingId] = useState<string | null>(null)
   // 出局记录（已出局且无残留可提）：默认隐藏，点击下拉框统一展开查看
   const [outExpanded, setOutExpanded] = useState(false)
-
-  // 点击/触摸下拉之外区域时收起币种下拉
-  useEffect(() => {
-    if (!currencyOpen) return undefined
-    const onOutside = (e: Event) => {
-      if (currencyRef.current && !currencyRef.current.contains(e.target as Node)) {
-        setCurrencyOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', onOutside)
-    document.addEventListener('touchstart', onOutside)
-    return () => {
-      document.removeEventListener('mousedown', onOutside)
-      document.removeEventListener('touchstart', onOutside)
-    }
-  }, [currencyOpen])
 
   const toggleReleaseRecords = useCallback(async (packageId: string) => {
     if (expandedId === packageId) {
@@ -141,9 +123,9 @@ export default function Airdrop() {
 
   const airdropCalc = useMemo(() => {
     const amt = parseFloat(quantity) || 0
-    // 下拉选择的币种决定输入含义：USDT → 折算 PEAK；PEAK → 折算 USDT
-    const usdAmount = payCurrency === 'USDT' ? amt : amt * price
-    const peakQty = payCurrency === 'USDT' ? (price > 0 ? amt / price : 0) : amt
+    // 只允许用 PEAK 参与：输入数量按实时价折算 USDT
+    const usdAmount = amt * price
+    const peakQty = amt
     const threshold = airdropConfig?.tierThresholdUsd ?? 500
     const rateLow = airdropConfig ? parseFloat(airdropConfig.dailyRateLow) : 1.4
     const rateHigh = airdropConfig ? parseFloat(airdropConfig.dailyRateHigh) : 1.5
@@ -159,7 +141,7 @@ export default function Airdrop() {
     const dailyTotal = dailyAirdrop + referAccel
     const totalDays = dailyTotal > 0 ? Math.ceil(totalAirdrop / dailyTotal) : 0
     return { usdAmount, peakQty, rateText, totalAirdrop, dailyAirdrop, referAccel, teamAccel, peerAccel, totalDays }
-  }, [quantity, price, payCurrency, airdropConfig, summary])
+  }, [quantity, price, airdropConfig, summary])
 
   const handleJoin = async () => {
     if (joining) return
@@ -177,10 +159,8 @@ export default function Airdrop() {
       message.warning(t('ipo.minJoinUsd', { min: minUsd }))
       return
     }
-    // 最低参与门槛 100U：U 下单直接比金额；PEAK 下单按实时价折算 USD 后比
-    if (payCurrency === 'USDT') {
-      if (amt < minUsd) { message.warning(t('ipo.minJoinUsd', { min: minUsd })); return }
-    } else if (price > 0 && amt * price < minUsd) {
+    // 最低参与门槛 100U：按实时价把 PEAK 折算成 USD 后比较
+    if (price > 0 && amt * price < minUsd) {
       message.warning(t('ipo.minJoinUsd', { min: minUsd })); return
     }
     setJoining(true)
@@ -448,34 +428,14 @@ export default function Airdrop() {
               <input
                 type="number"
                 className="sp-qty-input"
-                min={payCurrency === 'USDT' ? (airdropConfig?.minUsd ?? 100) : 0}
+                min={0}
                 step="0.01"
                 value={quantity}
-                placeholder={payCurrency === 'USDT' ? t('ipo.quantityPlaceholder') : t('ipo.quantityPlaceholderPeak')}
+                placeholder={t('ipo.quantityPlaceholderPeak')}
                 onChange={(e) => setQuantity(e.target.value)}
               />
-              <div className="sp-cur-select" ref={currencyRef}>
-                <button
-                  type="button"
-                  className="sp-cur-trigger"
-                  onClick={() => setCurrencyOpen((v) => !v)}
-                >
-                  <span>{payCurrency}</span>
-                  <span className={`sp-cur-caret${currencyOpen ? ' open' : ''}`}>▾</span>
-                </button>
-                {currencyOpen && (
-                  <div className="sp-cur-menu">
-                    {(['USDT', 'PEAK'] as const).map((c) => (
-                      <div
-                        key={c}
-                        className={`sp-cur-option${payCurrency === c ? ' active' : ''}`}
-                        onClick={() => { setPayCurrency(c); setCurrencyOpen(false) }}
-                      >
-                        {c}
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="sp-cur-select">
+                <span className="sp-cur-trigger">PEAK</span>
               </div>
             </div>
           </div>
@@ -485,17 +445,10 @@ export default function Airdrop() {
               <span>{t('ipo.realTimePrice')}</span>
               <span className="sp-highlight">{price > 0 ? price.toFixed(4) : '--'} USDT</span>
             </div>
-            {payCurrency === 'USDT' ? (
-              <div className="sp-info-line">
-                <span>{t('ipo.peakEquivalent')}</span>
-                <span className="sp-highlight">{airdropCalc.peakQty > 0 ? airdropCalc.peakQty.toFixed(4) : '--'} PEAK</span>
-              </div>
-            ) : (
-              <div className="sp-info-line">
-                <span>{t('ipo.usdEquivalent')}</span>
-                <span className="sp-highlight">{airdropCalc.usdAmount > 0 ? airdropCalc.usdAmount.toFixed(2) : '--'} USDT</span>
-              </div>
-            )}
+            <div className="sp-info-line">
+              <span>{t('ipo.usdEquivalent')}</span>
+              <span className="sp-highlight">{airdropCalc.usdAmount > 0 ? airdropCalc.usdAmount.toFixed(2) : '--'} USDT</span>
+            </div>
             <div className="sp-info-line">
               <span>{t('ipo.totalValue')}</span>
               <span className="sp-highlight">{airdropCalc.usdAmount.toFixed(2)} USDT</span>

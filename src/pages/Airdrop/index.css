@@ -106,7 +106,7 @@
 .sp-cur-trigger {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 6px;
   min-width: 70px;
   background: var(--bg-primary);

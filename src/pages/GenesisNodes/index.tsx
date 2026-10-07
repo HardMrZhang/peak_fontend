@@ -217,7 +217,8 @@ export default function GenesisNodes() {
           </div>
         </div>
 
-        {/* VIP Level */}
+        {/* 等级模块暂时隐藏 */}
+        {false && (
         <div className="genesis-vip-section">
           <h2 className="genesis-section-title">
             <span className="accent-dot" />
@@ -315,8 +316,10 @@ export default function GenesisNodes() {
             </div>
           </div>
         </div>
+        )}
 
-        {/* Recent Performance */}
+        {/* 团队业绩暂时隐藏 */}
+        {false && (
         <div className="genesis-perf-section">
           <h2 className="genesis-section-title">
             <span className="accent-dot" />
@@ -335,7 +338,7 @@ export default function GenesisNodes() {
           {customRange && (
             <div className="genesis-perf-custom">
               <span className="genesis-perf-custom-range">
-                {customRange[0]} ~ {customRange[1]}
+                {customRange?.[0]} ~ {customRange?.[1]}
               </span>
               {customLoading ? (
                 <Spin size="small" />
@@ -369,6 +372,7 @@ export default function GenesisNodes() {
             )}
           </div>
         </div>
+        )}
 
         {/* Purchase Records */}
         <div className="genesis-records-section">

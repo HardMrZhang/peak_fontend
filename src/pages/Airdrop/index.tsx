@@ -155,7 +155,8 @@ export default function Airdrop() {
     const referAccel = summary ? parseFloat(summary.directAccel) || 0 : 0
     const teamAccel = summary ? parseFloat(summary.teamAccel) || 0 : 0
     const peerAccel = summary ? parseFloat(summary.peerAccel) || 0 : 0
-    const dailyTotal = dailyAirdrop + referAccel + teamAccel + peerAccel
+    // 级差团队加速已从三倍空投页隐藏，预估天数不再计入
+    const dailyTotal = dailyAirdrop + referAccel + peerAccel
     const totalDays = dailyTotal > 0 ? Math.ceil(totalAirdrop / dailyTotal) : 0
     return { usdAmount, peakQty, rateText, totalAirdrop, dailyAirdrop, referAccel, teamAccel, peerAccel, totalDays }
   }, [quantity, price, payCurrency, airdropConfig, summary])
@@ -523,10 +524,13 @@ export default function Airdrop() {
               <span>{t('ipo.referAirdrop')}</span>
               <span className="sp-highlight">{airdropCalc.referAccel.toFixed(2)} PEAK</span>
             </div>
+            {/* 三倍空投级差团队加速暂时隐藏 */}
+            {false && (
             <div className="sp-info-line">
               <span>{t('ipo.teamAirdrop')}</span>
               <span className="sp-highlight">{airdropCalc.teamAccel.toFixed(2)} PEAK</span>
             </div>
+            )}
             <div className="sp-info-line">
               <span>{t('ipo.peerAirdrop')}</span>
               <span className="sp-highlight">{airdropCalc.peerAccel.toFixed(2)} PEAK</span>
@@ -612,9 +616,12 @@ export default function Airdrop() {
                     {/* PEAK 包的三倍空投加速行 */}
                     {!isAipkPkg(item) && (
                       <>
+                        {/* 三倍空投级差团队加速暂时隐藏 */}
+                        {false && (
                         <div className="sp-record-item">
                           {t('ipo.accelTeam')}: {item.isAccelerationOrder ? (summary?.teamAccel ?? '0') : '0'} PEAK
                         </div>
+                        )}
                         <div className="sp-record-item">
                           {t('ipo.accelPeer')}: {item.isAccelerationOrder ? (summary?.peerAccel ?? '0') : '0'} PEAK
                         </div>
